@@ -1,0 +1,10 @@
+{
+    "cmds": {
+        "style_name": "table",
+        "style_params": "spline 6000",
+        "coeff_types": "1 1",
+        "coeff_params": "./potentials/TABLE/0ce218cb3e_pairpot.table Si_Si"
+    },
+    "elements": ["Si"],
+    "ID": "table"
+}

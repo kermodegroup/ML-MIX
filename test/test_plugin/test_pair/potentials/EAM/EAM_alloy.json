@@ -1,0 +1,10 @@
+{
+    "cmds": {
+        "style_name": "eam/alloy",
+        "style_params": "",
+        "coeff_types": "* *",
+        "coeff_params": "./potentials/EAM/AlCu.eam.alloy Al Cu"
+    },
+    "elements": ["Al", "Cu"],
+    "ID": "EAM/alloy"
+}

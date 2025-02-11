@@ -1,0 +1,10 @@
+{
+    "cmds": {
+        "style_name": "eam/cd",
+        "style_params": "",
+        "coeff_types": "* *",
+        "coeff_params": "./potentials/EAM/FeCr.cdeam Fe Cr"
+    },
+    "elements": ["Fe", "Cr"],
+    "ID": "EAM/cd"
+}

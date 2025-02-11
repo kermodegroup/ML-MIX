@@ -1,0 +1,10 @@
+{
+    "cmds": {
+        "style_name": "eam/fs",
+        "style_params": "",
+        "coeff_types": "* *",
+        "coeff_params": "./potentials/EAM/Al_mm.eam.fs Al"
+    },
+    "elements": ["Al"],
+    "ID": "EAM/fs"
+}

@@ -1,0 +1,10 @@
+{
+    "cmds": {
+        "style_name": "pace",
+        "style_params": "",
+        "coeff_types": "* *",
+        "coeff_params": "./potentials/ACE/0ce218cb3e.yace Si"
+    },
+    "elements": ["Si"],
+    "ID": "ACE"
+}

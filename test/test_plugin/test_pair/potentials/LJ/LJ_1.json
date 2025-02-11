@@ -1,0 +1,10 @@
+{
+    "cmds": {
+        "style_name": "lj/cut",
+        "style_params": "5.0",
+        "coeff_types": "* *",
+        "coeff_params": "0.8 1.2"
+    },
+    "elements": ["X"],
+    "ID": "LJ"
+}

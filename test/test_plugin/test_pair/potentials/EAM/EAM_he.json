@@ -1,0 +1,10 @@
+{
+    "cmds": {
+        "style_name": "eam/he",
+        "style_params": "",
+        "coeff_types": "* *",
+        "coeff_params": "./potentials/EAM/PdHHe.eam.he Pd H He"
+    },
+    "elements": ["Pd", "H", "He"],
+    "ID": "EAM/he"
+}

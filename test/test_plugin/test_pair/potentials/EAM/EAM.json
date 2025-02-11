@@ -1,0 +1,10 @@
+{
+    "cmds": {
+        "style_name": "eam",
+        "style_params": "",
+        "coeff_types": "* *",
+        "coeff_params": "./potentials/EAM/Al_jnp.eam"
+    },
+    "elements": ["Al"],
+    "ID": "EAM"
+}
