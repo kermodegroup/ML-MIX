@@ -1,0 +1,12 @@
+Reference elastic constants: 150.77 56.36 70.47
+Reference elastic constants errors: 1.03 2.15 0.36
+Reference lattice parameter: 5.46075
+
+model_unconstrained_alpha_1e-7_2_10 elastic constants: 138.08 81.63 52.65
+model_unconstrained_alpha_1e-7_2_10 elastic constants errors: 2.33 0.19 2.06
+model_unconstrained_alpha_1e-7_2_10 lattice parameter: 5.64824
+
+model_constrained_alpha_1e-7_2_10 elastic constants: 148.84 55.33 69.83
+model_constrained_alpha_1e-7_2_10 elastic constants errors: 2.07 3.34 0.33
+model_constrained_alpha_1e-7_2_10 lattice parameter: 5.46075
+
