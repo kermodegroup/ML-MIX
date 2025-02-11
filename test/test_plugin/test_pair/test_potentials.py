@@ -96,7 +96,6 @@ if __name__ == "__main__":
                     sys.stdout = devnull
                     err_code = run_test(property_dict_1, property_dict_2, comm=comm, rank=rank)
                     sys.stdout = sys.__stdout__
-
             if rank == 0:
                 print(err_code)
             results[f"{property_dict_2['ID']}"] = {"result":err_code, "datetime":datetime.now().strftime("%Y-%m-%d %H:%M:%S")}

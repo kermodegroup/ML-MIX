@@ -9,8 +9,8 @@ def set_up_lammps(lmps, struct, mass_cmds, multi_potential=True, rank=0):
 
     # ---------- Initialize Simulation --------------------- 
     lmps.command('clear') 
-    lmps.command('plugin load ../../../src/build/hybridoverlaymlmlplugin.so')
-    lmps.command('plugin load ../../../src/build/mlmlplugin.so')
+    lmps.command('plugin load ../../../LAMMPS_plugin/src/build/hybridoverlaymlmlplugin.so')
+    lmps.command('plugin load ../../../LAMMPS_plugin/src/build/mlmlplugin.so')
 
     lmps.command('dimension 3')
     lmps.command('boundary p p p')
