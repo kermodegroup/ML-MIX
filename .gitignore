@@ -169,3 +169,11 @@ cython_debug/
 
 # PyPI configuration file
 .pypirc
+
+
+#.h5 file
+.h5
+
+#.yace and .table files
+.yace
+.table
