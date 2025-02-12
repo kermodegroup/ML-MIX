@@ -1,5 +1,10 @@
 # ML-MIX
-Package for ML/ML Force Mixing with Machine Learning Potentials in LAMMPS
+A LAMMPS plugin for efficiently mixing together forces from different machine-learned interatomic potentials inspired by quantum mechanics/molecular mechanics (QM/MM) methods. Use expensive, complex potentials only where they're needed! 
+
+![CloseInHeGif](docs/images/blue_background_title_looped.gif)
+![FeDumbbellGif](docs/images/Fe_dumbbell.gif)
+
+Cheap potentials can be generated using constrained linear fitting scripts 
 
 ## Setup
 
@@ -53,7 +58,7 @@ We fit constrained linear ACE potentials using the [ACEpotentials.jl package](ht
 ```
 julia
 ```
-and install the environment according to the `Manifest.toml` and `Project.toml` files with(".")```
+and install the environment contained in the `Manifest.toml` and `Project.toml` files with(".")
 
 ```
 using Pkg
@@ -63,7 +68,7 @@ Pkg.instantiate()
 
 ### Installing UF3 for constrained UF3 potential fitting
 
-We fit constrained linear UF3 potentials using a slightly modified version of the [UF3 package](https://github.com/uf3/uf3). The necessary fork of this package is included as a submodule in this repository. Specifically, we are utilising the `UltraFastFeaturization` branch of UF3, which greatly speeds up generating the potential features for fitting. Building this requires the HDF5 library is installed, as detailed [here](https://github.com/uf3/uf3/tree/UltraFastFeaturization/UltraFastFeaturization). Set the environment variables
+We fit constrained linear UF3 potentials using a slightly modified version of the [UF3 package](https://github.com/uf3/uf3). The necessary fork of this package is included as a submodule in this repository. We utilise the `UltraFastFeaturization` branch of UF3, which greatly speeds up generating the potential features for fitting. Building this requires the HDF5 library is installed, as detailed [here](https://github.com/uf3/uf3/tree/UltraFastFeaturization/UltraFastFeaturization). Before installation, set the environment variables
 
 ```
 export HDF5_INCLUDE_DIR=/Path/to/HDF5/include
@@ -72,7 +77,7 @@ export ULTRA_FAST_FEATURIZER=True
 ```
 
 
-Once these are set, navigate to the uf3 submodule and install it:
+and then proceed with the installation:
 
 ```
 cd external/uf3
