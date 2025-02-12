@@ -45,6 +45,6 @@ julia "$script_path/fit_ACE.jl" \
     --totaldegree "$totaldegree" \
     --rcut "$rcut"
 
-echo "python test_elastic_constants.py cheap_potentials/$folder_name/lammps_pot cheap_potentials/$folder_name/analysis $model_name1 $model_name2"
+echo Testing elastic constants and lattice parameter...
 
 python "$script_path/test_elastic_constants.py" "cheap_potentials/$folder_name/lammps_pot" "cheap_potentials/$folder_name/analysis" "cheap_potentials/$folder_name" "$model_name1" "$model_name2"
