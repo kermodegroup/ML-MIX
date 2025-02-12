@@ -16,7 +16,7 @@ Additionally, to run the case-studies, the following packages are necessary:
 - RIGID (for the Si stretched bond case study)
 - REPLICA (for nudged-elastic-band calculations)
 
-Whilst it is not necessary for the ML-MIX plugin, the examples also depend on passing commands to the LAMMPS shared library through Python. To build LAMMPS in such a way that this is possible, please follow the instructions [here](https://docs.lammps.org/Python_install.html). Installing into a virtual environment is strongly encouraged.
+Whilst it is not necessary for core functionality of the ML-MIX plugin, the case studies also depend on passing commands to the LAMMPS shared library through Python. To build LAMMPS in such a way that this is possible, please follow the instructions [here](https://docs.lammps.org/Python_install.html). Installing into a virtual environment is strongly encouraged.
 
 To aid the user, an example cmake LAMMPS build script is provided in `examples/example_lammps_build_script.sh`.
 
@@ -28,7 +28,7 @@ The ML-MIX plugin can be compiled straightforwardly with cmake in the LAMMPS_plu
 For an example cmake script, please see `examples/example_plugin_build_script.sh`.
 
 ### Loading the ML-MIX plugin
-To use the ML-MIX plugin, both the `fix` and `pair_style` need to be loaded at the start of an input script, e.g. with
+To use the ML-MIX plugin, both the `fix` and `pair_style` need to be loaded at the start of a LAMMPS input script:
 ```
 plugin load path/to/LAMMPS_plugin/build/hybridoverlaymlmlplugin.so
 plugin load path/to/LAMMPS_plugin/build/mlmlplugin.so
@@ -36,7 +36,7 @@ plugin load path/to/LAMMPS_plugin/build/mlmlplugin.so
 
 If the plugin has loaded correctly, the following lines should print
 ```
-Loading plugin: MLML hybrid overlay pair style v0.1 by Fraser Birks (fraser.birks@warwick.ac.uk)```
+Loading plugin: MLML hybrid overlay pair style v0.1 by Fraser Birks (fraser.birks@warwick.ac.uk)
 Loading plugin: MLML fix style v0.1 by Fraser Birks (fraser.birks@warwick.ac.uk)
 ```
 
