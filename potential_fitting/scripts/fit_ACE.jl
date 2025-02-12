@@ -70,6 +70,10 @@ function parse_arguments()
             help = "Key for virial stresses in the data"
             arg_type = String
             default = nothing
+        "--smoothness_prior_strength"
+            help = "Strength of the smoothness prior"
+            arg_type = Int64
+            default = 4
     end
 
     return parse_args(s)
@@ -101,6 +105,7 @@ rcut = args["rcut"]
 energy_key = args["energy_key"]
 force_key = args["force_key"]
 virial_key = args["virial_key"]
+smoothness_prior_strength = args["smoothness_prior_strength"]
 
 
 #set up model hyperparameters and basis
@@ -135,7 +140,7 @@ model = acemodel(
 # fit reference unconstrained ACE model to As data
 println("Fitting unconstrained reference model...")
 solver = ACEfit.BLR(factorization=:svd)
-P = smoothness_prior(model; p = 4) #this is our Tikhonov regularizer
+P = smoothness_prior(model; p = smoothness_prior_strength) #this is our Tikhonov regularizer
 
 weights = Dict("default" => Dict("E" => 30.0, "F" => 1.0 , "V" => 1.0 ))
 
