@@ -7,8 +7,6 @@ A LAMMPS plugin for efficiently mixing together forces from different machine-le
   <img src="docs/images/Fe_dumbbell.gif" width="300">
 </div>
 
-Cheap potentials can be generated using constrained linear fitting scripts 
-
 ## Setup
 
 ### Installing LAMMPS
