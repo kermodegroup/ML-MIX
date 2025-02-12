@@ -1,6 +1,5 @@
-# -*- CMake -*- file for plugin examples.
-# The is meant to be used as a template for plugins that are
-# distributed independent from the LAMMPS package.
+# -*- CMake -*- file for building ML-MIX plugins.
+# adapted from the LAMMPS example in the LAMMPS source code
 ##########################################
 
 cmake_minimum_required(VERSION 3.16)

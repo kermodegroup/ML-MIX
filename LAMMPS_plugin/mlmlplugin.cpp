@@ -23,7 +23,7 @@ extern "C" void lammpsplugin_init(void *lmp, void *handle, void *regfunc)
   plugin.style = "fix";
   plugin.name = "mlml";
   plugin.info = "MLML fix style v0.1";
-  plugin.author = "Fraser Birks (fraser.birks1@gmail.com)";
+  plugin.author = "Fraser Birks (fraser.birks@warwick.ac.uk)";
   plugin.creator.v2 = (lammpsplugin_factory2 *) &mlmlcreator;
   plugin.handle = handle;
   (*register_plugin)(&plugin, lmp);
