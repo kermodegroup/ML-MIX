@@ -79,3 +79,28 @@ cd external/uf3
 pip install .
 ```
 
+## Test results for each feature
+<!-- feature error table start -->
+| Potential | Serial | Date and time | Parallel | Date and time |
+| --- | --- | --- | --- | --- |
+| Force zeroing | ✅ | 2025-02-12 16:32:43 | ✅ | 2025-02-12 16:33:22 |
+| Region building | ✅ | 2025-02-12 16:34:27 | ✅ | 2025-02-12 16:34:38 |
+
+<!-- feature error table end -->
+
+
+## Tests results for different potentials
+<!-- error table start -->
+| Potential | Serial | Date and time | Parallel | Date and time |
+| --- | --- | --- | --- | --- |
+| EAM/fs | ✅ | 2025-02-12 16:31:51 | ✅ | 2025-02-12 16:33:36 |
+| EAM/cd | ✅ | 2025-02-12 16:31:49 | ✅ | 2025-02-12 16:33:35 |
+| LJ | ✅ | 2025-02-12 16:32:23 | ✅ | 2025-02-12 16:33:58 |
+| UF3 | ✅ | 2025-02-12 16:31:47 | ✅ | 2025-02-12 16:33:34 |
+| ACE | ✅ | 2025-02-12 16:32:22 | ✅ | 2025-02-12 16:33:57 |
+| EAM/alloy | ✅ | 2025-02-12 16:31:48 | ✅ | 2025-02-12 16:33:35 |
+| table | ✅ | 2025-02-12 16:31:48 | ✅ | 2025-02-12 16:33:34 |
+| EAM | ✅ | 2025-02-12 16:31:50 | ✅ | 2025-02-12 16:33:35 |
+| EAM/he | ✅ | 2025-02-12 16:31:51 | ✅ | 2025-02-12 16:33:36 |
+
+<!-- error table end -->
