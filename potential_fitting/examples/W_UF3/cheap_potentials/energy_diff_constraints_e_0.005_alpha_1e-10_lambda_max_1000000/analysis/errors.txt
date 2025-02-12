@@ -1,0 +1,7 @@
+alpha: 1e-10
+lambda_root: 906906.875
+hval at root: 1.2861479881109972e-08
+unconstrained_energy_err: 0.00010349589697608934
+unconstrained_force_err: 0.051817126331554074
+constrained_energy_err: 0.0005206530099644484
+constrained_force_err: 0.05158086268995198

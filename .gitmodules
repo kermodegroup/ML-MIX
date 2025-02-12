@@ -1,0 +1,4 @@
+[submodule "external/uf3"]
+	path = external/uf3
+	url = https://github.com/Fraser-Birks/uf3.git
+	branch = UltraFastFeaturization
