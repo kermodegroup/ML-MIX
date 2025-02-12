@@ -1,8 +1,11 @@
 # ML-MIX
 A LAMMPS plugin for efficiently mixing together forces from different machine-learned interatomic potentials inspired by quantum mechanics/molecular mechanics (QM/MM) methods. Use expensive, complex potentials only where they're needed! 
 
-![CloseInHeGif](docs/images/blue_background_title_looped.gif)
-![FeDumbbellGif](docs/images/Fe_dumbbell.gif)
+
+<div style="display: flex; gap: 10px;">
+  <img src="docs/images/blue_background_title_looped.gif" width="300">
+  <img src="docs/images/Fe_dumbbell.gif" width="300">
+</div>
 
 Cheap potentials can be generated using constrained linear fitting scripts 
 
