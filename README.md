@@ -3,7 +3,7 @@ A LAMMPS plugin for efficiently mixing together forces from different machine-le
 
 
 <div style="display: flex; gap: 10px;">
-  <img src="docs/images/blue_background_title_looped.gif" width="300">
+  <img src="docs/images/blue_background_title_looped.gif" width="500">
   <img src="docs/images/Fe_dumbbell.gif" width="300">
 </div>
 
