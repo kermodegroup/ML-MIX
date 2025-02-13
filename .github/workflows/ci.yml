@@ -1,4 +1,4 @@
-name: LAMMPS Plugin CI
+name: LAMMPS_Plugin_CI
 
 on: [push, pull_request]
 
@@ -131,7 +131,7 @@ jobs:
       run: |
         cd lammps/src
         LAMMPS_SRC_DIR=$(pwd)
-        cd ../../src
+        cd ../../LAMMPS_plugin
         mkdir build
         cd build
         cmake .. \
