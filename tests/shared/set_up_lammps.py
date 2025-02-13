@@ -1,16 +1,19 @@
+import os
+
 import ase.io
 
-def set_up_lammps(lmps, struct, mass_cmds, multi_potential=True, rank=0):
+def set_up_lammps(lmps, struct, mass_cmds, multi_potential=True, rank=0,path='./'):
     
     #write input file
-    input_file = 'data.in'
+    input_file = f'{path}/data.in'
     if rank == 0:
         ase.io.write(input_file, struct, format='lammps-data', parallel=False)
 
     # ---------- Initialize Simulation --------------------- 
     lmps.command('clear') 
-    lmps.command('plugin load ../../../LAMMPS_plugin/build/hybridoverlaymlmlplugin.so')
-    lmps.command('plugin load ../../../LAMMPS_plugin/build/mlmlplugin.so')
+    plugin_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../LAMMPS_plugin/build'))
+    lmps.command(f'plugin load {plugin_path}/hybridoverlaymlmlplugin.so')
+    lmps.command(f'plugin load {plugin_path}/mlmlplugin.so')
 
     lmps.command('dimension 3')
     lmps.command('boundary p p p')

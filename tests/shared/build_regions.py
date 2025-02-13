@@ -2,7 +2,6 @@ import numpy as np
 import ase.io
 import mpi4py as MPI
 
-
 def read_lammps_dump(filename):
     traj = ase.io.read(filename,parallel=False)
     print(traj)
@@ -45,6 +44,7 @@ def read_lammps_dump(filename):
     traj.arrays['d2_eval[2]'] = snapshots[0][:,4]
     return traj
 
+
 def get_seed_atoms(struct):
     #find 2 atoms nearest center of struct
     center = np.mean(struct.get_positions(), axis=0)
@@ -53,12 +53,12 @@ def get_seed_atoms(struct):
     seed_atoms = idx[:2]
     return seed_atoms
 
-def build_regions_lammps(lmps, struct, r_core, r_blend, r_buff, comm=None, rank=0):
+def build_regions_lammps(lmps, struct, r_core, r_blend, r_buff, comm=None, rank=0, path='./'):
     largest_cutoff = np.max((r_core,r_buff,r_blend))
     lmps.command(f'comm_modify cutoff {largest_cutoff+2.0}')
     seed_atoms = get_seed_atoms(struct)
     # set up dump
-    lmps.command('dump dump1 all custom 1 dump.lammpstrj id type x y z fx fy fz i2_potential[1] i2_potential[2] d2_eval[1] d2_eval[2]')
+    lmps.command(f'dump dump1 all custom 1 {path}/dump.lammpstrj id type x y z fx fy fz i2_potential[1] i2_potential[2] d2_eval[1] d2_eval[2]')
     # set up fix
     lmps.command(f'group seed_atoms id {" ".join([str(i+1) for i in seed_atoms])}')
     lmps.command(f'fix mlml_fix all mlml 1 {r_core} {r_buff} {r_blend} group seed_atoms')
@@ -66,7 +66,7 @@ def build_regions_lammps(lmps, struct, r_core, r_blend, r_buff, comm=None, rank=
     lmps.command('run 0')
     
     if rank == 0:
-        out_dump = read_lammps_dump('dump.lammpstrj')
+        out_dump = read_lammps_dump(f'{path}/dump.lammpstrj')
 
         i2_potential_1 = out_dump.arrays['i2_potential[1]']
         i2_potential_2 = out_dump.arrays['i2_potential[2]']
@@ -88,7 +88,7 @@ def build_regions_lammps(lmps, struct, r_core, r_blend, r_buff, comm=None, rank=
     return i2_potential, d2_eval
 
 
-def build_regions_python(struct, r_core, r_blend, r_buff, comm=None, rank=0):
+def build_regions_python(struct, r_core, r_blend, r_buff, comm=None, rank=0, path='./'):
     seed_atoms = get_seed_atoms(struct)
     pos = struct.get_positions()
 
@@ -141,7 +141,7 @@ def build_regions_python(struct, r_core, r_blend, r_buff, comm=None, rank=0):
     struct.arrays['buff_1'] = buff_1
     struct.arrays['d2_eval'] = d2_eval
     if rank == 0:
-        ase.io.write('struct_i2.xyz', struct, parallel=False)
+        ase.io.write(f'{path}/struct_i2.xyz', struct, parallel=False)
     
 
 

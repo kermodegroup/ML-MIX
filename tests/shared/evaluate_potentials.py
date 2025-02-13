@@ -7,7 +7,7 @@ from build_struct import build_struct
 from build_regions import build_regions_lammps
 from set_up_lammps import set_up_lammps
 
-def run_test(property_dict_1, property_dict_2, verbose=False, zero=False, comm=None, rank=None):
+def run_test(property_dict_1, property_dict_2, verbose=False, zero=False, comm=None, rank=None, path='./', crash_on_fail=False):
     # generate structure
 
     elements_1 = property_dict_1["elements"]
@@ -37,28 +37,28 @@ def run_test(property_dict_1, property_dict_2, verbose=False, zero=False, comm=N
         atomic_num = ase.data.atomic_numbers[element]
         atomic_mass = ase.data.atomic_masses[atomic_num]
         mass_cmds.append(f"mass {i+1} {atomic_mass}")
-    struct = build_struct(elements, rank=rank)
+    struct = build_struct(elements, rank=rank, path=path)
     if not verbose:
         lmps = lammps(cmdargs=["-log", "none", "-screen", "none"], comm=comm)
     else:
         lmps = lammps(comm=comm)
-    set_up_lammps(lmps, struct, mass_cmds)
+    set_up_lammps(lmps, struct, mass_cmds,path=path)
     
     r_core = 3.0
     r_blend = 3.0
     r_buff = 5.0
-    i2_potential, d2_eval = build_regions_lammps(lmps, struct, r_core, r_blend, r_buff)
+    i2_potential, d2_eval = build_regions_lammps(lmps, struct, r_core, r_blend, r_buff,path=path)
     try:
         #get forces for each potential
         lmps.command(f'pair_style {cmds_1["style_name"]} {cmds_1["style_params"]}')
         lmps.command(f'pair_coeff {cmds_1["coeff_types"]} {cmds_1["coeff_params"]}')
-        lmps.command('dump myDump all custom 1 just_1.lammpstrj id type xs ys zs fx fy fz i2_potential[1] i2_potential[2] d2_eval[1] d2_eval[2]')
+        lmps.command(f'dump myDump all custom 1 {path}/just_1.lammpstrj id type xs ys zs fx fy fz i2_potential[1] i2_potential[2] d2_eval[1] d2_eval[2]')
         lmps.command('run 0')
         lmps.command(f'undump myDump')
 
         lmps.command(f'pair_style {cmds_2["style_name"]} {cmds_2["style_params"]}')
         lmps.command(f'pair_coeff {cmds_2["coeff_types"]} {cmds_2["coeff_params"]}')
-        lmps.command('dump myDump all custom 1 just_2.lammpstrj id type xs ys zs fx fy fz i2_potential[1] i2_potential[2] d2_eval[1] d2_eval[2]')
+        lmps.command(f'dump myDump all custom 1 {path}/just_2.lammpstrj id type xs ys zs fx fy fz i2_potential[1] i2_potential[2] d2_eval[1] d2_eval[2]')
         lmps.command('run 0')
         lmps.command(f'undump myDump')
 
@@ -74,19 +74,22 @@ def run_test(property_dict_1, property_dict_2, verbose=False, zero=False, comm=N
             lmps.command(f'pair_coeff {cmds_1["coeff_types"]} {cmds_1["style_name"]} 1 {cmds_1["coeff_params"]}')
             lmps.command(f'pair_coeff {cmds_2["coeff_types"]} {cmds_2["style_name"]} 2 {cmds_2["coeff_params"]}')
 
-        lmps.command('dump myDump all custom 1 both.lammpstrj id type xs ys zs fx fy fz i2_potential[1] i2_potential[2] d2_eval[1] d2_eval[2]')
+        lmps.command(f'dump myDump all custom 1 {path}/both.lammpstrj id type xs ys zs fx fy fz i2_potential[1] i2_potential[2] d2_eval[1] d2_eval[2]')
         lmps.command('run 0')
         lmps.command(f'undump myDump')
 
     except:
-        return "ERR"
+        if crash_on_fail:
+            raise AssertionError("Test crashed!")
+        else:
+            return "ERR"
     
     lmps.close()
 
     if rank == 0:
-        just_1 = ase.io.read('just_1.lammpstrj', parallel=False)
-        just_2 = ase.io.read('just_2.lammpstrj', parallel=False)
-        both = ase.io.read('both.lammpstrj', parallel=False)
+        just_1 = ase.io.read(f'{path}/just_1.lammpstrj', parallel=False)
+        just_2 = ase.io.read(f'{path}/just_2.lammpstrj', parallel=False)
+        both = ase.io.read(f'{path}/both.lammpstrj', parallel=False)
         
         #compare forces
         forces_1 = just_1.get_forces()
@@ -108,11 +111,13 @@ def run_test(property_dict_1, property_dict_2, verbose=False, zero=False, comm=N
         both.arrays['fb'] = forces_both
         both.arrays['fmb'] = manual_forces_both
         both.arrays['diff'] = diff
-        ase.io.write('diff.xyz', both, format='extxyz', parallel=False)
+        ase.io.write(f'{path}/diff.xyz', both, format='extxyz', parallel=False)
         try:
             assert np.allclose(forces_both, manual_forces_both, atol=1e-6)
         except AssertionError:
             print(f"Forces for {ID_2} do not match.")
+            if crash_on_fail:
+                raise AssertionError("Test failed!")
             return "❌"
         return "✅"
     
