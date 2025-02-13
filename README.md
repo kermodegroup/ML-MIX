@@ -13,7 +13,7 @@ A LAMMPS plugin for efficiently mixing together forces from different machine-le
 
 To clone this repository (and it's submodule dependencies), run
 ```
-git clone git clone --recurse-submodules https://github.com/kermodegroup/ML-MIX.git
+git clone --recurse-submodules https://github.com/kermodegroup/ML-MIX.git
 ```
 
 ### Installing LAMMPS
