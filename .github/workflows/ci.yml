@@ -1,4 +1,4 @@
-name: LAMMPS_Plugin_CI
+name: CI
 
 on: [push, pull_request]
 
