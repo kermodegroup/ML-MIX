@@ -9,6 +9,13 @@ A LAMMPS plugin for efficiently mixing together forces from different machine-le
 
 ## Setup
 
+### Cloning this repository
+
+To clone this repository (and it's submodule dependencies), run
+```
+git clone git clone --recurse-submodules https://github.com/kermodegroup/ML-MIX.git
+```
+
 ### Installing LAMMPS
 To compile the ML-MIX LAMMPS plugin, you first need to clone and build LAMMPS. LAMMPS can be cloned directly with
 ```
@@ -29,9 +36,12 @@ To aid the user, an example cmake LAMMPS build script is provided in `examples/e
 ### Building the ML-MIX plugin
 The ML-MIX plugin can be compiled straightforwardly with cmake in the LAMMPS_plugin folder. The path to the `src` dir of LAMMPS must be provided, e.g.
 ```
--D LAMMPS_SOURCE_DIR=/path/to/lammps/src
+mkdir build
+cd build
+cmake .. -D LAMMPS_SOURCE_DIR=/path/to/lammps/src \
+cmake --build . -j 1
 ```
-For an example cmake script, please see `examples/example_plugin_build_script.sh`.
+This code is also provided in `examples/example_plugin_build_script.sh`.
 
 ### Loading the ML-MIX plugin
 To use the ML-MIX plugin, both the `fix` and `pair_style` need to be loaded at the start of a LAMMPS input script:
@@ -55,16 +65,9 @@ pip install -r requirements.txt
 
 ### Installing ACEpotentials.jl for constrained linear ACE fitting
 
-We fit constrained linear ACE potentials using the [ACEpotentials.jl package](https://github.com/ACEsuit/ACEpotentials.jl). For this, Julia is needed, which can be installed following the instructions [here](https://docs.julialang.org/en/v1/manual/installation/). Once this has been installed, open the Julia REPL with 
+We fit constrained linear ACE potentials using the [ACEpotentials.jl package](https://github.com/ACEsuit/ACEpotentials.jl). For this, Julia is needed, which can be installed following the instructions [here](https://docs.julialang.org/en/v1/manual/installation/). Install the environment contained in the `Manifest.toml` and `Project.toml` files with
 ```
-julia
-```
-and install the environment contained in the `Manifest.toml` and `Project.toml` files with(".")
-
-```
-using Pkg
-Pkg.activate(".")
-Pkg.instantiate()
+julia --project=. -e 'using Pkg; Pkg.Registry.add("General"); Pkg.Registry.add(RegistrySpec(url="https://github.com/ACEsuit/ACEregistry")); Pkg.instantiate()'
 ```
 
 ### Installing UF3 for constrained UF3 potential fitting
