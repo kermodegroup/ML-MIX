@@ -79,6 +79,13 @@ for file in $files; do
     filename=$(basename "$file")
     model_name="${filename%.*}"
     #echo command
+    echo Adding He with no interaction to $model_name...
+
+    python $script_path/gen_HeW_uf3.py \
+    --json_path cheap_potentials/$folder_name/raw_pot \
+    --in_file_name $model_name \
+    --out_file_name $model_name \
+
     echo Generating LAMMPS potentials...
 
     python ../../../external/uf3/lammps_plugin/scripts/generate_uf3_lammps_pots.py \
@@ -86,7 +93,7 @@ for file in $files; do
     -u metal \
     -m "$file" \
     -d "cheap_potentials/$folder_name/lammps_pot"
-    mv "cheap_potentials/$folder_name/lammps_pot/W.uf3" "cheap_potentials/$folder_name/lammps_pot/$model_name.uf3"
+    mv "cheap_potentials/$folder_name/lammps_pot/HeW.uf3" "cheap_potentials/$folder_name/lammps_pot/$model_name.uf3"
 done
 
 # now call the script test_elastic_constants.py, 
