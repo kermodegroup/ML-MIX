@@ -101,6 +101,7 @@ FixMLML::FixMLML(LAMMPS *lmp, int narg, char **arg) : Fix(lmp, narg, arg)
         // now check if we are using an initialisation group
         if (strcmp(arg[iarg+5], "init_group")==0){
           init_flag=true;
+          first_set=false;
           group2 = utils::strdup(arg[iarg+6]);
           igroup2 = group->find(group2);
           if (igroup2 == -1)
