@@ -5,7 +5,6 @@ from matscipy.neighbours import neighbour_list
 
 def read_lammps_dump(filename):
     traj = ase.io.read(filename,parallel=False, index='-1')
-    print(traj)
     snapshots = []
     current_snapshot = []
     reading_atoms = False
@@ -110,7 +109,6 @@ def build_regions_python(struct, r_core, r_blend, r_buff, pick_seed_with='group'
         i = neighbour_list('i', struct, 4.0)
         coord = np.bincount(i)
         seed_atoms = np.where((coord>=46))[0]
-        print(len(seed_atoms))
     elif pick_seed_with == 'all_expensive':
         i2_potential[:,0] = True
         i2_potential[:,1] = False

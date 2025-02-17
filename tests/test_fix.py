@@ -146,13 +146,18 @@ def test_build_with_group():
     region_test(pick_seed_with='group')
 
 def test_build_with_fix():
-    region_test(pick_seed_with='fix',fix_nevery=10)
+    region_test(pick_seed_with='fix',nsteps=1,fix_nevery=10)
+    region_test(pick_seed_with='fix',nsteps=5,fix_nevery=10)
     region_test(pick_seed_with='fix',nsteps=20,fix_nevery=10)
+    region_test(pick_seed_with='fix',nsteps=55,fix_nevery=10)
+
 
 def test_build_with_init_group():
     region_test(pick_seed_with='fix_and_init_group',nsteps=1,fix_nevery=10)
     region_test(pick_seed_with='fix_and_init_group',nsteps=5,fix_nevery=10)
     region_test(pick_seed_with='fix_and_init_group',nsteps=20,fix_nevery=10)
+    region_test(pick_seed_with='fix_and_init_group',nsteps=55,fix_nevery=10)
+
 
 
     
