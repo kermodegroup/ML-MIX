@@ -1,15 +1,15 @@
 import numpy as np
 import ase.io
 import mpi4py as MPI
+from matscipy.neighbours import neighbour_list
 
 def read_lammps_dump(filename):
-    traj = ase.io.read(filename,parallel=False)
+    traj = ase.io.read(filename,parallel=False, index='-1')
     print(traj)
     snapshots = []
     current_snapshot = []
     reading_atoms = False
     headers = []
-    
     with open(filename, 'r') as file:
         for line in file:
             if line.startswith("ITEM: TIMESTEP"):
@@ -18,6 +18,7 @@ def read_lammps_dump(filename):
                     snapshots.append(current_snapshot[np.argsort(current_snapshot[:,0])])
                     current_snapshot = []
                 next(file)  # Skip the timestep value
+                reading_atoms=False
             elif line.startswith("ITEM: ATOMS"):
                 headers = line.split()[2:]
                 reading_atoms = True
@@ -38,10 +39,10 @@ def read_lammps_dump(filename):
     if current_snapshot:
         current_snapshot = np.array(current_snapshot)
         snapshots.append(current_snapshot[np.argsort(current_snapshot[:,0])])
-    traj.arrays['i2_potential[1]'] = snapshots[0][:,1]
-    traj.arrays['i2_potential[2]'] = snapshots[0][:,2]
-    traj.arrays['d2_eval[1]'] = snapshots[0][:,3]
-    traj.arrays['d2_eval[2]'] = snapshots[0][:,4]
+    traj.arrays['i2_potential[1]'] = snapshots[-1][:,1]
+    traj.arrays['i2_potential[2]'] = snapshots[-1][:,2]
+    traj.arrays['d2_eval[1]'] = snapshots[-1][:,3]
+    traj.arrays['d2_eval[2]'] = snapshots[-1][:,4]
     return traj
 
 
@@ -53,21 +54,30 @@ def get_seed_atoms(struct):
     seed_atoms = idx[:2]
     return seed_atoms
 
-def build_regions_lammps(lmps, struct, r_core, r_blend, r_buff, comm=None, rank=0, path='./'):
+def build_regions_lammps(lmps, struct, r_core, r_blend, r_buff, pick_seed_with='group', nsteps=1, fix_nevery=10, comm=None, rank=0, path='./'):
     largest_cutoff = np.max((r_core,r_buff,r_blend))
     lmps.command(f'comm_modify cutoff {largest_cutoff+2.0}')
     seed_atoms = get_seed_atoms(struct)
     # set up dump
-    lmps.command(f'dump dump1 all custom 1 {path}/dump.lammpstrj id type x y z fx fy fz i2_potential[1] i2_potential[2] d2_eval[1] d2_eval[2]')
-    # set up fix
+    lmps.command(f'dump dump1 all custom {nsteps} {path}/dump.lammpstrj id type x y z fx fy fz i2_potential[1] i2_potential[2] d2_eval[1] d2_eval[2]')
     lmps.command(f'group seed_atoms id {" ".join([str(i+1) for i in seed_atoms])}')
-    lmps.command(f'fix mlml_fix all mlml 1 {r_core} {r_buff} {r_blend} group seed_atoms')
+    if pick_seed_with == 'group':
+        lmps.command(f'fix mlml_fix all mlml 1 {r_core} {r_buff} {r_blend} group seed_atoms')
+    elif pick_seed_with == 'fix':
+        lmps.command('compute ca all coord/atom cutoff 4.0')
+        lmps.command(f'fix av_ca all ave/atom 1 1 {fix_nevery} c_ca')
+        lmps.command(f'fix mlml_fix all mlml 1 {r_core} {r_buff} {r_blend} fix_classify av_ca {fix_nevery} 45.5 inf')
+    elif pick_seed_with == 'fix_and_init_group':
+        lmps.command('compute ca all coord/atom cutoff 4.0')
+        lmps.command(f'fix av_ca all ave/atom 1 1 {fix_nevery} c_ca')
+        lmps.command(f'fix mlml_fix all mlml 1 {r_core} {r_buff} {r_blend} fix_classify av_ca {fix_nevery} 45.5 inf init_group seed_atoms')
 
-    lmps.command('run 0')
+    if pick_seed_with != 'group':    
+        lmps.command(f'dump fix_dump all custom {fix_nevery} {path}/fix_dump.lammpstrj id type x y z fx fy fz i2_potential[1] i2_potential[2] d2_eval[1] d2_eval[2] f_av_ca')
+    lmps.command(f'run {nsteps}')
     
     if rank == 0:
         out_dump = read_lammps_dump(f'{path}/dump.lammpstrj')
-
         i2_potential_1 = out_dump.arrays['i2_potential[1]']
         i2_potential_2 = out_dump.arrays['i2_potential[2]']
         d2_eval_1 = out_dump.arrays['d2_eval[1]']
@@ -88,18 +98,37 @@ def build_regions_lammps(lmps, struct, r_core, r_blend, r_buff, comm=None, rank=
     return i2_potential, d2_eval
 
 
-def build_regions_python(struct, r_core, r_blend, r_buff, comm=None, rank=0, path='./'):
-    seed_atoms = get_seed_atoms(struct)
-    pos = struct.get_positions()
-
+def build_regions_python(struct, r_core, r_blend, r_buff, pick_seed_with='group', comm=None, rank=0, path='./'):
+    
     i2_potential = np.zeros((len(struct),2), dtype=bool)
     d2_eval = np.zeros((len(struct),2), dtype=float)
     core = np.zeros(len(struct), dtype=bool)
 
+    if pick_seed_with == 'group':
+        seed_atoms = get_seed_atoms(struct)
+    elif pick_seed_with == 'fix':
+        i = neighbour_list('i', struct, 4.0)
+        coord = np.bincount(i)
+        seed_atoms = np.where((coord>=46))[0]
+        print(len(seed_atoms))
+    elif pick_seed_with == 'all_expensive':
+        i2_potential[:,0] = True
+        i2_potential[:,1] = False
+        d2_eval[:,0] = 1.0
+        d2_eval[:,1] = 0.0
+        core = np.ones_like(core)
+        struct.arrays['i2_potential'] = i2_potential
+        struct.arrays['core'] = core
+        struct.arrays['d2_eval'] = d2_eval
+        if rank == 0:
+            ase.io.write(f'{path}/struct_i2.xyz', struct, parallel=False)
+        return i2_potential, d2_eval
+
+
+
     i2_potential[:,1] = True
     for idx in seed_atoms:
-        pos_atom = pos[idx,:]
-        dists = np.linalg.norm(pos - pos_atom, axis=1)
+        dists = struct.get_distances(idx, np.arange(len(struct)), mic=True)
         core = (dists<r_core)|core
 
     core_atoms = np.where(core)[0]
@@ -110,8 +139,7 @@ def build_regions_python(struct, r_core, r_blend, r_buff, comm=None, rank=0, pat
     d2_eval[core,0] = 1.0
 
     for idx in core_atoms:
-        pos_atom = pos[idx,:]
-        dists = np.linalg.norm(pos - pos_atom, axis=1)
+        dists = struct.get_distances(idx, np.arange(len(struct)), mic=True)
         blend_adj = ((dists<r_blend)&(~core))
         blend_adj_idx = np.where(blend_adj)[0]
         for idx_adj in blend_adj_idx:
@@ -125,8 +153,7 @@ def build_regions_python(struct, r_core, r_blend, r_buff, comm=None, rank=0, pat
     buff_0 = np.zeros(len(struct), dtype=bool)
     buff_1 = np.zeros(len(struct), dtype=bool)
     for idx in blend_atoms:
-        pos_atom = pos[idx,:]
-        dists = np.linalg.norm(pos - pos_atom, axis=1)
+        dists = struct.get_distances(idx, np.arange(len(struct)), mic=True)
         buff_0 = ((dists<r_buff)&(~(core|blend)))|buff_0
         buff_1 = ((dists<r_buff)&(core))|buff_1
 
