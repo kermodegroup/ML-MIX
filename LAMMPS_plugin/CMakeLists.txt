@@ -59,8 +59,8 @@ endif()
 ##########################
 # building the plugins
 
-# add_library(langevinmlmlplugin MODULE langevinmlmlplugin.cpp fix_langevin_mlml.cpp fix_langevin_mlml.h)
-# target_link_libraries(langevinmlmlplugin PRIVATE lammps)
+add_library(langevinmlmlplugin MODULE langevinmlmlplugin.cpp fix_langevin_mlml.cpp fix_langevin_mlml.h)
+target_link_libraries(langevinmlmlplugin PRIVATE lammps)
 
 add_library(mlmlplugin MODULE mlmlplugin.cpp fix_mlml.cpp)
 target_link_libraries(mlmlplugin PRIVATE lammps)
@@ -68,24 +68,24 @@ target_link_libraries(mlmlplugin PRIVATE lammps)
 add_library(hybridoverlaymlmlplugin MODULE hybridoverlaymlmlplugin.cpp pair_hybrid_overlay_mlml.cpp pair_hybrid_overlay_mlml.h)
 target_link_libraries(hybridoverlaymlmlplugin PRIVATE lammps)
 
-set_target_properties(hybridoverlaymlmlplugin mlmlplugin PROPERTIES PREFIX "" SUFFIX ".so") #langevinmlmlplugin
+set_target_properties(hybridoverlaymlmlplugin mlmlplugin langevinmlmlplugin PROPERTIES PREFIX "" SUFFIX ".so")
 
 # MacOS seems to need this
 if(CMAKE_SYSTEM_NAME STREQUAL Darwin)
-  set_target_properties(hybridoverlaymlmlplugin mlmlplugin # langevinmlmlplugin
+  set_target_properties(hybridoverlaymlmlplugin mlmlplugin langevinmlmlplugin
     PROPERTIES LINK_FLAGS "-Wl,-undefined,dynamic_lookup")
 elseif(CMAKE_SYSTEM_NAME STREQUAL "Windows")
 # tell CMake to export all symbols to a .dll on Windows with special case for MinGW cross-compilers
-  set_target_properties(hybridoverlaymlmlplugin mlmlplugin # langevinmlmlplugin
+  set_target_properties(hybridoverlaymlmlplugin mlmlplugin langevinmlmlplugin
     PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS TRUE)
   if(CMAKE_CROSSCOMPILING)
-    set_target_properties(hybridoverlaymlmlplugin mlmlplugin # langevinmlmlplugin
+    set_target_properties(hybridoverlaymlmlplugin mlmlplugin langevinmlmlplugin
       PROPERTIES LINK_FLAGS "-Wl,--export-all-symbols")
   endif()
 else()
-  set_target_properties(hybridoverlaymlmlplugin mlmlplugin PROPERTIES  #langevinmlmlplugin
+  set_target_properties(hybridoverlaymlmlplugin mlmlplugin langevinmlmlplugin PROPERTIES
     LINK_FLAGS "-rdynamic")
 endif()
 
 add_custom_target(plugins ALL ${CMAKE_COMMAND} -E echo "Building Plugins"
-  DEPENDS hybridoverlaymlmlplugin mlmlplugin)  #langevinmlmlplugin
+  DEPENDS hybridoverlaymlmlplugin mlmlplugin langevinmlmlplugin)
