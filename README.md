@@ -31,7 +31,7 @@ Additionally, to run the case-studies, the following packages are necessary:
 
 Whilst it is not necessary for core functionality of the ML-MIX plugin, the case studies also depend on passing commands to the LAMMPS shared library through Python. To build LAMMPS in such a way that this is possible, please follow the instructions [here](https://docs.lammps.org/Python_install.html). Installing into a virtual environment is strongly encouraged.
 
-To aid the user, an example cmake LAMMPS build script is provided in `examples/example_lammps_build_script.sh`.
+To aid the user, an example cmake LAMMPS build script is provided in `build_scripts/example_lammps_build_script.sh`.
 
 ### Building the ML-MIX plugin
 The ML-MIX plugin can be compiled straightforwardly with cmake in the LAMMPS_plugin folder. The path to the `src` dir of LAMMPS must be provided, e.g.
@@ -41,7 +41,7 @@ cd build
 cmake .. -D LAMMPS_SOURCE_DIR=/path/to/lammps/src \
 cmake --build . -j 1
 ```
-This code is also provided in `examples/example_plugin_build_script.sh`.
+This code is also provided in `build_scripts/example_plugin_build_script.sh`.
 
 ### Loading the ML-MIX plugin
 To use the ML-MIX plugin, both the `fix` and `pair_style` need to be loaded at the start of a LAMMPS input script:
