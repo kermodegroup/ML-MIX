@@ -5,6 +5,7 @@ from ase.lattice.cubic import Diamond
 from ase.constraints import ExpCellFilter
 from ase.optimize import LBFGS
 import os
+import ase.io
 
 def bare_bones_setup_lammps(lmps,input_file,mass_cmds,calc_commands,
                              sim_tstep=0.001, thermo_freq=100,multi_potential=False):
@@ -78,3 +79,51 @@ def make_vacancy(calc, n_cell=10, rattle=True):
     
     print(f'Si vacancy cell with {len(si)} atoms')
     return si, r_vac, vac_pos
+
+
+def read_lammps_dump(filename):
+    traj = ase.io.read(filename,parallel=False, index=':')
+    if len(traj) == 1:
+        traj = [traj]
+    snapshots = []
+    current_snapshot = []
+    reading_atoms = False
+    headers = []
+    with open(filename, 'r') as file:
+        for line in file:
+            if line.startswith("ITEM: TIMESTEP"):
+                if current_snapshot:
+                    current_snapshot = np.array(current_snapshot)
+                    snapshots.append(current_snapshot[np.argsort(current_snapshot[:,0])])
+                    current_snapshot = []
+                next(file)  # Skip the timestep value
+                reading_atoms=False
+            elif line.startswith("ITEM: ATOMS"):
+                headers = line.split()[2:]
+                reading_atoms = True
+            elif reading_atoms:
+                values = line.split()
+                if "i2_potential[1]" in headers:
+                    id_idx = headers.index("id")
+                    i2_idx_1 = headers.index("i2_potential[1]")
+                    i2_idx_2 = headers.index("i2_potential[2]")
+                    d2_idx_1 = headers.index("d2_eval[1]")
+                    d2_idx_2 = headers.index("d2_eval[2]")
+                    current_snapshot.append([int(values[id_idx]),
+                                             int(values[i2_idx_1]), 
+                                             int(values[i2_idx_2]), 
+                                             float(values[d2_idx_1]), 
+                                             float(values[d2_idx_2])])
+    
+    if current_snapshot:
+        current_snapshot = np.array(current_snapshot)
+        snapshots.append(current_snapshot[np.argsort(current_snapshot[:,0])])
+
+    print(f'Read {len(snapshots)} snapshots')
+    print(snapshots)
+    for i, t in enumerate(traj):
+        t.arrays['i2_potential[1]'] = snapshots[i][:,1]
+        t.arrays['i2_potential[2]'] = snapshots[i][:,2]
+        t.arrays['d2_eval[1]'] = snapshots[i][:,3]
+        t.arrays['d2_eval[2]'] = snapshots[i][:,4]
+    return traj

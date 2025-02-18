@@ -2,48 +2,11 @@ import numpy as np
 import ase.io
 import mpi4py as MPI
 from matscipy.neighbours import neighbour_list
-
-def read_lammps_dump(filename):
-    traj = ase.io.read(filename,parallel=False, index='-1')
-    snapshots = []
-    current_snapshot = []
-    reading_atoms = False
-    headers = []
-    with open(filename, 'r') as file:
-        for line in file:
-            if line.startswith("ITEM: TIMESTEP"):
-                if current_snapshot:
-                    current_snapshot = np.array(current_snapshot)
-                    snapshots.append(current_snapshot[np.argsort(current_snapshot[:,0])])
-                    current_snapshot = []
-                next(file)  # Skip the timestep value
-                reading_atoms=False
-            elif line.startswith("ITEM: ATOMS"):
-                headers = line.split()[2:]
-                reading_atoms = True
-            elif reading_atoms:
-                values = line.split()
-                if "i2_potential[1]" in headers:
-                    id_idx = headers.index("id")
-                    i2_idx_1 = headers.index("i2_potential[1]")
-                    i2_idx_2 = headers.index("i2_potential[2]")
-                    d2_idx_1 = headers.index("d2_eval[1]")
-                    d2_idx_2 = headers.index("d2_eval[2]")
-                    current_snapshot.append([int(values[id_idx]),
-                                             int(values[i2_idx_1]), 
-                                             int(values[i2_idx_2]), 
-                                             float(values[d2_idx_1]), 
-                                             float(values[d2_idx_2])])
-    
-    if current_snapshot:
-        current_snapshot = np.array(current_snapshot)
-        snapshots.append(current_snapshot[np.argsort(current_snapshot[:,0])])
-    traj.arrays['i2_potential[1]'] = snapshots[-1][:,1]
-    traj.arrays['i2_potential[2]'] = snapshots[-1][:,2]
-    traj.arrays['d2_eval[1]'] = snapshots[-1][:,3]
-    traj.arrays['d2_eval[2]'] = snapshots[-1][:,4]
-    return traj
-
+import sys
+import os
+script_path = os.path.dirname(os.path.abspath(__file__))
+sys.path.append(f'{script_path}/../../utils')
+from utils import read_lammps_dump
 
 def get_seed_atoms(struct):
     #find 2 atoms nearest center of struct
@@ -76,7 +39,7 @@ def build_regions_lammps(lmps, struct, r_core, r_blend, r_buff, pick_seed_with='
     lmps.command(f'run {nsteps}')
     
     if rank == 0:
-        out_dump = read_lammps_dump(f'{path}/dump.lammpstrj')
+        out_dump = read_lammps_dump(f'{path}/dump.lammpstrj')[-1]
         i2_potential_1 = out_dump.arrays['i2_potential[1]']
         i2_potential_2 = out_dump.arrays['i2_potential[2]']
         d2_eval_1 = out_dump.arrays['d2_eval[1]']
