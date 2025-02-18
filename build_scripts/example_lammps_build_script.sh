@@ -34,3 +34,10 @@ cmake --build . -j 20
 cmake --install .
 
 make install-python
+
+
+#get current directory
+current_dir=$(pwd)
+
+# add to LD_LIBRARY_PATH
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$current_dir
