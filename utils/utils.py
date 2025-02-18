@@ -83,8 +83,9 @@ def make_vacancy(calc, n_cell=10, rattle=True):
 
 def read_lammps_dump(filename):
     traj = ase.io.read(filename,parallel=False, index=':')
-    if len(traj) == 1:
+    if isinstance(traj, ase.Atoms):
         traj = [traj]
+    # print(f'Read {len(traj)} snapshots')
     snapshots = []
     current_snapshot = []
     reading_atoms = False
@@ -103,10 +104,10 @@ def read_lammps_dump(filename):
                 reading_atoms = True
             elif reading_atoms:
                 values = line.split()
-                if "i2_potential[1]" in headers:
+                if "i2_potential[1]" in headers or "i_potential[1]" in headers:
                     id_idx = headers.index("id")
-                    i2_idx_1 = headers.index("i2_potential[1]")
-                    i2_idx_2 = headers.index("i2_potential[2]")
+                    i2_idx_1 = headers.index("i2_potential[1]") if "i2_potential[1]" in headers else headers.index("i_potential[1]")
+                    i2_idx_2 = headers.index("i2_potential[2]") if "i2_potential[2]" in headers else headers.index("i_potential[2]")
                     d2_idx_1 = headers.index("d2_eval[1]")
                     d2_idx_2 = headers.index("d2_eval[2]")
                     current_snapshot.append([int(values[id_idx]),
@@ -119,8 +120,8 @@ def read_lammps_dump(filename):
         current_snapshot = np.array(current_snapshot)
         snapshots.append(current_snapshot[np.argsort(current_snapshot[:,0])])
 
-    print(f'Read {len(snapshots)} snapshots')
-    print(snapshots)
+    # print(f'Read {len(snapshots)} snapshots')
+    # print(snapshots)
     for i, t in enumerate(traj):
         t.arrays['i2_potential[1]'] = snapshots[i][:,1]
         t.arrays['i2_potential[2]'] = snapshots[i][:,2]
