@@ -14,7 +14,7 @@ This case study follows the **matscipy format**:
 - **Scripts for running case studies and analysis** are located in `scripts/`.
 - **Input parameters for individual simulations** are located in `simulation_input/**/params.py`.
 
-## Running the Case Study
+## Running the Case Study **Zenodo download only**
 To run a specific simulation, navigate to the relevant folder and execute the script using `mpirun`. For example:
 
 ```bash
@@ -24,7 +24,7 @@ mpirun -np 40 python ../../scripts/He_W_MD_with_fix.py
 
 Replace `[simulation_name]` with the appropriate directory name.
 
-**Zenodo download only** To analyse the diffusion coefficient data, navigate to the top directory and run
+To analyse the diffusion coefficient data, navigate to the top directory and run
 ```bash
 python scripts/find_He_W_D_many_single_runs.py
 ```
