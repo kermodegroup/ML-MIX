@@ -10,12 +10,14 @@ The examples in this folder walk through the process of generating constrained c
 
 In each case, the optimal model parameters $\mathbf{c}$ are found as a solution to
 
-$$\min_{\mathbf{c}}(||\mathbf{y}_{\mathrm{S}} - \mathbf{A}_\mathrm{S}\mathbf{c}||^{2} + \lambda ||\mathbf{y}_{\mathrm{H}} - \mathbf{A}_\mathrm{H} \mathbf{c}||^{2}).$$
+$$
+\min_{\mathbf{c}}\left(||\mathbf{y}_ {\mathrm{S}} - \mathbf{A}_ {\mathrm{S}}\mathbf{c}||^{2} + \lambda ||\mathbf{y}_ {\mathrm{H}} - \mathbf{A}_ {\mathrm{H}} \mathbf{c}||^{2}\right).
+$$
 
-Where $\mathbf{A}_\mathrm{H} \in \mathbb{R}^{N_{\mathrm{H}} \times N_{\mathrm{D}}}$ and $\mathbf{A}_\mathrm{S} \in \mathbb{R}^{N_{\mathrm{S}} \times N_{\mathrm{D}}}$ are the design matrices for the hard and soft constraints respectively, and $\mathbf{y}_{\mathrm{H}} \in \mathbb{R}^{N_{\mathrm{H}}}$ and $\mathbf{y}_{\mathrm{S}} \in \mathbb{R}^{N_{\mathrm{S}}}$ are the corresponding expensive potential target vectors. Obtaining a solution to the problem requires finding the minimum $\lambda$ such that the solution to this equation lies on the surface of the constraint subspace 
+Where $\mathbf{A}_ \mathrm{H} \in \mathbb{R}^{N_ {\mathrm{H}} \times N_ {\mathrm{D}}}$ and $\mathbf{A}_ \mathrm{S} \in \mathbb{R}^{N_ {\mathrm{S}} \times N_ {\mathrm{D}}}$ are the design matrices for the hard and soft constraints respectively, and $\mathbf{y}_ \mathrm{H} \in \mathbb{R}^{N_ {\mathrm{H}}}$ and $\mathbf{y}_ \mathrm{S} \in \mathbb{R}^{N_ {\mathrm{S}}}$ are the corresponding expensive potential target vectors. Obtaining a solution to the problem requires finding the minimum $\lambda$ such that the solution to this equation lies on the surface of the constraint subspace
 
 $$
-||\mathbf{A}_\mathrm{H} \mathbf{c} - \mathbf{y}_{\mathrm{H}}||^{2} = \alpha.
+||\mathbf{A}_ {\mathrm{H}} \mathbf{c} - \mathbf{y}_ {\mathrm{H}}||^{2} = \alpha.
 $$
 
 In each example given here, $\mathbf{A}_\mathrm{H}$ data corresponds to constrained homogeneous lattice deformations, and $\mathbf{A}_\mathrm{S}$ data is from high temperature bulk MD, but this need not necessarily be the case.
