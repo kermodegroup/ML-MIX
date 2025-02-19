@@ -20,14 +20,14 @@ $$
 ||\mathbf{A}_ {\mathrm{H}} \mathbf{c} - \mathbf{y}_ {\mathrm{H}}||^{2} = \alpha.
 $$
 
-In each example given here, $\mathbf{A}_\mathrm{H}$ data corresponds to constrained homogeneous lattice deformations, and $\mathbf{A}_\mathrm{S}$ data is from high temperature bulk MD, but this need not necessarily be the case.
+In each example given here, $\mathbf{A}_ \mathrm{H}$ data corresponds to constrained homogeneous lattice deformations, and $\mathbf{A}_ \mathrm{S}$ data is from high temperature bulk MD, but this need not necessarily be the case.
 
 This study follows the **matscipy format**:
 - **Scripts for running case studies and analysis** are located in `scripts/`.
 - **Input parameters for individual simulations** are located in `simulation_input/**/params.py`.
 
 ## Peforming the constrained fitting (**Zenodo download only**)
-To generate the $\mathbf{A}_\mathrm{H}$ and $\mathbf{A}_\mathrm{S}$ data for each specific example, run e.g:
+To generate the $\mathbf{A}_ \mathrm{H}$ and $\mathbf{A}_ \mathrm{S}$ data for each specific example, run e.g:
 
 ```bash
 cd examples/[simulation_name]/
