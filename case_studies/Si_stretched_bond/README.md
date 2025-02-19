@@ -24,7 +24,7 @@ mpirun -np 40 python ../../scripts/fixed_bond_MD.py
 
 Replace `[simulation_name]` with the appropriate directory name.
 
-**Zenodo download only** To analyse the stretched bond data, navigate to the top directory and run
+To analyse the stretched bond data, navigate to the top directory and run
 ```bash
 python scripts/find_avg_bond_forces.py
 ```
