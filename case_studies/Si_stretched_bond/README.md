@@ -14,7 +14,7 @@ This case study follows the **matscipy format**:
 - **Scripts for running case studies and analysis** are located in `scripts/`.
 - **Input parameters for individual simulations** are located in `simulation_input/**/params.py`.
 
-## Running the Case Study **Zenodo download only**
+## Running the Case Study (**Zenodo download only**)
 To run a specific simulation, navigate to the relevant folder and execute the script using `mpirun`. For example:
 
 ```bash

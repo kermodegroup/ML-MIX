@@ -14,7 +14,7 @@ This case study follows the **matscipy format**:
 - **Scripts for running case studies and analysis** are located in `scripts/`.
 - **Input parameters for individual simulations** are located in `simulation_input/**/params.py`.
 
-## Running the Case Study **Zenodo download only**
+## Running the Case Study (**Zenodo download only**)
 To generate the initial and final images, run the following:
 ```bash
 cd simulation_input
