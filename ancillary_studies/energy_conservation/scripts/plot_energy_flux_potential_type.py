@@ -18,10 +18,10 @@ rvals = [[4,6,8,10], [10,10,10]]
 #                    ['3_15_control', '3_15']]
 potential_files = [['2_10', '2_15', '3_15']]
 
-studies = ['abrupt_mixing_change_rqm']
+studies = ['abrupt_mixing_change_rqm', 'smooth_mixing_r_tot_10']
 
 #change this to plot smooth mixing or abrupt mixing
-study = 1
+study = 0
 
 if not os.path.exists('plots'):
     os.makedirs('plots')

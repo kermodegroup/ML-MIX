@@ -8,7 +8,7 @@ potential_files = ['2_10',
                    '2_15', 
                    '3_15']
 
-studies = ['abrupt_mixing_change_rqm', 'smooth_mixing_r_tot_10']
+studies = ['abrupt_mixing', 'blended_mixing']
 
 subfile_set_1 = ['r=4','r=6', 'r=8', 'r=10']
 subfile_set_2 = ['r=4','r=5', 'r=6']
@@ -22,7 +22,7 @@ cmds = ['pair_style hybrid/overlay pace table spline 5000',
         f'pair_coeff * * pace {expensive_pot}.yace Si', 
         f'pair_coeff 1 1 table {expensive_pot}_pairpot.table Si_Si']
 mass = 28.0855
-mass_cmds = ['mass 1 28.0855']
+mass_cmds = [f'mass 1 {mass}']
 calc = LAMMPSlib(lmpcmds = cmds,log_file='lammps_output.log',keep_alive=True)
 
 
