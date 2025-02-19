@@ -29,7 +29,7 @@ To find the energies of each snapshot in each simulation, run the following in t
 ```bash
 python ../scripts/find_energies.py
 ```
-Note that this script assumes the results of each simulation are saved in subfolders called `r=4`, `r=6` (matching the file structure in `results/`).
+Note that this script assumes the results of each simulation are saved in subfolders called `r=4`, `r=6`, etc. (matching the file structure in `results/`).
 
 The simulation results (given in `results/`) can be plotted by running the following in the top level directory
 
