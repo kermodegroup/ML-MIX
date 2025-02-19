@@ -1,12 +1,14 @@
 # Case Study: He Diffusion in W
 
-## ⚠️ Important Notice
+## ⚠️ Important Notice ⚠️
 The version of this case study on GitHub is **incomplete**. It is missing required potentials, result data, and plots. You can download the **full study** from Zenodo at:
 
 [Zenodo DOI Link]
 
 ## Overview
-This study compares the diffusion coefficient measured from an simulation using only an expensive W-He ACE potential and the value measured from an ML/ML simulation where a pure W uf3 potential is used for most of the W atoms and the ACE potential is confined only to a small region near the He as it diffuses through the structure.
+This study compares two things:
+-  The diffusion coefficient of He in bulk W measured in a simulation which uses only an expensive W-He ACE potential
+-  The same diffusion coefficient measured in an ML/ML simulation where a pure W uf3 potential is used for most of the W atoms and the ACE potential is confined only to a small region near the He.
 
 This case study follows the **matscipy format**:
 - **Scripts for running case studies and analysis** are located in `scripts/`.
