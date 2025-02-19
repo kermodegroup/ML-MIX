@@ -26,7 +26,12 @@ Replace `[simulation_name]` with the appropriate directory name.
 ```bash
 python scripts/find_He_W_D_many_single_runs.py
 ```
-and plot with
+To select which set of simulation results to analyse, edit the following lines of the `params.py` file in the top directory:
+```python
+investigation = 'ref_D_coeff'
+T = 800
+```
+Finally, plot all simulation results with:
 ```bash
 python scripts/plot_dvals.py
 ```
