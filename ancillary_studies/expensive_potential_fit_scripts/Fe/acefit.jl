@@ -1,5 +1,6 @@
 # Script by Lakshmi Shenoy
-
+using Pkg
+Pkg.activate("../../../")
 using Distributed
 addprocs(30, exeflags="--project=$(Base.active_project())")
 @everywhere using ACEpotentials
