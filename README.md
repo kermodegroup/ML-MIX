@@ -11,6 +11,8 @@ A LAMMPS plugin for efficiently mixing together forces from different machine-le
 
 Full documentation can be found here: [documentation link]
 
+Detailed setup instructions can be found below.
+
 For a user wanting to start quickly, simple examples showcasing and explaining features of ML-MIX can be found in `simple_examples/`
 
 The accompanying paper on ML-MIX can be found here: [paper link]
