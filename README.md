@@ -7,6 +7,22 @@ A LAMMPS plugin for efficiently mixing together forces from different machine-le
   <img src="docs/images/Fe_dumbbell.gif" width="300">
 </div>
 
+## File structure
+
+Full documentation can be found here: [documentation link]
+
+Simple examples show casing features of ML-MIX can be found in `simple_examples`
+
+The paper on ML-MIX can be found here: [paper link]
+
+The full version of this repository found on Zenodo [zenodo link] contains potentials, data and plots for each case study. 
+
+Scripts and examples for constrained fitting of cheap potentials can be found in `constrained_fitting/`.
+Code for running all of the main case studies in the paper can be found in `case_studies/`. 
+Code for running all the ancillary studies in the paper can be found in `ancillary_studies/`.
+
+More information can be found in the `READme` files inside each subdirectory.
+
 ## Setup
 
 ### Cloning this repository
@@ -92,7 +108,7 @@ pip install .
 <!-- feature error table start -->
 | Potential | Serial | Date and time | Parallel | Date and time |
 | --- | --- | --- | --- | --- |
-| Region building | ✅ | 2025-02-17 18:47:19 | ✅ | 2025-02-17 18:57:25 |
+| Region building | ✅ | 2025-02-18 16:43:39 | ✅ | 2025-02-17 18:57:25 |
 
 <!-- feature error table end -->
 
