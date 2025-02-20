@@ -1,0 +1,165 @@
+# Load the plugins #
+plugin load ../../../LAMMPS_plugin/build/mlmlplugin.so
+plugin load ../../../LAMMPS_plugin/build/langevinmlmlplugin.so
+plugin load ../../../LAMMPS_plugin/build/hybridoverlaymlmlplugin.so
+
+
+# Set up the simulation cell #
+dimension 3
+boundary p p p
+atom_style atomic
+units metal
+
+# Define the property/atoms used in ML-MIX (essential!) #
+
+# Once these structures are created by the user,
+# they are used internally by ML-MIX to store information
+# about what atoms need to be evaluated by each potential
+# (i2_potential) and how much each potential contributes to the
+# forces on each atom (d2_eval)
+
+# The great thing about using a property/atom to do this
+# is that it can be dumped out, so you can easily visualise
+# the region tracking (and check if it's working!)
+
+fix eval_pot all property/atom i2_potential 2 ghost yes
+fix eval_arr all property/atom d2_eval 2 ghost yes
+
+# read in data #
+read_data ../fe_dumbell_16.lj
+mass 1 55.845
+
+# Define mixed pair_style #
+
+# The mixed pair_style is a subclass of hybrid/overlay
+# it essentially does the same thing (evaluates one pair_style
+# after another), but with the catch that the list of atoms
+# before entering a given sub-style is trimmed according to
+# i2_potential, and the forces evaluated after are scaled by
+# d2_eval.
+
+# You specify what potential works on each region by specifying
+# the region number after the sub pair-style name. Note that
+# here there are two numbers for each sub pair-style
+# i.e pace 1 1, table 2 2 etc. The FIRST of those numbers specifies
+# the ML-MIX region, the SECOND of those numbers is the standard
+# feature of hybrid/overlay when you have multiple of the same
+# sub-pair styles.
+
+# By convention, region 1 is the expensive potential region.
+
+pair_style hybrid/overlay/mlml pace pace table spline 5000 table spline 5000
+pair_coeff * * pace 1 1 ../potentials/jace_espresso.yace Fe
+pair_coeff 1 1 table 1 1 ../potentials/jace_espresso_pairpot.table Fe_Fe
+pair_coeff * * pace 2 2 ../potentials/model_constrained_alpha_1e-7_2_10_espresso_2.yace Fe
+pair_coeff 1 1 table 2 2 ../potentials/model_constrained_alpha_1e-7_2_10_espresso_2_pairpot.table Fe_Fe
+
+# Define fix for raw force dumping with thermostat applied #
+fix sf all store/force
+
+timestep 0.001
+thermo 20
+
+# Modify the communication cutoff based on largest radius + skin depth
+
+# This is important. An atom at the edge of a domain needs
+# information as far out as the largest neighbourlist + the
+# skin width. Here, my buffer region size is 6.0 A, so that's the 
+# largest neighbourlist, and the skin width is 2.0 A by default,
+# hence 8.0 A. If you don't do this, the simulation will crash
+# (try it!)
+
+comm_modify cutoff 8.0
+
+# Set NVE #
+fix 5 all nve
+
+# Here we set the seed atoms for the simulation.
+# You can think of the seed atoms as the ones which should
+# definitely be evaluated expensively, right 
+# at the centre of the expensive region. Here, as we have an 
+# interstital defect cell, we select the two atoms
+# which are involved in the dumbbell insterstitial at
+# any one time. 
+
+# We do this by using fix ave/atom to
+# getting the coordination per atom every 10 timesteps 
+# 10 times. Every 100 timesteps, the fix computes
+# the average coordination, which is then read by fix mlml. 
+
+
+compute ca all coord/atom cutoff 2.2
+fix av_ca all ave/atom 5 20 100 c_ca
+
+
+# Create the fix to build regions #
+# The syntax of this fix is
+# fix <fix_name> all mlml nevery r_core r_buffer r_blend keyword args
+
+# Justifying the choices made one by one:
+# - I have set nevery to 1. That means the regions are
+#   rebuilt every single timestep. Region rebuilding has
+#   very little overhead when regions are small (especially
+#   compared to evaluating ACEs), so building every timestep
+#   is best in this case to ensure they do not get out of date
+#   as the seed atoms move. If you are mixing two very cheap 
+#   potentials, or your regions are very large, I'd recommend
+#   testing this.
+# - r_core is set to 6.0 A and r_blend is set to 4.0 A.
+#   This gives a large expensive potential region, which is
+#   necessary when you have something like an Fe dumbbell 
+#   interstitial that severely disrupts neighbouring atoms.
+# - r_buffer is set to 6.0. This is set by the cutoff of
+#   the potentials. Any more than this would give no
+#   improvement, as potentials are local.
+# - fix_classify keyword: this tells the fix that seed atoms are
+#   defined by the fix 'av_ca' (which we defined earlier).
+#   The next number should match the Nfreq value in 
+#   fix ave/atom (100 here).
+# - The next two numbers are a lower bound and upper bound.
+#   These tell fix mlml which values in the fix
+#   output vector to classify as seed atoms. '-inf' and 'inf'
+#   can be used for no bound.
+# - In this case, for the first 100 timesteps of the simulation
+#   (before fix av_ca has computed anything), the mlml_fix will
+#   default to designating all atoms as potential 1. This can
+#   be overruled by appending an additional keyword/arg pair 
+#   to the end of the fix mlml command; init_group <group_name>.
+#   If that is done, the simulation will use a group to designate
+#   seed atoms until the first fix call.
+
+#!###############!
+# Note: it is crucial that when using 'fix_classify'
+# fix mlml needs to be defined AFTER the classifying fix
+# in the input script.
+#!###############!
+
+
+fix mlml_fix all mlml 1 6.0 6.0 4.0 fix_classify av_ca 100 2.0 inf
+
+# Create fix to load balance the simulation
+# This is the balancing fix- every 10 timesteps it auto shifts
+# parallel domains to match computational cost based 
+# on evaluation time. 
+
+fix b_fix all balance 10 1.1 shift xyz 5 1.05 weight time 1.0
+
+
+# Finally, we run the MD. Note that 
+# we are dumping the ML-MIX evaluation regions for
+# each potential.
+
+dump myDump all custom 100 dump0.lammpstrj id type xs ys zs vx vy vz f_sf[1] f_sf[2] f_sf[3] d2_eval[1] d2_eval[2] i_potential[1] i_potential[2] f_av_ca
+
+# equilibrate to 900K using a thermostat:
+fix thermostat all langevin 900 900 0.01 49743 zero yes
+run 2000
+unfix thermostat
+
+# Apply a weak thermostat to just the cheap potential region
+# using langevin/mlml fix with 2 appended. This is to counteract
+# the small energy drift seen in ML/ML simulations.
+fix mlml_langevin all langevin/mlml 900 900 2.0 12345 2
+
+
+run 10000

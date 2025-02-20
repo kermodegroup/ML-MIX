@@ -1,0 +1,33 @@
+# Set up the simulation cell #
+dimension 3
+boundary p p p
+atom_style atomic
+units metal
+
+# read in data #
+read_data ../fe_dumbell_16.lj
+mass 1 55.845
+
+# Define mixed pair_style #
+pair_style hybrid/overlay pace table spline 5000 
+pair_coeff * * pace ../potentials/jace_espresso.yace Fe
+pair_coeff 1 1 table ../potentials/jace_espresso_pairpot.table Fe_Fe
+
+# Define fix for raw force dumping with thermostat applied #
+fix sf all store/force
+
+timestep 0.001
+thermo 20
+
+# Set NVE #
+fix 5 all nve
+
+dump myDump all custom 100 dump0.lammpstrj id type xs ys zs vx vy vz f_sf[1] f_sf[2] f_sf[3]
+
+# equilibrate to 900K using a thermostat:
+
+fix thermostat all langevin 900 900 0.01 49743 zero yes
+run 2000
+unfix thermostat
+
+run 10000

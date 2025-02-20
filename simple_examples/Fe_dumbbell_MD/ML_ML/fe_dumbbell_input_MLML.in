@@ -1,0 +1,73 @@
+# Load the plugins #
+plugin load ../../../LAMMPS_plugin/build/mlmlplugin.so
+plugin load ../../../LAMMPS_plugin/build/langevinmlmlplugin.so
+plugin load ../../../LAMMPS_plugin/build/hybridoverlaymlmlplugin.so
+
+
+# Set up the simulation cell #
+dimension 3
+boundary p p p
+atom_style atomic
+units metal
+
+# Define the property/atoms used in ML-MIX (essential!) #
+fix eval_pot all property/atom i2_potential 2 ghost yes
+fix eval_arr all property/atom d2_eval 2 ghost yes
+
+# read in data #
+read_data ../fe_dumbell_16.lj
+mass 1 55.845
+
+# Define mixed pair_style #
+pair_style hybrid/overlay/mlml pace pace table spline 5000 table spline 5000
+pair_coeff * * pace 1 1 ../potentials/jace_espresso.yace Fe
+pair_coeff 1 1 table 1 1 ../potentials/jace_espresso_pairpot.table Fe_Fe
+pair_coeff * * pace 2 2 ../potentials/model_constrained_alpha_1e-7_2_10_espresso_2.yace Fe
+pair_coeff 1 1 table 2 2 ../potentials/model_constrained_alpha_1e-7_2_10_espresso_2_pairpot.table Fe_Fe
+
+# Define fix for raw force dumping with thermostat applied #
+fix sf all store/force
+
+timestep 0.001
+thermo 20
+
+# Modify the communication cutoff based on largest radius + skin depth
+
+comm_modify cutoff 8.0
+
+# Set NVE #
+fix 5 all nve
+
+# Create a fix to track the dumbbell interstitial defect #
+compute ca all coord/atom cutoff 2.2
+fix av_ca all ave/atom 5 20 100 c_ca
+
+
+# Create the fix to build regions #
+
+#!###############!
+# Note: it is crucial that when using 'fix_classify'
+# fix mlml needs to be defined AFTER the classifying fix
+# in the input script.
+#!###############!
+
+fix mlml_fix all mlml 1 6.0 6.0 4.0 fix_classify av_ca 100 2.0 inf
+
+# Create fix to load balance the simulation
+
+fix b_fix all balance 10 1.1 shift xyz 5 1.05 weight time 1.0
+
+
+dump myDump all custom 100 dump0.lammpstrj id type xs ys zs vx vy vz f_sf[1] f_sf[2] f_sf[3] d2_eval[1] d2_eval[2] i_potential[1] i_potential[2] f_av_ca
+
+# equilibrate to 900K using a thermostat:
+fix thermostat all langevin 900 900 0.01 49743 zero yes
+run 2000
+unfix thermostat
+
+# Apply a weak thermostat to just the cheap potential region
+
+fix mlml_langevin all langevin/mlml 900 900 2.0 12345 2
+
+
+run 10000
