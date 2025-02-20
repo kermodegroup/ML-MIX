@@ -4,3 +4,8 @@ These folders contain simple examples which aim to showcase and explain as many 
 For the ML/ML examples, a well-commented input script is provided alongside a normal one. For a user who wants to quickly get a good feel of how ML-MIX works, it is recommended they read through these commented input scripts.
 
 All examples use pure LAMMPS, not LAMMPS/python as the more complex examples given in `case_studies/` do. 
+
+Run examples with
+```bash
+mpirun -np 40 lmp -in <example_input_script>.in
+```
