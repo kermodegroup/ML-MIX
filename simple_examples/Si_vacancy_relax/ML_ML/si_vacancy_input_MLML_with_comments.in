@@ -112,10 +112,9 @@ group central_atom id 30327 30328 30477 30478 30485 30487 33515 33516 33523 3352
 #   get stuck with atoms oscillating in and out of the
 #   expensive potential region. Feel free to change this
 #   and see what happens.
-# - r_core and r_blend are both set to 4.0 A,
-#   these are relatively large, but in a minimisation you 
-#   want a bit more clearance between your core atoms and
-#   cheap atoms.
+# - r_core and r_blend are both set to 4.0 A - not huge, but
+#   we have already included many atoms around the vacancy as 
+#   seed atoms.
 # - r_buffer is set to 6.0. This is set by the cutoff of
 #   both potentials. Any more than this would give no
 #   improvement, as potentials are local. However, as we are
