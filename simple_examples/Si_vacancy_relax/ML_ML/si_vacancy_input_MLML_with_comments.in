@@ -1,0 +1,159 @@
+# Load the plugins #
+plugin load ../../../LAMMPS_plugin/build/mlmlplugin.so
+plugin load ../../../LAMMPS_plugin/build/hybridoverlaymlmlplugin.so
+
+# Set up the simulation cell #
+dimension 3
+boundary p p p
+atom_style atomic
+units metal
+
+# Define the property/atoms used in ML-MIX (essential!) #
+
+# Once these structures are created by the user,
+# they are used internally by ML-MIX to store information
+# about what atoms need to be evaluated by each potential
+# (i2_potential) and how much each potential contributes to the
+# forces on each atom (d2_eval)
+
+# The great thing about using a property/atom to do this
+# is that it can be dumped out, so you can easily visualise
+# the region tracking (and check if it's working!)
+
+fix eval_pot all property/atom i2_potential 2 ghost yes
+fix eval_arr all property/atom d2_eval 2 ghost yes
+
+# read in data #
+# _small: 8000 atoms 
+# _large: 64000 atoms
+read_data ../unrelaxed_vacancy_large.data
+mass 1 28.0855
+
+# Define mixed pair_style #
+
+# The mixed pair_style is a subclass of hybrid/overlay
+# it essentially does the same thing (evaluates one pair_style
+# after another), but with the catch that the list of atoms
+# before entering a given sub-style is trimmed according to
+# i2_potential, and the forces evaluated after are scaled by
+# d2_eval.
+
+# You specify what potential works on each region by specifying
+# the region number after the sub pair-style name. Note that
+# here there are two numbers for each sub pair-style
+# i.e pace 1 1, table 2 2 etc. The FIRST of those numbers specifies
+# the ML-MIX region, the SECOND of those numbers is the standard
+# feature of hybrid/overlay when you have multiple of the same
+# sub-pair styles.
+
+# By convention, region 1 is the expensive potential region.
+
+pair_style hybrid/overlay/mlml pace pace table spline 5000 table spline 5000
+pair_coeff * * pace 1 1 ../potentials/0ce218cb3e.yace Si
+pair_coeff 1 1 table 1 1 ../potentials/0ce218cb3e_pairpot.table Si_Si
+pair_coeff * * pace 2 2 ../potentials/model_constrained_alpha_1e-7_2_10.yace Si
+pair_coeff 1 1 table 2 2 ../potentials/model_constrained_alpha_1e-7_2_10_pairpot.table Si_Si
+
+# Define simulation properties #
+timestep 0.001
+thermo 1
+
+# Modify the communication cutoff based on largest radius + skin depth
+
+# This is important. An atom at the edge of a domain needs
+# information as far out as the largest neighbourlist + the
+# skin width. Here, my buffer region size is 6.0 A, so that's the 
+# largest neighbourlist, and the skin width is 2.0 A by default,
+# hence 8.0 A. If you don't do this, the simulation will crash
+# (try it!)
+
+comm_modify cutoff 8.0
+
+# Create a group containing all the atoms around the vacancy #
+# These seed atoms will remain fixed during relaxation #
+
+# Here we set the seed atoms for the simulation.
+# You can think of the seed atoms as the ones which should
+# definitely be evaluated expensively, right 
+# at the centre of the expensive region. Here, as we have a 
+# vacancy cell, we select all atoms that border the vacancy.
+
+# I have elected to do this by forming a fixed group
+# of atoms based on ids. That's a little laborious 
+# and is something you'd only really do for a minimisation
+# like this, if we were running MD, we could just 
+# track the defect using a coordination fix directly
+# (see other example). This would be much easier if say, we
+# had a defect atom of another species we were relaxing around,
+# then we could just make a group based on types.
+
+# I didn't find all the IDs by hand. 
+# I generated the input structure using ASE + python and 
+# pulled out the IDs then. See the Si NEB case_study for
+# examples of how to do this.
+
+# Uncomment for small vacancy cell
+# group central_atom id 3567 3568 3637 3638 3645 3647 4355 4356 4363 4367 4435 4437 4441 4442 4444 4446
+
+# Uncomment for large vacancy cell
+group central_atom id 30327 30328 30477 30478 30485 30487 33515 33516 33523 33527 33675 33677 33681 33682 33684 33686
+
+
+# Create the fix to build regions #
+# The syntax of this fix is
+# fix <fix_name> all mlml nevery r_core r_buffer r_blend keyword args
+
+# Justifying the choices made one by one:
+# - I have set nevery to 0. That means the regions are
+#   only built once, at the very start of the simulation
+#   this is important for minimisations - you don't want
+#   regions continually rebuilding like you would in MD,
+#   as you're trying to drive forces very small and might
+#   get stuck with atoms oscillating in and out of the
+#   expensive potential region. Feel free to change this
+#   and see what happens.
+# - r_core and r_blend are both set to 4.0 A,
+#   these are relatively large, but in a minimisation you 
+#   want a bit more clearance between your core atoms and
+#   cheap atoms.
+# - r_buffer is set to 6.0. This is set by the cutoff of
+#   both potentials. Any more than this would give no
+#   improvement, as potentials are local. However, as we are
+#   not rebuilding regions every step, you may want 
+#   to go larger if you expect atoms to shift a lot and 
+#   want to be cautious. 
+# - group keyword: this tells the fix that out seed atoms are
+#   defined by the group 'central_atom' (which we built earlier).
+#   The final regions will be the union of all of the regions
+#   built around each atom in 'central_atom'.
+
+
+fix mlml_fix all mlml 0 4.0 6.0 4.0 group central_atom
+
+# Create fix to load balance simulation
+
+# This is the balancing fix- every 5 timesteps it auto shifts
+# parallel domains to match computational cost based 
+# on evaluation time. It does not invoke during
+# minimisations, so we run 6 MD steps before to invoke it.
+
+fix b_fix all balance 5 1.1 shift xyz 5 1.05 weight time 1.0
+
+# Run some MD steps with no atom motion to trigger a rebalance
+run 6
+
+# Setup minimisation #
+
+# Finally, we set up the minimisation. Note that 
+# we are dumping the ML-MIX evaluation regions for
+# each potential. The inf norm force tolerance is set to 1e-4.
+# Total energy is undefined in force-mixed simulations, so this
+# must be set to 0. Note that if one tries to push the tolerance
+# too small, it can fail to converge.
+
+min_style fire
+min_modify norm inf
+dump myDump all custom 10 min_traj.lammpstrj id type xs ys zs vx vy vz fx fy fz d2_eval[1] d2_eval[2] i_potential[1] i_potential[2] ix iy iz
+
+# Start minimisation - note that we cannot use an energy criteria here #
+minimize 0.0 1.0e-4 2000 2000

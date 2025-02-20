@@ -1,0 +1,28 @@
+# Set up the simulation cell #
+dimension 3
+boundary p p p
+atom_style atomic
+units metal
+
+# read in data #
+# _small: 8000 atoms 
+# _large: 64000 atoms
+read_data ../unrelaxed_vacancy_large.data
+mass 1 28.0855
+
+# Define pair_style #
+pair_style hybrid/overlay pace table spline 5000
+pair_coeff * * pace ../potentials/0ce218cb3e.yace Si
+pair_coeff 1 1 table ../potentials/0ce218cb3e_pairpot.table Si_Si
+
+# Define simulation properties #
+timestep 0.001
+thermo 1
+
+# Setup minimisation #
+min_style fire
+min_modify norm inf
+dump myDump all custom 1 min_traj.lammpstrj id type xs ys zs vx vy vz fx fy fz ix iy iz
+
+# Start minimisation #
+minimize 0.0 1.0e-4 2000 2000

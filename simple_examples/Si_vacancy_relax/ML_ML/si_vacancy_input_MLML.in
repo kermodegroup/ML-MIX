@@ -1,0 +1,59 @@
+# Load the plugins #
+plugin load ../../../LAMMPS_plugin/build/mlmlplugin.so
+plugin load ../../../LAMMPS_plugin/build/hybridoverlaymlmlplugin.so
+
+# Set up the simulation cell #
+dimension 3
+boundary p p p
+atom_style atomic
+units metal
+
+# Define the property/atoms used in ML-MIX (essential!) #
+fix eval_pot all property/atom i2_potential 2 ghost yes
+fix eval_arr all property/atom d2_eval 2 ghost yes
+
+# read in data #
+# _small: 8000 atoms 
+# _large: 64000 atoms
+read_data ../unrelaxed_vacancy_large.data
+mass 1 28.0855
+
+# Define mixed pair_style #
+pair_style hybrid/overlay/mlml pace pace table spline 5000 table spline 5000
+pair_coeff * * pace 1 1 ../potentials/0ce218cb3e.yace Si
+pair_coeff 1 1 table 1 1 ../potentials/0ce218cb3e_pairpot.table Si_Si
+pair_coeff * * pace 2 2 ../potentials/model_constrained_alpha_1e-7_2_10.yace Si
+pair_coeff 1 1 table 2 2 ../potentials/model_constrained_alpha_1e-7_2_10_pairpot.table Si_Si
+
+# Define simulation properties #
+timestep 0.001
+thermo 1
+
+# Modify the communication cutoff based on largest radius + skin depth
+comm_modify cutoff 8.0
+
+# Create a group containing all the atoms around the vacancy #
+# These seed atoms will remain fixed during relaxation #
+
+# Uncomment for small vacancy cell
+# group central_atom id 3567 3568 3637 3638 3645 3647 4355 4356 4363 4367 4435 4437 4441 4442 4444 4446
+
+# Uncomment for large vacancy cell
+group central_atom id 30327 30328 30477 30478 30485 30487 33515 33516 33523 33527 33675 33677 33681 33682 33684 33686
+
+# Create the fix to build regions #
+fix mlml_fix all mlml 0 4.0 6.0 4.0 group central_atom
+
+# Create fix to load balance simulation
+fix b_fix all balance 5 1.1 shift xyz 5 1.05 weight time 1.0
+
+# Run some MD steps with no atom motion to trigger a rebalance
+run 6
+
+# Setup minimisation #
+min_style fire
+min_modify norm inf
+dump myDump all custom 10 min_traj.lammpstrj id type xs ys zs vx vy vz fx fy fz d2_eval[1] d2_eval[2] i_potential[1] i_potential[2] ix iy iz
+
+# Start minimisation - note that we cannot use an energy criteria here #
+minimize 0.0 1.0e-4 2000 2000
