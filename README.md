@@ -7,7 +7,7 @@ A LAMMPS plugin for efficiently mixing together forces from different machine-le
   <img src="docs/images/Fe_dumbbell.gif" width="300">
 </div>
 
-## File structure
+## Key Information
 
 Full documentation can be found here: [documentation link]
 
@@ -17,7 +17,7 @@ For a user wanting to start quickly, simple examples showcasing and explaining f
 
 The accompanying paper on ML-MIX can be found here: [paper link]
 
-All the code associated with this paper is included in this repository, in `potential_fitting`, `case_studies/` and `ancillary_studies`, however the GitHub version is incomplete, as it is missing potentials, data and plots. The full version of this repository can be found on Zenodo [zenodo link].
+All the code associated with this paper is included in this repository, in `potential_fitting/`, `case_studies/` and `ancillary_studies/`, however the GitHub version is incomplete, as it is missing potentials, data and plots. The full version of this repository can be found on Zenodo [zenodo link].
 
 Scripts and examples for constrained fitting of cheap potentials can be found in `constrained_fitting/`.
 
