@@ -20,8 +20,8 @@ cmds_mix = ['pair_style hybrid/overlay/mlml pace pace table spline 5000 table sp
 
 mass = 55.845
 in_file_root = 'fe_dumbell_16'
-in_file_path = '../../'
-base_struct_name = '../../fe_dumbell_16.xyz'
+in_file_path = '../'
+base_struct_name = '../fe_dumbell_16.xyz'
 multi_potential = True
 dump_name = f'dump{val}.lammpstrj'
 bond_dump_name = 'stretched_bond_dump.lammpstrj'
