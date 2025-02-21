@@ -1,4 +1,4 @@
-# ML-MIX ![CI](https://github.com/kermodegroup/ML-MIX/actions/workflows/ci.yml/badge.svg)
+# ML-MIX ![CI](https://github.com/kermodegroup/ML-MIX/actions/workflows/ci.yml/badge.svg) ![DOCS](https://github.com/kermodegroup/ML-MIX/actions/workflows/docs.yml/badge.svg) 
 A LAMMPS plugin for efficiently mixing together forces from different machine-learned interatomic potentials inspired by quantum mechanics/molecular mechanics (QM/MM) methods. Use expensive, complex potentials only where they're needed! 
 
 
