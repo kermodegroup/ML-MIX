@@ -1,0 +1,212 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>fix mlml &mdash; ML-MIX 0.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=2709fde1"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="pair_style hybrid/overlay/mlml" href="pair_hybrid_overlay_mlml.html" />
+    <link rel="prev" title="LAMMPS Style Documentation" href="index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            ML-MIX
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../setup.html">Setup</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../overview.html">Package Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../examples.html">Examples</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">LAMMPS Style Documentation</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="#">fix mlml</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#syntax">Syntax</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#examples">Examples</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#description">Description</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#restrictions">Restrictions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#related-commands">Related commands</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#default">Default</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="pair_hybrid_overlay_mlml.html">pair_style hybrid/overlay/mlml</a></li>
+<li class="toctree-l2"><a class="reference internal" href="fix_langevin_mlml.html">fix langevin/mlml command</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../potential_fitting/index.html">Potential fitting</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">ML-MIX</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="index.html">LAMMPS Style Documentation</a></li>
+      <li class="breadcrumb-item active">fix mlml</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/commands/fix_mlml.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="fix-mlml">
+<span id="index-0"></span><h1>fix mlml<a class="headerlink" href="#fix-mlml" title="Link to this heading"></a></h1>
+<section id="syntax">
+<h2>Syntax<a class="headerlink" href="#syntax" title="Link to this heading"></a></h2>
+<div class="highlight-LAMMPS notranslate"><div class="highlight"><pre><span></span>fix ID group-ID mlml nevery r_core r_buff r_blend keyword args ...
+</pre></div>
+</div>
+<ul>
+<li><p>ID, group-ID are documented in <span class="xref std std-doc">fix</span> command</p></li>
+<li><p>mlml = style name of this fix command</p></li>
+<li><p>nevery = rebuild the mlml regions every this many timesteps</p></li>
+<li><p>r_core = size of the core region (distance units)</p></li>
+<li><p>r_buff = size of the buffer region (distance units)</p></li>
+<li><p>r_blend = size of the blending region (distance units)</p></li>
+<li><p>keyword = <em>group</em> or <em>fix_classify</em> or <em>init_group</em></p></li>
+<li><p>one of <em>group</em> or <em>fix_classify</em> keyword/args must be appended</p></li>
+<li><p><em>init_group</em> keyword/args is optional and can only be appended after <em>fix_classify</em> args</p>
+<pre class="literal-block"><em>group</em> arg = <em>group-ID</em>
+  group-ID = ID of a group of seed atoms to build region around
+<em>fix_classify</em> args = <em>fix_id</em> <em>nfreq</em> <em>lb</em> <em>ub</em>
+  <em>fix_id</em> = ID of a fix that generates output vector for classification
+  <em>nfreq</em> = querying classifying fix every this many timesteps
+  <em>lb</em> = lower bound of fix output vector values to select as seed atoms
+  <em>ub</em> = lower bound of fix output vector values to select as seed atoms
+<em>init_group</em> args = <em>group-ID</em>
+  group-ID = ID of a group of seed atoms to initially build mlml regions around before the first time the fix output vector defined by <em>fix_classify</em> is queried</pre>
+</li>
+</ul>
+</section>
+<section id="examples">
+<h2>Examples<a class="headerlink" href="#examples" title="Link to this heading"></a></h2>
+<div class="highlight-LAMMPS notranslate"><div class="highlight"><pre><span></span>group He_group type 2
+fix mlml_fix all mlml 1 4.0 6.0 4.0 group He_group
+
+compute ca all coord/atom cutoff 2.0
+fix av_ca all ave/atom 10 10 100 c_ca
+fix mlml_fix all mlml 1 4.0 6.0 4.0 fix_classify av_ca 100 0.4 inf
+
+compute ca all coord/atom cutoff 2.0
+fix av_ca all ave/atom 10 10 100 c_ca
+group init_defect id 10 11 12
+fix mlml_fix all mlml 1 4.0 6.0 4.0 fix_classify av_ca 100 0.4 inf init_group init_defect
+</pre></div>
+</div>
+</section>
+<section id="description">
+<h2>Description<a class="headerlink" href="#description" title="Link to this heading"></a></h2>
+<p>This fix command is used to create and maintain a set of regions to be evaluated with 2 different pair_styles using the <em>hybrid/overlay/mlml</em> pair style in the <em>mlmix</em> package. In <em>hybrid/overlay/mlml</em>, different pair_styles are labelled either 1 or 2 to indicate evaluation region.</p>
+<p>This fix is used to build an evaluation region around user-specified seed atoms. All atoms which lie inside this region are marked for evaluation with pair_style 1, and all atoms outside it are marked for evaluation with potential 2.</p>
+<p>The <em>group</em> keyword can be used to specify a fixed LAMMPS group of seed atoms to build regions around. The <em>fix_classify</em> keyword can be used to specify a different fix with ID <em>fix_id</em> that generates an output per-atom vector, which is used to classify atoms as seed atoms. Atoms which correspond to values between <em>lb</em> and <em>ub</em> of the fix output vector are used as seed atoms. <em>lb</em> can take the value of <em>-inf</em> and <em>ub</em> can take the value of <em>inf</em> to specify no lower or upper bound. <em>nfreq</em> specifies how often the fix output vector is queried. The evaluation frequency of the target fix must evenly divide <em>nfreq</em>.</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>If using the <em>fix_classify</em> keyword, this fix must be defined
+after the fix that is queried for the output vector in the input script.</p>
+</div>
+<p>The <em>init_group</em> keyword can be optionally used after <em>fix_classify</em> to specify a group of seed atoms to initially build the regions around. If this is not specified, then all atoms are flagged to be evaluated with pair_style 1 until the first time the output vector of the fix specified with <em>fix_classify</em> is queried.</p>
+<p>The regions are rebuilt every <em>nevery</em> timesteps. If <em>nevery</em> is set to 0, the regions are only built once at the start of the simulation.</p>
+<p>Regions are built around all seed atoms with a core region, a blending region
+and a buffer region.</p>
+<p>The core region is the union of atoms contained within spheres of radius <em>r_core</em> around each seed atom.</p>
+<p>The blending region is the union of atoms contained within spheres of radius
+<em>r_blend</em> around each core atom, which is not already in the core region.
+Atoms within the blending region are evaluated with both pair_styles, and the forces are linearly blended between the two. The proportion of pair_style 1 force on any individual atom is determined by</p>
+<div class="math notranslate nohighlight">
+\[p_{1} = 1.0 - \left(\frac{|\mathbf{r}|}{r_{\text{blend}}}\right)\]</div>
+<p>where <span class="math notranslate nohighlight">\(\mathbf{r}\)</span> is the shortest vector from the atom to any seed atom.
+The force on this blended atom is then determined by</p>
+<div class="math notranslate nohighlight">
+\[\mathbf{F}^{i} = p_{1} \mathbf{F}^{i}_{1} + (1 - p_{1}) \mathbf{F}^{i}_{2}\]</div>
+<p>There are two buffer regions, which are each constructed by taking the union of atoms contained within spheres of radius <em>r_buff</em> around blending atoms. The pair_style 1 buffer are atoms external to the blending and core regions, whilst the pair_style 2 buffer is only atoms contained within the core region. Note that if <cite>*r_buff* &gt; *r_core*</cite>, pair_style 2 buffer will contain all core atoms.</p>
+</section>
+<section id="restrictions">
+<h2>Restrictions<a class="headerlink" href="#restrictions" title="Link to this heading"></a></h2>
+<p>To use this fix, the i2_potential and d2_eval property/atoms must be defined.
+This fix is designed to be used in conjunction with the <em>hybrid/overlay/mlml</em> pair style.
+Please see <span class="xref std std-doc">pair_style hybrid/overlay/mlml</span> for more information.</p>
+<p>The group specified with this command must be all.</p>
+</section>
+<section id="related-commands">
+<h2>Related commands<a class="headerlink" href="#related-commands" title="Link to this heading"></a></h2>
+<p><a class="reference internal" href="pair_hybrid_overlay_mlml.html"><span class="doc">pair_style hybrid/overlay/mlml</span></a></p>
+</section>
+<section id="default">
+<h2>Default<a class="headerlink" href="#default" title="Link to this heading"></a></h2>
+<p>none</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="index.html" class="btn btn-neutral float-left" title="LAMMPS Style Documentation" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="pair_hybrid_overlay_mlml.html" class="btn btn-neutral float-right" title="pair_style hybrid/overlay/mlml" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Fraser Birks.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

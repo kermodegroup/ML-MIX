@@ -1,0 +1,181 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>pair_style hybrid/overlay/mlml &mdash; ML-MIX 0.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=2709fde1"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="fix langevin/mlml command" href="fix_langevin_mlml.html" />
+    <link rel="prev" title="fix mlml" href="fix_mlml.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            ML-MIX
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../setup.html">Setup</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../overview.html">Package Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../examples.html">Examples</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">LAMMPS Style Documentation</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="fix_mlml.html">fix mlml</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">pair_style hybrid/overlay/mlml</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#syntax">Syntax</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#examples">Examples</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#description">Description</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#restrictions">Restrictions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#related-commands">Related commands</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#default">Default</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="fix_langevin_mlml.html">fix langevin/mlml command</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../potential_fitting/index.html">Potential fitting</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">ML-MIX</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="index.html">LAMMPS Style Documentation</a></li>
+      <li class="breadcrumb-item active">pair_style hybrid/overlay/mlml</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/commands/pair_hybrid_overlay_mlml.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="pair-style-hybrid-overlay-mlml">
+<span id="index-0"></span><h1>pair_style hybrid/overlay/mlml<a class="headerlink" href="#pair-style-hybrid-overlay-mlml" title="Link to this heading"></a></h1>
+<section id="syntax">
+<h2>Syntax<a class="headerlink" href="#syntax" title="Link to this heading"></a></h2>
+<div class="highlight-LAMMPS notranslate"><div class="highlight"><pre><span></span>pair_style hybrid/overlay/mlml keyword value style1 args style2 args ...
+</pre></div>
+</div>
+<ul>
+<li><p>keyword = zero</p></li>
+<li><p>style1,style2 = list of one or more pair styles and their arguments</p></li>
+<li><p>factor1,factor2 = scale factors for pair styles, may be a variable</p></li>
+<li><p>zero or more keyword/value pairs may be appended</p></li>
+<li><p>keyword = <em>angmom</em> or <em>gjf</em> or <em>omega</em> or <em>scale</em> or <em>tally</em> or <em>zero</em></p>
+<pre class="literal-block"><em>zero</em> value = <em>no</em> or <em>yes</em>
+  <em>no</em> = do not set total pair_style force to zero
+  <em>yes</em> = set total pair_style force to zero</pre>
+</li>
+</ul>
+</section>
+<section id="examples">
+<h2>Examples<a class="headerlink" href="#examples" title="Link to this heading"></a></h2>
+<div class="highlight-LAMMPS notranslate"><div class="highlight"><pre><span></span>pair_style hybrid/overlay/mlml lj/cut 2.5 lj/cut 3.5
+pair_coeff * * lj/cut 1 1 1.0 1.0
+pair_coeff * * lj/cut 2 2 1.5 0.8
+
+pair_style hybrid/overlay/mlml lj/cut 2.5 eam/alloy
+pair_coeff * * lj/cut 1 1.0 1.0
+pair_coeff * * eam/alloy 2 AlCu.eam.alloy Al Cu
+</pre></div>
+</div>
+</section>
+<section id="description">
+<h2>Description<a class="headerlink" href="#description" title="Link to this heading"></a></h2>
+<p>This documentation should be considered as an extension to the documentation provided for the <em>hybrid/overlay</em> pair style. Everything that is valid for the <em>hybrid/overlay</em> pair style is also valid for the <em>hybrid/overlay/mlml</em> unless stated otherwise here.</p>
+<p>The <em>hybrid/overlay/mlml</em> style is a variant of the <em>hybrid/overlay</em> style which allows for the use of multiple pair styles in one simulation. The <em>hybrid/overlay/mlml</em> style is part of the <em>mlmix</em> package. With the <em>hybrid/overlay/mlml</em> style, different pair styles can be evaluated in different spatial regions of the simulation domain. The full force vector is constructed through force-mixing, a method commonly used in QM/MM simulations.</p>
+<p>The assignment of pair styles to type pairs is made via the <span class="xref std std-doc">pair_coeff</span> command.  For <em>hybrid/overlay/mlml</em>, an additional numeric argument must be specified after the sub-style name, which can either be 1 or 2. This value indicates the <em>mlmix</em> region to which the sub-style should be  applied.</p>
+<p>For <em>hybrid/overlay/mlml</em>, if a pair style is used multiple times in the pair_style command, the additional numeric argument to differentiate between the different instances of the sub-style must be specified after the number which indicates the <em>mlmix</em> region.</p>
+<hr class="docutils" />
+<p>Forces from force mixing are not the derivatives of a potential energy function, subsequently the ‘total energy’ of the system is not well defined. Therefore, the <em>hybrid/overlay/mlml</em> will set global potential energy and virials to zero.</p>
+<p>A consequence of force mixing is that the total force on the system may not be zero. To address this, the <em>zero</em> keyword can be used. If set to <em>yes</em>, the total force on the system will be modified such that the total is zero. This is achieved by averaging the net overall force on the system over all atoms and subtracting this from the force on each atom.</p>
+</section>
+<section id="restrictions">
+<h2>Restrictions<a class="headerlink" href="#restrictions" title="Link to this heading"></a></h2>
+<p>As well as the restrictions that apply to the <em>hybrid/overlay</em> pair style, <span class="xref std std-doc">run_style respa</span> is completely disabled for <em>hybrid/overlay/mlml</em>.</p>
+<p>To use this pair_style, the i2_potential and d2_eval property/atoms must be defined.</p>
+<p>This pair_style is designed to be used in conjunction with <em>fix mlml</em>. Please see <span class="xref std std-doc">fix mlml</span> for more information.</p>
+</section>
+<section id="related-commands">
+<h2>Related commands<a class="headerlink" href="#related-commands" title="Link to this heading"></a></h2>
+<p><span class="xref std std-doc">pair_coeff</span>
+<a class="reference internal" href="fix_mlml.html"><span class="doc">fix mlml</span></a></p>
+</section>
+<section id="default">
+<h2>Default<a class="headerlink" href="#default" title="Link to this heading"></a></h2>
+<p>none</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="fix_mlml.html" class="btn btn-neutral float-left" title="fix mlml" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="fix_langevin_mlml.html" class="btn btn-neutral float-right" title="fix langevin/mlml command" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Fraser Birks.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
