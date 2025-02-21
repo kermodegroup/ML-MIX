@@ -19,12 +19,6 @@ The accompanying paper on ML-MIX can be found here: [paper link]
 
 All the code associated with this paper is included in this repository, in `potential_fitting/`, `case_studies/` and `ancillary_studies/`, however the GitHub version is incomplete, as it is missing potentials, data and plots. The full version of this repository can be found on Zenodo [zenodo link].
 
-Scripts and examples for constrained fitting of cheap potentials can be found in `constrained_fitting/`.
-
-Code for running all of the main studies in the paper can be found in `case_studies/`. 
-
-Code for running all the ancillary studies in the paper can be found in `ancillary_studies/`.
-
 More information can be found in the `README` files inside each subdirectory.
 
 ## Setup
