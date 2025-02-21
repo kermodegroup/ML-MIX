@@ -1,0 +1,197 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Setup &mdash; ML-MIX 0.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=2709fde1"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Package Overview" href="overview.html" />
+    <link rel="prev" title="ML-MIX documentation" href="index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            ML-MIX
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Setup</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#cloning-this-repository">Cloning this Repository</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#installing-lammps">Installing LAMMPS</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#building-the-ml-mix-plugin">Building the ML-MIX Plugin</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#loading-the-ml-mix-plugin">Loading the ML-MIX Plugin</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#installing-python-packages">Installing Python Packages</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#installing-acepotentials-jl-for-ace-fitting">Installing ACEpotentials.jl for ACE fitting</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#installing-uf3-for-uf3-fitting">Installing UF3 for UF3 fitting</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="overview.html">Package Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">ML-MIX</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Setup</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/setup.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="setup">
+<h1>Setup<a class="headerlink" href="#setup" title="Link to this heading"></a></h1>
+<section id="cloning-this-repository">
+<h2>Cloning this Repository<a class="headerlink" href="#cloning-this-repository" title="Link to this heading"></a></h2>
+<p>To clone this repository (and its submodule dependencies), run:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>git<span class="w"> </span>clone<span class="w"> </span>--recurse-submodules<span class="w"> </span>https://github.com/kermodegroup/ML-MIX.git
+</pre></div>
+</div>
+</section>
+<section id="installing-lammps">
+<h2>Installing LAMMPS<a class="headerlink" href="#installing-lammps" title="Link to this heading"></a></h2>
+<p>To compile the ML-MIX LAMMPS plugin, first clone and build LAMMPS:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>git<span class="w"> </span>clone<span class="w"> </span>-b<span class="w"> </span>release<span class="w"> </span>https://github.com/lammps/lammps.git<span class="w"> </span>mylammps
+</pre></div>
+</div>
+<p>Follow the <a class="reference external" href="https://docs.lammps.org/Build.html">official build instructions</a>.</p>
+<p>Required LAMMPS packages:</p>
+<ul class="simple">
+<li><p>ML-PACE</p></li>
+<li><p>ML-UF3</p></li>
+<li><p>RIGID (for Si stretched bond case study)</p></li>
+<li><p>REPLICA (for nudged-elastic-band calculations)</p></li>
+</ul>
+<p>The ML-MIX case studies (given in <cite>case_studies/</cite>) use Python-LAMMPS integration.
+To install LAMMPS with this enabled, follow the <a class="reference external" href="https://docs.lammps.org/Python_install.html">Python installation guide</a>.
+Installation into a virtual environment is highly recommended.</p>
+<p><strong>Example LAMMPS build script:</strong> <cite>build_scripts/example_lammps_build_script.sh</cite>.</p>
+</section>
+<section id="building-the-ml-mix-plugin">
+<h2>Building the ML-MIX Plugin<a class="headerlink" href="#building-the-ml-mix-plugin" title="Link to this heading"></a></h2>
+<p>To build the ML-MIX plugin, navigate to the <cite>LAMMPS_plugin</cite> directory and run:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>mkdir<span class="w"> </span>build
+<span class="nb">cd</span><span class="w"> </span>build
+cmake<span class="w"> </span>..<span class="w"> </span>-D<span class="w"> </span><span class="nv">LAMMPS_SOURCE_DIR</span><span class="o">=</span>/path/to/lammps/src
+cmake<span class="w"> </span>--build<span class="w"> </span>.<span class="w"> </span>-j<span class="w"> </span><span class="m">1</span>
+</pre></div>
+</div>
+<p>Ensuring to replace <cite>/path/to/lammps/src</cite> with the path to the cloned LAMMPS source directory.</p>
+<p>Example script: <cite>build_scripts/example_plugin_build_script.sh</cite>.</p>
+</section>
+<section id="loading-the-ml-mix-plugin">
+<h2>Loading the ML-MIX Plugin<a class="headerlink" href="#loading-the-ml-mix-plugin" title="Link to this heading"></a></h2>
+<p>To load the ML-MIX plugin files, add the following lines to your LAMMPS input script:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>plugin<span class="w"> </span>load<span class="w"> </span>path/to/LAMMPS_plugin/build/hybridoverlaymlmlplugin.so
+plugin<span class="w"> </span>load<span class="w"> </span>path/to/LAMMPS_plugin/build/langevinmlmlplugin.so
+plugin<span class="w"> </span>load<span class="w"> </span>path/to/LAMMPS_plugin/build/mlmlplugin.so
+</pre></div>
+</div>
+<p>If the plugins are loaded successfully, you should see outputs similar to the following for each:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>Loading plugin: MLML hybrid overlay pair style v0.1 by Fraser Birks (fraser.birks@warwick.ac.uk)
+</pre></div>
+</div>
+</section>
+<section id="installing-python-packages">
+<h2>Installing Python Packages<a class="headerlink" href="#installing-python-packages" title="Link to this heading"></a></h2>
+<p>To install the Python packages required for running provided case studies, run the following:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>-r<span class="w"> </span>requirements.txt
+</pre></div>
+</div>
+<p>Ensure that the python enivronment is the one containing LAMMPS.</p>
+</section>
+<section id="installing-acepotentials-jl-for-ace-fitting">
+<h2>Installing ACEpotentials.jl for ACE fitting<a class="headerlink" href="#installing-acepotentials-jl-for-ace-fitting" title="Link to this heading"></a></h2>
+<p>To install <a class="reference external" href="https://github.com/ACEsuit/ACEpotentials.jl">ACEpotentials.jl</a>, run:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>julia<span class="w"> </span>--project<span class="o">=</span>.<span class="w"> </span>-e<span class="w"> </span><span class="s1">&#39;using Pkg; Pkg.Registry.add(&quot;General&quot;); Pkg.Registry.add(RegistrySpec(url=&quot;https://github.com/ACEsuit/ACEregistry&quot;)); Pkg.instantiate()&#39;</span>
+</pre></div>
+</div>
+</section>
+<section id="installing-uf3-for-uf3-fitting">
+<h2>Installing UF3 for UF3 fitting<a class="headerlink" href="#installing-uf3-for-uf3-fitting" title="Link to this heading"></a></h2>
+<p>We fit constrained linear UF3 potentials using a slightly modified version of the <a class="reference external" href="https://github.com/uf3/uf3">UF3 package</a>. The necessary fork of this package is included as a submodule in this repository. We utilise the UltraFastFeaturization branch of UF3, which greatly speeds up generating the potential features for fitting. Building this requires the HDF5 library is installed, as detailed here. Before installation, the environment variables HDF5_INCLUDE_DIR and HDF5_LIB_DIR must be set to the HDF5 include and lib directories respectively.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">export</span><span class="w"> </span><span class="nv">HDF5_INCLUDE_DIR</span><span class="o">=</span>/Path/to/HDF5/include
+<span class="nb">export</span><span class="w"> </span><span class="nv">HDF5_LIB_DIR</span><span class="o">=</span>/Path/to/HDF5/lib
+<span class="nb">export</span><span class="w"> </span><span class="nv">ULTRA_FAST_FEATURIZER</span><span class="o">=</span>True
+<span class="nb">cd</span><span class="w"> </span>external/uf3
+pip<span class="w"> </span>install<span class="w"> </span>.
+</pre></div>
+</div>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="index.html" class="btn btn-neutral float-left" title="ML-MIX documentation" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="overview.html" class="btn btn-neutral float-right" title="Package Overview" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Fraser Birks.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

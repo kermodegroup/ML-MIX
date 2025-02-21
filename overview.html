@@ -1,0 +1,196 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Package Overview &mdash; ML-MIX 0.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=2709fde1"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Examples" href="examples.html" />
+    <link rel="prev" title="Setup" href="setup.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            ML-MIX
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="setup.html">Setup</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Package Overview</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#command-overview">Command overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#why-use-this-package">Why Use This Package?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#how-it-works-data-flow">How it works: Data flow</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#how-it-works-region-building">How it works: Region building</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#how-it-works-force-mixing">How it works: Force mixing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#mitigating-energy-drift">Mitigating energy drift</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">ML-MIX</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Package Overview</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/overview.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="package-overview">
+<h1>Package Overview<a class="headerlink" href="#package-overview" title="Link to this heading"></a></h1>
+<p>This package extends LAMMPS, adding functionality for efficient QM/MM style force-mixing of two different pair_styles.
+It does this through the use of two commands; <cite>fix mlml</cite> and <cite>pair hybrid/overlay/mlml</cite>. There is also a third command
+<cite>fix langevin/mlml</cite>, which can be used for maintaining the temperature of mixed-systems over long timescales without disrupting any key dynamics.</p>
+<section id="command-overview">
+<h2>Command overview<a class="headerlink" href="#command-overview" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p><strong>fix mlml</strong>: Used to allocate and track which atoms should be evaluated by which potential.</p></li>
+<li><p><strong>pair hybrid/overlay/mlml</strong>: Used to mix together different pair_styles in the different spatial regions of the simulation domain designated by fix mlml.</p></li>
+<li><p><strong>fix langevin/mlml</strong>: Used to apply a langevin thermostat to a specific spatial region of the simulation domain designated by fix mlml.</p></li>
+</ul>
+</section>
+<section id="why-use-this-package">
+<h2>Why Use This Package?<a class="headerlink" href="#why-use-this-package" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p>As machine-learned interatomic potentials get larger and more accurate, they are becoming increasingly expensive in evaluation.</p></li>
+<li><p>In the realm of materials science, it is common to have systems in which regions of complex chemistry (where highly accurate potentials are required) are surrounded by large regions of simple chemistry (where a simpler potential is sufficient).</p></li>
+<li><p>This package allows users to mix together different pair_styles in different spatial regions of the simulation domain, allowing for the use of expensive, accurate potentials only where they are needed.</p></li>
+<li><p>It does this in a way which does not edit the pair_styles themselves, minimises overhead and is compatible with built in LAMMPS parallelisation strategies.</p></li>
+<li><p>Selecting which atoms to evaluate expensively can be done two ways; either by specifying an immutable group of seed atoms, or by using the output vector of a different fix to classify. Through the fix implementation, a user can use built in LAMMPS criteria for classification (e.g, coordination analysis, common neighbour analysis) or could straightforwardly plug in their own custom fix.</p></li>
+<li><p>Auxillary code is provided to allow for the fitting of constrained, lightweight linear ACE and UF3 models to approximate an expensive potential in a small region of potential energy space.</p></li>
+</ul>
+</section>
+<section id="how-it-works-data-flow">
+<h2>How it works: Data flow<a class="headerlink" href="#how-it-works-data-flow" title="Link to this heading"></a></h2>
+<p>Data for which potentials to be evaluated are stored in two user defined property/atom arrays: <cite>i2_potential</cite> and <cite>d2_eval</cite>.</p>
+<ul class="simple">
+<li><p><cite>i2_potential</cite> is an integer array which specifies which potential(s) should be evaluated for each atom.</p></li>
+<li><p><cite>d2_eval</cite> is a double array which specifies the proportion of the force which should be evaluated by each potential for each atom.</p></li>
+</ul>
+<p>At the start of every input script, these two arrays must be initialised with</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>fix<span class="w"> </span>eval_pot<span class="w"> </span>all<span class="w"> </span>property/atom<span class="w"> </span>i2_potential<span class="w"> </span><span class="m">2</span><span class="w"> </span>ghost<span class="w"> </span>yes
+fix<span class="w"> </span>eval_arr<span class="w"> </span>all<span class="w"> </span>property/atom<span class="w"> </span>d2_eval<span class="w"> </span><span class="m">2</span><span class="w"> </span>ghost<span class="w"> </span>yes
+</pre></div>
+</div>
+<p>The first column of each of these arrays corresponds to the potential labelled 1, and the second column corresponds to the potential labelled 2.</p>
+<p>The values held in these arrays can be dumped any time in the simulation with the <cite>dump custom</cite> command, allowing users to visualise which atoms are being evaluated by which potential.</p>
+</section>
+<section id="how-it-works-region-building">
+<h2>How it works: Region building<a class="headerlink" href="#how-it-works-region-building" title="Link to this heading"></a></h2>
+<img alt="Region Building" class="align-center" src="_static/images/region_construction.png" />
+<p>Region building in ML-MIX is based on an underlying assumption that there is a small subset of atoms in the overall simulation domain which should be modelled by potential 1 (region 1) and a remainder which should be modelled by potential 2 (region 2). The <cite>fix mlml</cite> command is responsible for constructing these regions. A user specifies some criteria that is used to find <cite>seed atoms</cite>; these are the atoms that region 1 is built around.</p>
+<p>The seed atom criteria can take two forms, either a fixed set of atoms, specified by a lammps group at the start of the simulation, or a dynamic set of atoms, specified by applying an inequality critera to the output per-atom vector of another seperately defined fix.</p>
+<p>Once seed atoms are found, regions are built around the seed atoms. This can be thought of as a process of forming the union of concentric spheres around each seed atom. The innermost sphere is the <cite>core region</cite>, the next sphere is the <cite>blending region</cite> and the outermost sphere is the <cite>buffer region</cite>. Different values of <cite>i2_potential</cite> and <cite>d2_eval</cite> are assigned to atoms in each of these regions:</p>
+<ul class="simple">
+<li><p>Core region: i2_potential[0][i] = 1, d2_eval[0][i] = 1.0. (i.e, the atom is evaluated by potential 1 with 100% of the force contributing).</p></li>
+<li><p>Blending region: i2_potential[0][i] = 1, d2_eval[0][i] = p1, where p1 is a linear function of the distance from the atom to the nearest seed atom that decays from 1.0 to 0.0 as the distance increases. (i.e, the atom will be evaluated by potential 1 with a proportion of the force determined by the distance from the atom to the nearest seed atom).</p></li>
+<li><p>Buffer region: i2_potential[0][i] = 1, d2_eval[0][i] = 0.0 (i.e, the atom is evaluated by potential 1 with 0% of the force contributing - see the section below on force mixing to understand why a buffer region is necessary).</p></li>
+<li><p>Outside the buffer region: i2_potential[0][i] = 0, d2_eval[0][i] = 0.0 (i.e, the atom is not evaluated by potential 1).</p></li>
+</ul>
+<p>For potential 2, the same process is followed. Note that many atoms which will be evaluated by potential 1 will also be evaluated by potential 2 (i.e, those which lie in the buffer of 1, the blending region and the buffer of 2), but with d2_eval[1][i] = 1 - d2_eval[0][i].</p>
+<p>There are two key timescales associated with <cite>fix mlml</cite>, the timescale associated with rebuilding regions (taking the fixed seed atoms and re-determining the core, blending and buffer regions based on new positions), and (in the case of dynamic seed atoms) the timescale associated with querying the output vector of the fix to classify new seed atoms.</p>
+</section>
+<section id="how-it-works-force-mixing">
+<h2>How it works: Force mixing<a class="headerlink" href="#how-it-works-force-mixing" title="Link to this heading"></a></h2>
+<img alt="Force mixing" class="align-center" src="_static/images/force_mixing_image.png" />
+<p>Whilst <cite>fix mlml</cite> is responsible for assigning atoms to regions and controlling force contributions, the <cite>pair hybrid/overlay/mlml</cite> command is responsible for actually evaluating the forces. The <cite>pair hybrid/overlay/mlml</cite> command is a variant of the <cite>pair hybrid/overlay</cite> command, which allows for the use of multiple pair_styles in one simulation. The <cite>pair hybrid/overlay/mlml</cite> command constructs the full force vector through force-mixing, a method commonly used in QM/MM simulations.</p>
+<p>The assignment of pair styles to type pairs is made via the <cite>pair_coeff</cite> command. For <cite>hybrid/overlay/mlml</cite>, an additional numeric argument must be specified after the sub-style name, which can either be 1 or 2. This value indicates the region to which <cite>pair_style</cite> should be applied. As many sub-styles can be specified as desired, and multiple sub-styles can be assigned to the same regions.</p>
+<p><cite>hybrid/overlay/mlml</cite> differs from <cite>hybrid/overlay</cite> in two key ways. Firstly, it prunes the atom list for each pair_style evaluation to only include the necessary atoms according to <cite>i2_potential</cite>. Secondly, once forces have been evaluated, it constructs the full force vector by modifying the forces evaluated by each pair_style according to <cite>d2_eval</cite>.</p>
+<p>To understand why the buffer region is necessary and understand what size it needs to be for local potentials, consider a set of atoms <span class="math notranslate nohighlight">\(\Lambda_{k}\)</span>, which is a subset within a larger domain <span class="math notranslate nohighlight">\(\Lambda_{k} \subseteq \Lambda\)</span>. To attain correct forces on atoms in <span class="math notranslate nohighlight">\(\Lambda_{k}\)</span> with a local potential <span class="math notranslate nohighlight">\(\Phi_{k}\)</span> that has a cutoff radius <span class="math notranslate nohighlight">\(r_{\mathrm{cutoff}}\)</span>. The force on atom <span class="math notranslate nohighlight">\(i \in \Lambda_{k}\)</span> can be written in terms of local energies as</p>
+<div class="math notranslate nohighlight">
+\[F_{i} = \frac{\partial E}{\partial \mathbf{x}_{i}} = \sum_{j}^{j\in \mathrm{neigh}(i)}{\frac{\partial E^{k}_{j}}{\partial \mathbf{x}_{i}}}\]</div>
+<p>where <span class="math notranslate nohighlight">\(E^{k}_{j}\)</span> represents the local energy of atom <span class="math notranslate nohighlight">\(j\)</span> as evaluated by <span class="math notranslate nohighlight">\(\Phi_{k}\)</span>. Due to the local nature of the potential, we only need to evaluate <span class="math notranslate nohighlight">\(E^{k}_{j}\)</span> for atoms that lie within <span class="math notranslate nohighlight">\(r_{\mathrm{cutoff}}\)</span> of atom <span class="math notranslate nohighlight">\(i\)</span>. For an atom that lies on the edge of <span class="math notranslate nohighlight">\(\Lambda_{k}\)</span>, it is clear that attaining the correct force requires evaluation of atoms up to <span class="math notranslate nohighlight">\(r_{\mathrm{cutoff}}\)</span> outside <span class="math notranslate nohighlight">\(\Lambda_{k}\)</span>. Defining the distance between two atoms <span class="math notranslate nohighlight">\(i, j\)</span> as <span class="math notranslate nohighlight">\(d(i, j)\)</span>, the buffer region <span class="math notranslate nohighlight">\(\Lambda_{k\text{-buffer}}\)</span> is given by</p>
+<div class="math notranslate nohighlight">
+\[\Lambda_{k\text{-buffer}} = \bigcup \Big\{ i \in \Lambda \setminus \Lambda_k \,\Big|\, \exists j \in \Lambda_k, \text{ such that } d(i, j) \leq r_{\mathrm{cutoff}} \Big\}.\]</div>
+<p>This expression tells us that to get exactly correct forces on atoms in the blending region, we need to evaluate the local energy gradients of atoms up to <span class="math notranslate nohighlight">\(r_{\mathrm{cutoff}}\)</span> outside it.</p>
+</section>
+<section id="mitigating-energy-drift">
+<h2>Mitigating energy drift<a class="headerlink" href="#mitigating-energy-drift" title="Link to this heading"></a></h2>
+<p>A consequence of force-mixing is that simulations do not conserve energy. The energy drift rate of a simulation is determined by three things:</p>
+<ul class="simple">
+<li><p>How closely the two potentials approximate each other (closer -&gt; less drift).</p></li>
+<li><p>The width of the blending region (wider -&gt; less drift).</p></li>
+<li><p>The overall size of the interface area between potentials (larger -&gt; more drift).</p></li>
+</ul>
+<p>For potentials which are fit to match closely, energy drift is usually in the ballpark of a few K/hundred ps. This is small enough that it can be corrected for by the action of a weak thermostat. The <cite>fix langevin/mlml</cite> command is provided for this purpose. It is a variant of the <cite>fix langevin</cite> command, which applies a langevin thermostat to a specific ML-MIX region of the simulation domain. In its current implementation, it is a standard langevin thermostat with the random forces multiplied by the <cite>d2_eval</cite> vector.</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="setup.html" class="btn btn-neutral float-left" title="Setup" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="examples.html" class="btn btn-neutral float-right" title="Examples" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Fraser Birks.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

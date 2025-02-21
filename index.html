@@ -16,9 +16,11 @@
       <script src="_static/documentation_options.js?v=2709fde1"></script>
       <script src="_static/doctools.js?v=9bcbadda"></script>
       <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
-    <link rel="search" title="Search" href="search.html" /> 
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Setup" href="setup.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -40,11 +42,13 @@
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <!-- Local TOC -->
-              <div class="local-toc"><ul>
-<li><a class="reference internal" href="#">ML-MIX documentation</a></li>
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="setup.html">Setup</a></li>
+<li class="toctree-l1"><a class="reference internal" href="overview.html">Package Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a></li>
 </ul>
-</div>
+
         </div>
       </div>
     </nav>
@@ -71,17 +75,54 @@
              
   <section id="ml-mix-documentation">
 <h1>ML-MIX documentation<a class="headerlink" href="#ml-mix-documentation" title="Link to this heading"></a></h1>
-<p>Add your content using <code class="docutils literal notranslate"><span class="pre">reStructuredText</span></code> syntax. See the
-<a class="reference external" href="https://www.sphinx-doc.org/en/master/usage/restructuredtext/index.html">reStructuredText</a>
-documentation for details.</p>
+<p>Welcome to the documentation for ML-MIX, a LAMMPS plugin for performing efficient spatial mixing of different pair_styles!</p>
+<img alt="Force mixing" class="align-center" src="_static/images/flowchartv2.png" />
+<p>This documentation covers:</p>
+<ul class="simple">
+<li><p>Setup and installation of the LAMMPS plugin and Python packages required for running the provided case studies.</p></li>
+<li><p>An overview of the plugin.</p></li>
+<li><p>Simple examples demonstrating how to use the plugin.</p></li>
+<li><p>Detailed LAMMPS-style documentation on the commands provided by the plugin.</p></li>
+<li><p>Documentation on the constrained fitting of small, fast linear ACE and UF3 potentials.</p></li>
+</ul>
 <div class="toctree-wrapper compound">
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="setup.html">Setup</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="setup.html#cloning-this-repository">Cloning this Repository</a></li>
+<li class="toctree-l2"><a class="reference internal" href="setup.html#installing-lammps">Installing LAMMPS</a></li>
+<li class="toctree-l2"><a class="reference internal" href="setup.html#building-the-ml-mix-plugin">Building the ML-MIX Plugin</a></li>
+<li class="toctree-l2"><a class="reference internal" href="setup.html#loading-the-ml-mix-plugin">Loading the ML-MIX Plugin</a></li>
+<li class="toctree-l2"><a class="reference internal" href="setup.html#installing-python-packages">Installing Python Packages</a></li>
+<li class="toctree-l2"><a class="reference internal" href="setup.html#installing-acepotentials-jl-for-ace-fitting">Installing ACEpotentials.jl for ACE fitting</a></li>
+<li class="toctree-l2"><a class="reference internal" href="setup.html#installing-uf3-for-uf3-fitting">Installing UF3 for UF3 fitting</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="overview.html">Package Overview</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="overview.html#command-overview">Command overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="overview.html#why-use-this-package">Why Use This Package?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="overview.html#how-it-works-data-flow">How it works: Data flow</a></li>
+<li class="toctree-l2"><a class="reference internal" href="overview.html#how-it-works-region-building">How it works: Region building</a></li>
+<li class="toctree-l2"><a class="reference internal" href="overview.html#how-it-works-force-mixing">How it works: Force mixing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="overview.html#mitigating-energy-drift">Mitigating energy drift</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="examples.html#basic-examples">Basic Examples</a></li>
+<li class="toctree-l2"><a class="reference internal" href="examples.html#advanced-examples">Advanced Examples</a></li>
+<li class="toctree-l2"><a class="reference internal" href="examples.html#how-to-run-the-examples">How to Run the Examples</a></li>
+</ul>
+</li>
+</ul>
 </div>
 </section>
 
 
            </div>
           </div>
-          <footer>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="setup.html" class="btn btn-neutral float-right" title="Setup" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
 
   <hr/>
 
