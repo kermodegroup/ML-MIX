@@ -9,7 +9,7 @@ A LAMMPS plugin for efficiently mixing together forces from different machine-le
 
 ## Key Information
 
-Full documentation can be found here: [documentation link]
+Full documentation can be found here: https://kermodegroup.github.io/ML-MIX/
 
 Detailed setup instructions can be found below.
 
