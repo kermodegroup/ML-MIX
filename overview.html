@@ -125,7 +125,7 @@ fix<span class="w"> </span>eval_arr<span class="w"> </span>all<span class="w"> <
 </section>
 <section id="how-it-works-region-building">
 <h2>How it works: Region building<a class="headerlink" href="#how-it-works-region-building" title="Link to this heading"></a></h2>
-<img alt="Region Building" class="align-center" src="_static/images/region_construction.png" />
+<img alt="Region Building" class="align-center" src="_images/region_construction.png" />
 <p>Region building in ML-MIX is based on an underlying assumption that there is a small subset of atoms in the overall simulation domain which should be modelled by potential 1 (region 1) and a remainder which should be modelled by potential 2 (region 2). The <cite>fix mlml</cite> command is responsible for constructing these regions. A user specifies some criteria that is used to find <cite>seed atoms</cite>; these are the atoms that region 1 is built around.</p>
 <p>The seed atom criteria can take two forms, either a fixed set of atoms, specified by a lammps group at the start of the simulation, or a dynamic set of atoms, specified by applying an inequality critera to the output per-atom vector of another seperately defined fix.</p>
 <p>Once seed atoms are found, regions are built around the seed atoms. This can be thought of as a process of forming the union of concentric spheres around each seed atom. The innermost sphere is the <cite>core region</cite>, the next sphere is the <cite>blending region</cite> and the outermost sphere is the <cite>buffer region</cite>. Different values of <cite>i2_potential</cite> and <cite>d2_eval</cite> are assigned to atoms in each of these regions:</p>
@@ -140,7 +140,7 @@ fix<span class="w"> </span>eval_arr<span class="w"> </span>all<span class="w"> <
 </section>
 <section id="how-it-works-force-mixing">
 <h2>How it works: Force mixing<a class="headerlink" href="#how-it-works-force-mixing" title="Link to this heading"></a></h2>
-<img alt="Force mixing" class="align-center" src="_static/images/force_mixing_image.png" />
+<img alt="Force mixing" class="align-center" src="_images/force_mixing_image.png" />
 <p>Whilst <cite>fix mlml</cite> is responsible for assigning atoms to regions and controlling force contributions, the <cite>pair hybrid/overlay/mlml</cite> command is responsible for actually evaluating the forces. The <cite>pair hybrid/overlay/mlml</cite> command is a variant of the <cite>pair hybrid/overlay</cite> command, which allows for the use of multiple pair_styles in one simulation. The <cite>pair hybrid/overlay/mlml</cite> command constructs the full force vector through force-mixing, a method commonly used in QM/MM simulations.</p>
 <p>The assignment of pair styles to type pairs is made via the <cite>pair_coeff</cite> command. For <cite>hybrid/overlay/mlml</cite>, an additional numeric argument must be specified after the sub-style name, which can either be 1 or 2. This value indicates the region to which <cite>pair_style</cite> should be applied. As many sub-styles can be specified as desired, and multiple sub-styles can be assigned to the same regions.</p>
 <p><cite>hybrid/overlay/mlml</cite> differs from <cite>hybrid/overlay</cite> in two key ways. Firstly, it prunes the atom list for each pair_style evaluation to only include the necessary atoms according to <cite>i2_potential</cite>. Secondly, once forces have been evaluated, it constructs the full force vector by modifying the forces evaluated by each pair_style according to <cite>d2_eval</cite>.</p>
