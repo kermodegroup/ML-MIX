@@ -3,7 +3,7 @@
 ## ⚠️ Important Notice ⚠️
 The version of this on GitHub is **incomplete**. It is missing some of the required expensive potentials. You can download the **complete version** from Zenodo at:
 
-[Zenodo DOI Link]
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.14920348.svg)](https://doi.org/10.5281/zenodo.14920348)
 
 ## Overview
 The examples in this folder walk through the process of generating constrained cheap potentials to match an expensive potential in a domain of interest. In the Fe and Si examples, the cheap models are small ACE potentials. In the W example, the cheap model is an ultra-fast UF3 potential. 

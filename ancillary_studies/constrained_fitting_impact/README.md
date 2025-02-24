@@ -3,7 +3,9 @@
 ## ⚠️ Important Notice ⚠️
 The version of this case study on GitHub is **incomplete**. It is missing required potentials, result data, and plots. You can download the **full study** from Zenodo at:
 
-[Zenodo DOI Link]
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.14920348.svg)](https://doi.org/10.5281/zenodo.14920348)
+
+
 
 ## Overview
 This study compares the strain error in sheared and relaxed blocks of Si in ML/ML simulations compared to an all-expensive potential reference. In each case, a central sphere of atoms is simulated using an expensive Si ACE potential. For the ML/ML simulations, two different cheap potentials are used for the other atoms in the domain:

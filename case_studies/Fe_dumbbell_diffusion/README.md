@@ -3,7 +3,7 @@
 ## ⚠️ Important Notice ⚠️
 The version of this case study on GitHub is **incomplete**. It is missing required potentials, result data, and plots. You can download the **plots and potentials** from Zenodo at:
 
-[Zenodo DOI Link]
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.14920348.svg)](https://doi.org/10.5281/zenodo.14920348)
 
 The full trajectory data is ~30 GB, and is therefore too large for Zenodo. This is available on request, email: fraser.birks@warwick.ac.uk.
 

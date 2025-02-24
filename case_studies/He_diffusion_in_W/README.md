@@ -3,7 +3,7 @@
 ## ⚠️ Important Notice ⚠️
 The version of this case study on GitHub is **incomplete**. It is missing required potentials, result data, and plots. You can download the **full study** from Zenodo at:
 
-[Zenodo DOI Link]
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.14920348.svg)](https://doi.org/10.5281/zenodo.14920348)
 
 ## Overview
 This study compares two things:

@@ -3,7 +3,7 @@
 ## ⚠️ Important Notice ⚠️
 The version of this case study on GitHub is **incomplete**. It is missing required potentials, result data, and plots. You can download the **full study** from Zenodo at:
 
-[Zenodo DOI Link]
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.14920348.svg)](https://doi.org/10.5281/zenodo.14920348)
 
 ## Overview
 This study measures the energy drift over time of an NVE simulation of a block of silicon containing a stretched and rigidly fixed bond. Atoms immediately around the central bond are modelled using an expensive Si ACE potential, whilst atoms further from the bond are modelled using cheaper Si ACE potentials.
