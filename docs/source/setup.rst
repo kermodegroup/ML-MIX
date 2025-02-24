@@ -21,7 +21,8 @@ Follow the `official build instructions <https://docs.lammps.org/Build.html>`_.
 
 Required LAMMPS packages:
 
-- ML-PACE
+- PLUGIN
+- ML-PACE which can be added using the instructions found `here <https://acesuit.github.io/ACEpotentials.jl/v0.6/tutorials/lammps/>`
 - ML-UF3
 - RIGID (for Si stretched bond case study)
 - REPLICA (for nudged-elastic-band calculations)
