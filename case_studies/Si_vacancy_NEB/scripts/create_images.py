@@ -1,3 +1,15 @@
+# ----------------------------------------------------------------------
+# This script is part of the ML-MIX repository.
+# 
+# Copyright (2025) Fraser Birks
+#
+# This script is licensed under the MIT License. You are free to use, modify,
+# and distribute it, provided that this copyright notice and license text 
+# remain intact.
+#
+# See the LICENSE file in the repository root for full details.
+# ----------------------------------------------------------------------
+
 from ase.calculators.lammpslib import LAMMPSlib
 import sys
 import os

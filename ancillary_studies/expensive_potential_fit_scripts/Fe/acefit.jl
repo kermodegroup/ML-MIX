@@ -1,4 +1,16 @@
-# Script by Lakshmi Shenoy
+# ----------------------------------------------------------------------
+# This script is part of the ML-MIX repository.
+# 
+# Copyright (2025)  Lakshmi Shenoy, Fraser Birks
+#
+# This script is licensed under the MIT License. You are free to use, modify,
+# and distribute it, provided that this copyright notice and license text 
+# remain intact.
+#
+# See the LICENSE file in the repository root for full details.
+# ----------------------------------------------------------------------
+
+
 using Pkg
 Pkg.activate("../../../")
 using Distributed
