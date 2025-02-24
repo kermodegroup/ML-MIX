@@ -17,7 +17,9 @@ For a user wanting to start quickly, simple examples showcasing and explaining f
 
 The accompanying paper on ML-MIX can be found here: [paper link]
 
-All the code associated with this paper is included in this repository, in `potential_fitting/`, `case_studies/` and `ancillary_studies/`, however the GitHub version is incomplete, as it is missing potentials, data and plots. The full version of this repository can be found on Zenodo [zenodo link].
+All the code associated with this paper is included in this repository, in `potential_fitting/`, `case_studies/` and `ancillary_studies/`, however the GitHub version is incomplete, as it is missing potentials, data and plots. The full version of this repository can be found on Zenodo [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.14920348.svg)](https://doi.org/10.5281/zenodo.14920348)
+
+
 
 More information can be found in the `README` files inside each subdirectory.
 
