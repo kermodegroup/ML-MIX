@@ -41,7 +41,7 @@ else()
   endif()
 endif()
 
-# C++11 is required
+# C++17 is required
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
