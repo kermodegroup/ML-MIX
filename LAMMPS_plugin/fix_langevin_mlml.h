@@ -1,16 +1,25 @@
-/* -*- c++ -*- ----------------------------------------------------------
+/* ----------------------------------------------------------------------
    LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
    https://www.lammps.org/, Sandia National Laboratories
    LAMMPS development team: developers@lammps.org
 
-   Copyright (2003) Sandia Corporation.  Under the terms of Contract
+   Copyright (2003) Sandia Corporation. Under the terms of Contract
    DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains
-   certain rights in this software.  This software is distributed under
+   certain rights in this software. This software is distributed under
    the GNU General Public License.
 
    See the README file in the top-level LAMMPS directory.
 ------------------------------------------------------------------------- */
 
+/* ----------------------------------------------------------------------
+   Contributing authors: 
+     Carolyn Phillips (U Mich) - reservoir energy tally
+     Aidan Thompson (SNL) - GJF formulation
+     Charles Sievers & Niels Gronbech-Jensen (UC Davis) - 
+         updated GJF formulation and included statistically correct 2GJ velocity
+
+   Small ML-MIX modifications by Fraser Birks (2025)
+------------------------------------------------------------------------- */
 #ifndef LMP_FIX_LANGEVIN_MLML_H
 #define LMP_FIX_LANGEVIN_MLML_H
 

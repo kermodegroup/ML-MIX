@@ -1,15 +1,16 @@
-// clang-format off
 /* ----------------------------------------------------------------------
-   LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
+   This file is part of a plugin for LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
    https://www.lammps.org/, Sandia National Laboratories
-   LAMMPS development team: developers@lammps.org
 
-   Copyright (2003) Sandia Corporation.  Under the terms of Contract
-   DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains
-   certain rights in this software.  This software is distributed under
-   the GNU General Public License.
+   Copyright (2025) Fraser Birks
+   This file was written by Fraser Birks and is distributed under the 
+   GNU General Public License.
 
-   See the README file in the top-level LAMMPS directory.
+   This file is not part of the original LAMMPS distribution but is designed 
+   to be used with LAMMPS. It is provided under the same GPLv2 license as LAMMPS 
+   to ensure compatibility.
+
+   See the LICENSE file for details.
 ------------------------------------------------------------------------- */
 
 #include "pair_hybrid_overlay_mlml.h"

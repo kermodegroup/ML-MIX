@@ -1,3 +1,18 @@
+/* ----------------------------------------------------------------------
+   This file is part of a plugin for LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
+   https://www.lammps.org/, Sandia National Laboratories
+
+   Copyright (2025) Fraser Birks
+   This file was written by Fraser Birks and is distributed under the 
+   GNU General Public License.
+
+   This file is not part of the original LAMMPS distribution but is designed 
+   to be used with LAMMPS. It is provided under the same GPLv2 license as LAMMPS 
+   to ensure compatibility.
+
+   See the LICENSE file for details.
+------------------------------------------------------------------------- */
+
 #ifndef LMP_FIX_MLML_H
 #define LMP_FIX_MLML_H
 
