@@ -37,6 +37,9 @@ To compile the ML-MIX LAMMPS plugin, you first need to clone and build LAMMPS. L
 ```
 git clone -b release https://github.com/lammps/lammps.git mylammps
 ```
+
+An example cmake LAMMPS build script is provided in `build_scripts/example_lammps_build_script.sh` which includes all required plugins.
+
 Instructions to build LAMMPS can be found on the [official website](https://docs.lammps.org/Build.html). To use ML-MIX, you must build with the [PLUGIN package](https://docs.lammps.org/Packages_details.html#pkg-plugin) enabled. 
 
 Additionally, to run the case-studies, the following packages are necessary:
@@ -47,10 +50,8 @@ Additionally, to run the case-studies, the following packages are necessary:
 
 Whilst it is not necessary for core functionality of the ML-MIX plugin, the case studies also depend on passing commands to the LAMMPS shared library through Python. To build LAMMPS in such a way that this is possible, please follow the instructions [here](https://docs.lammps.org/Python_install.html). Installing into a virtual environment is strongly encouraged.
 
-To aid the user, an example cmake LAMMPS build script is provided in `build_scripts/example_lammps_build_script.sh`.
-
 ### Building the ML-MIX plugin
-The ML-MIX plugin can be compiled straightforwardly with cmake in the LAMMPS_plugin folder. The path to the `src` dir of LAMMPS must be provided, e.g.
+The ML-MIX plugin can be compiled straightforwardly with cmake in the `LAMMPS_plugin/` folder. The path to the `src` dir of LAMMPS must be provided, e.g.
 ```
 mkdir build
 cd build
