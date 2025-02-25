@@ -1,0 +1,30 @@
+cff-version: 1.2.0
+message: "If you use ML-MIX in your research, please cite the following publication:"
+authors:
+  - name: "Fraser Birks"
+    orcid: "0009-0008-9117-0393" 
+    affiliation: "Warwick Center for Predictive Modelling, School of Engineering, University of Warwick"
+  - name: "Thomas D Swinburne"
+    orcid: "000-0002-3255-4257"  
+    affiliation: "Aix-Marseille Universite, CNRS,"
+  - name: "James R Kermode"
+    orcid: "0000-0001-6755-6271"
+    affiliation: "Warwick Center for Predictive Modelling, School of Engineering, University of Warwick"
+title: "ML-MIX: A Machine Learning-Based Mixing Model"
+version: "v0.1.0"
+url: "https://github.com/kermodegroup/ML-MIX"
+date-released: "2025-02-25"
+
+# preferred-citation:
+#   type: article
+#   authors:
+#     - name: "A"
+#     - name: "B"
+#     - name: "C"
+#   title: "Your Paper Title"
+#   journal: "Journal Name"
+#   volume: "XX"
+#   issue: "X"
+#   pages: "XXX-XXX"
+#   year: "YYYY"
+#   doi: "10.xxxx/yyyyyyyyyy"  # Replace with actual DOI
