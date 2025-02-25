@@ -10,7 +10,7 @@ authors:
   - name: "Kermode, J.R."
     orcid: "0000-0001-6755-6271"
     affiliation: "Warwick Center for Predictive Modelling, School of Engineering, University of Warwick"
-title: "ML-MIX: A Machine Learning-Based Mixing Model"
+title: "ML-MIX: A LAMMPS plugin for force-mixing of machine learned interatomic potentials"
 version: "v0.1.0"
 url: "https://github.com/kermodegroup/ML-MIX"
 date-released: "2025-02-25"
