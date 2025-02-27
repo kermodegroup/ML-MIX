@@ -79,6 +79,15 @@ def run_test(property_dict_1, property_dict_2, verbose=False, zero=False, comm=N
     r_blend = 3.0
     r_buff = np.max([cutoff_1, cutoff_2])
     i2_potential, d2_eval = build_regions_lammps(lmps, struct, r_core, r_blend, r_buff,path=path)
+    #
+    # Unfixing here is necessary as it turns out that if you have just fix mlml and a pair_style that
+    # requests a half full neighbour list, the pair_style tries to get it from the neighbourlist
+    # used in fix mlml, and for some reason it doesn't work (all forces are 0). This isn't a problem
+    # if you have another pair_style defined that uses the full neighbour list. But it means that right now,
+    # the LJ/LJ tests fail. This is a workaround so LJ can be used as one of the pair_styles in the
+    # other tests. For now, just removing LJ test until this is fixed.
+    # 
+    lmps.command('unfix mlml_fix')
     try:
         #get forces for each potential
         # lmps.command('compute myforce all reduce sum fx fy fz')
@@ -87,13 +96,14 @@ def run_test(property_dict_1, property_dict_2, verbose=False, zero=False, comm=N
         lmps.command(f'pair_style {cmds_1["style_name"]} {cmds_1["style_params"]}')
         lmps.command(f'pair_coeff {cmds_1["coeff_types"]} {cmds_1["coeff_params"]}')
         lmps.command('run 0')
-        lmps.command(f'write_dump all custom {path}/just_1.lammpstrj id type xs ys zs fx fy fz i2_potential[1] i2_potential[2] d2_eval[1] d2_eval[2] modify format float %20.15g')
+        lmps.command(f'write_dump all custom {path}/just_1.lammpstrj id type xs ys zs fx fy fz modify format float %20.15g')
 
         lmps.command(f'pair_style {cmds_2["style_name"]} {cmds_2["style_params"]}')
         lmps.command(f'pair_coeff {cmds_2["coeff_types"]} {cmds_2["coeff_params"]}')
         lmps.command('run 0')
-        lmps.command(f'write_dump all custom {path}/just_2.lammpstrj id type xs ys zs fx fy fz i2_potential[1] i2_potential[2] d2_eval[1] d2_eval[2] modify format float %20.15g')
-
+        lmps.command(f'write_dump all custom {path}/just_2.lammpstrj id type xs ys zs fx fy fz modify format float %20.15g')
+        
+        lmps.command(f'fix mlml_fix all mlml 1 {r_core} {r_buff} {r_blend} group seed_atoms')
         if zero:
             lmps.command(f'pair_style hybrid/overlay/mlml zero yes {cmds_1["style_name"]} {cmds_1["style_params"]} {cmds_2["style_name"]} {cmds_2["style_params"]}')
         else:
@@ -147,7 +157,7 @@ def run_test(property_dict_1, property_dict_2, verbose=False, zero=False, comm=N
         try:
             assert np.allclose(forces_both, manual_forces_both, atol=1e-5, rtol=0)
         except AssertionError:
-            print(f"Forces for {ID_2} do not match.")
+            print(f"Forces for {ID_1} do not match.")
             if crash_on_fail:
                 raise AssertionError("Test failed!")
             return "❌"

@@ -22,6 +22,7 @@ def build_regions_lammps(lmps, struct, r_core, r_blend, r_buff, pick_seed_with='
     seed_atoms = get_seed_atoms(struct)
     # set up dump
     lmps.command(f'dump dump1 all custom {nsteps} {path}/dump.lammpstrj id type x y z fx fy fz i2_potential[1] i2_potential[2] d2_eval[1] d2_eval[2]')
+    lmps.command(f'dump_modify dump1 format float %20.15g')
     lmps.command(f'group seed_atoms id {" ".join([str(i+1) for i in seed_atoms])}')
     if pick_seed_with == 'group':
         lmps.command(f'fix mlml_fix all mlml 1 {r_core} {r_buff} {r_blend} group seed_atoms')

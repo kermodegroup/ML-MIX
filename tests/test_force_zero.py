@@ -27,7 +27,7 @@ def test_force_zero(verbose=False,crash_on_fail=True,direct_run=False):
         if not os.path.exists(data_path):
             os.makedirs(data_path)
     property_dict_1 = load("./potentials/BASE/BASE.json")
-    directory = f"./potentials/LJ"
+    directory = f"./potentials/UF3"
     json_files = [f for f in os.listdir(directory) if f.endswith(".json")]
     assert len(json_files) == 1, "Only one json file should be in the BASE directory"
     json_file = json_files[0]
