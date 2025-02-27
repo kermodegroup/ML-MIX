@@ -6,5 +6,8 @@
         "coeff_params": "./potentials/TABLE/0ce218cb3e_pairpot.table Si_Si"
     },
     "elements": ["Si"],
-    "ID": "table"
+    "ID": "table",
+    "structure":"diamond",
+    "a":"5.4",
+    "cutoff": "6.01"
 }

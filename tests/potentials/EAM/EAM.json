@@ -6,5 +6,8 @@
         "coeff_params": "./potentials/EAM/Al_jnp.eam"
     },
     "elements": ["Al"],
-    "ID": "EAM"
+    "ID": "EAM",
+    "structure":"X",
+    "a":"X",
+    "cutoff": "6.01"
 }

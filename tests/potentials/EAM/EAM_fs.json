@@ -6,5 +6,9 @@
         "coeff_params": "./potentials/EAM/Al_mm.eam.fs Al"
     },
     "elements": ["Al"],
-    "ID": "EAM/fs"
+    "ID": "EAM/fs",
+    "structure":"fcc",
+    "a":"4.05",
+    "cutoff": "6.01"
+
 }

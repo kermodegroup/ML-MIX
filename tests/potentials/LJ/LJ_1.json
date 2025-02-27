@@ -3,8 +3,11 @@
         "style_name": "lj/cut",
         "style_params": "5.0",
         "coeff_types": "* *",
-        "coeff_params": "0.8 1.2"
+        "coeff_params": "1.0 1.1"
     },
     "elements": ["X"],
-    "ID": "LJ"
+    "ID": "LJ",
+    "structure":"X",
+    "a":"X",
+    "cutoff": "5.01"
 }

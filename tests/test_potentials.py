@@ -81,7 +81,7 @@ def pot_test(selected_potentials, verbose=False, crash_on_fail=True, direct_run=
         print("Selected potentials:", selected_potentials)
         if not os.path.exists(data_path):
             os.makedirs(data_path)
-    property_dict_1 = load("./potentials/BASE/BASE.json")
+    property_dict_2 = load("./potentials/BASE/BASE.json")
     results = {}
     #for each potential in selected_potentials, load json files in the potential folder
     for potential in selected_potentials:
@@ -89,10 +89,10 @@ def pot_test(selected_potentials, verbose=False, crash_on_fail=True, direct_run=
         json_files = [f for f in os.listdir(directory) if f.endswith(".json")]
         for json_file in json_files:
             pot_name = json_file[0].split(".")[0]
-            property_dict_2 = load(f'{directory}/{json_file}')
+            property_dict_1 = load(f'{directory}/{json_file}')
             #print running property_dict_2["ID"].....
             if rank == 0:
-                print(f"Running {property_dict_2['ID']}.....", end="", flush=True)
+                print(f"Running {property_dict_1['ID']}.....", end="", flush=True)
             if verbose:
                 err_code = run_test(property_dict_1,
                                     property_dict_2, 
@@ -115,7 +115,7 @@ def pot_test(selected_potentials, verbose=False, crash_on_fail=True, direct_run=
             if rank == 0:
                 print(err_code)
             
-            results[f"{property_dict_2['ID']}"] = {"result":err_code, "datetime":datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
+            results[f"{property_dict_1['ID']}"] = {"result":err_code, "datetime":datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
         
     if direct_run:
         return results
@@ -147,7 +147,7 @@ def test_EAM():
 if __name__ == "__main__":
     args = parse_arguments()
     selected_potentials = process_potentials(args)
-    results = pot_test(selected_potentials, verbose=args.verbose, crash_on_fail=args.crash_on_fail, direct_run=True, data_path=data_path)
+    results = pot_test(selected_potentials, verbose=args.verbose, crash_on_fail=args.crash_on_fail, direct_run=True)
     out_json = f"test_results_{test_type}.json"
     top_readme = "../README.md"
     insert_key = "error table"

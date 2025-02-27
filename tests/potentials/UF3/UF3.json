@@ -3,8 +3,11 @@
         "style_name": "uf3",
         "style_params": "3",
         "coeff_types": "* *",
-        "coeff_params": "./potentials/UF3/HeW.uf3 W He"
+        "coeff_params": "./potentials/UF3/W.uf3 W"
     },
-    "elements": ["He", "W"],
-    "ID": "UF3"
+    "elements": ["W"],
+    "ID": "UF3",
+    "structure":"bcc",
+    "a":"3.16",
+    "cutoff": "6.01"
 }

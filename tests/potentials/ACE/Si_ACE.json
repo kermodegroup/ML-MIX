@@ -6,5 +6,8 @@
         "coeff_params": "./potentials/ACE/0ce218cb3e.yace Si"
     },
     "elements": ["Si"],
-    "ID": "ACE"
+    "ID": "ACE",
+    "structure":"diamond",
+    "a":"5.4",
+    "cutoff": "6.01"
 }

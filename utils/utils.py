@@ -1,4 +1,3 @@
-import os
 import numpy as np
 from ase.build import bulk
 from ase.lattice.cubic import Diamond

@@ -19,6 +19,7 @@ def set_up_lammps(lmps, struct, mass_cmds, multi_potential=True, rank=0,path='./
     lmps.command('boundary p p p')
     lmps.command('atom_style atomic')
     lmps.command('units metal')
+    lmps.command('atom_modify map yes')
     #lmps.command('comm_style tiled')
 
     #-----------------Read atoms------------------

@@ -6,5 +6,8 @@
         "coeff_params": "./potentials/EAM/PdHHe.eam.he Pd H He"
     },
     "elements": ["Pd", "H", "He"],
-    "ID": "EAM/he"
+    "ID": "EAM/he",
+    "structure":"X",
+    "a":"X",
+    "cutoff": "6.01"
 }

@@ -6,5 +6,6 @@
         "coeff_params": "1.0 1.0"
     },
     "elements": ["X"],
-    "ID": "LJ"
+    "ID": "LJ",
+    "cutoff": "5.01"
 }

@@ -57,6 +57,11 @@ def build_regions_lammps(lmps, struct, r_core, r_blend, r_buff, pick_seed_with='
     if comm is not None:
         i2_potential = comm.bcast(i2_potential, root=0)
         d2_eval = comm.bcast(d2_eval, root=0)
+    
+    if pick_seed_with != 'group':
+        lmps.command(f'undump fix_dump')
+    lmps.command(f'undump dump1')
+
     return i2_potential, d2_eval
 
 

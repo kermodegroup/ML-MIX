@@ -2,8 +2,8 @@ import ase
 import ase.io
 from ase.build import bulk
 
-def build_struct(elements, n=10, rank=0,path='./'):
-    struct = bulk('H', 'fcc', a=3.0, cubic=True)
+def build_struct(elements, n=10, rank=0,path='./',structure='fcc',a=3.0):
+    struct = bulk('H', structure, a=a, cubic=True)
     struct *= n
 
     elements_str = '-'.join(elements)

@@ -6,5 +6,9 @@
         "coeff_params": "./potentials/EAM/AlCu.eam.alloy Al Cu"
     },
     "elements": ["Al", "Cu"],
-    "ID": "EAM/alloy"
+    "ID": "EAM/alloy",
+    "structure":"X",
+    "a":"X",
+    "cutoff": "6.01"
+
 }

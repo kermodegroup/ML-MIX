@@ -6,5 +6,9 @@
         "coeff_params": "./potentials/EAM/FeCr.cdeam Fe Cr"
     },
     "elements": ["Fe", "Cr"],
-    "ID": "EAM/cd"
+    "ID": "EAM/cd",
+    "structure":"X",
+    "a":"X",
+    "cutoff": "6.01"
+
 }
