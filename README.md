@@ -19,9 +19,14 @@ The accompanying paper on ML-MIX can be found here: [arXiv:2502.19081](https://a
 
 All the code associated with this paper is included in this repository, in `potential_fitting/`, `case_studies/` and `ancillary_studies/`, however the GitHub version is incomplete, as it is missing potentials, data and plots. The full version of this repository can be found on Zenodo [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.14920348.svg)](https://doi.org/10.5281/zenodo.14920348)
 
-
-
 More information can be found in the `README` files inside each subdirectory.
+
+⚠️ Bug Warning ⚠️
+In the current version of LAMMPS, if a pair_style tries to build a half neighborlist by pruning a full neighborlist that is built for a fix, it seems to lead to all the forces computed by that pair_style being 0 (atoms have no neighbors). This will be a problem when using ML-MIX if:
+- fix mlml is defined (which needs a full neighborlist)
+- *ALL* other pair_styles defined need half neighborlists (if there is even one pair_style defined which needs a full neighborlist, i.e, ACE, UF3, this isn't a problem as then half neighborlists are constructed correctly.)
+
+We are working to resolve this issue.
 
 ## Setup
 
@@ -109,7 +114,7 @@ pip install .
 <!-- feature error table start -->
 | Potential | Serial | Date and time | Parallel | Date and time |
 | --- | --- | --- | --- | --- |
-| Region building | ✅ | 2025-02-18 16:43:39 | ✅ | 2025-02-17 18:57:25 |
+| Force zeroing | ✅ | 2025-02-27 23:06:23 | N/A | N/A |
 
 <!-- feature error table end -->
 
@@ -118,14 +123,7 @@ pip install .
 <!-- error table start -->
 | Potential | Serial | Date and time | Parallel | Date and time |
 | --- | --- | --- | --- | --- |
-| EAM/fs | ✅ | 2025-02-12 16:31:51 | ✅ | 2025-02-12 16:33:36 |
-| EAM/cd | ✅ | 2025-02-12 16:31:49 | ✅ | 2025-02-12 16:33:35 |
-| LJ | ✅ | 2025-02-12 16:32:23 | ✅ | 2025-02-12 16:33:58 |
-| UF3 | ✅ | 2025-02-12 16:31:47 | ✅ | 2025-02-12 16:33:34 |
-| ACE | ✅ | 2025-02-12 16:32:22 | ✅ | 2025-02-12 16:33:57 |
-| EAM/alloy | ✅ | 2025-02-12 16:31:48 | ✅ | 2025-02-12 16:33:35 |
-| table | ✅ | 2025-02-12 16:31:48 | ✅ | 2025-02-12 16:33:34 |
-| EAM | ✅ | 2025-02-12 16:31:50 | ✅ | 2025-02-12 16:33:35 |
-| EAM/he | ✅ | 2025-02-12 16:31:51 | ✅ | 2025-02-12 16:33:36 |
+| ACE | ✅ | 2025-02-27 23:00:34 | ✅ | 2025-02-27 22:10:36 |
+| UF3 | ✅ | 2025-02-27 22:54:26 | ✅ | 2025-02-27 18:04:19 |
 
 <!-- error table end -->
