@@ -122,6 +122,18 @@ pair_coeff * * eam/alloy 2 AlCu.eam.alloy Al Cu
 </section>
 <section id="description">
 <h2>Description<a class="headerlink" href="#description" title="Link to this heading"></a></h2>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p><strong>Bug Warning</strong>
+In the current version of LAMMPS, if a <cite>pair_style</cite> attempts to build a half neighbor list by pruning a full neighbor list created for a <cite>fix</cite>, it can result in all forces computed by that <cite>pair_style</cite> being zero (atoms effectively have no neighbors).</p>
+<p>This issue affects <cite>ML-MIX</cite> in the following cases:</p>
+<ul class="simple">
+<li><p><cite>fix mlml</cite> is defined (which requires a full neighbor list).</p></li>
+<li><p><em>All</em> other <cite>pair_style</cite> definitions require half neighbor lists.
+(If at least one <cite>pair_style</cite>—such as <cite>ACE</cite> or <cite>UF3</cite>—requires a full neighbor list, then half neighbor lists are constructed correctly, and this issue does not occur.)</p></li>
+</ul>
+<p>We are actively working to resolve this issue.</p>
+</div>
 <p>This documentation should be considered as an extension to the documentation provided for the <em>hybrid/overlay</em> pair style. Everything that is valid for the <em>hybrid/overlay</em> pair style is also valid for the <em>hybrid/overlay/mlml</em> unless stated otherwise here.</p>
 <p>The <em>hybrid/overlay/mlml</em> style is a variant of the <em>hybrid/overlay</em> style which allows for the use of multiple pair styles in one simulation. The <em>hybrid/overlay/mlml</em> style is part of the <em>mlmix</em> package. With the <em>hybrid/overlay/mlml</em> style, different pair styles can be evaluated in different spatial regions of the simulation domain. The full force vector is constructed through force-mixing, a method commonly used in QM/MM simulations.</p>
 <p>The assignment of pair styles to type pairs is made via the <span class="xref std std-doc">pair_coeff</span> command.  For <em>hybrid/overlay/mlml</em>, an additional numeric argument must be specified after the sub-style name, which can either be 1 or 2. This value indicates the <em>mlmix</em> region to which the sub-style should be  applied.</p>

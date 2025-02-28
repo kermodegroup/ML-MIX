@@ -40,6 +40,19 @@ Examples
 Description
 """""""""""
 
+.. warning::
+
+   **Bug Warning**  
+   In the current version of LAMMPS, if a `pair_style` attempts to build a half neighbor list by pruning a full neighbor list created for a `fix`, it can result in all forces computed by that `pair_style` being zero (atoms effectively have no neighbors).
+
+   This issue affects `ML-MIX` in the following cases:
+
+   - `fix mlml` is defined (which requires a full neighbor list).
+   - *All* other `pair_style` definitions require half neighbor lists.  
+     (If at least one `pair_style`—such as `ACE` or `UF3`—requires a full neighbor list, then half neighbor lists are constructed correctly, and this issue does not occur.)
+
+   We are actively working to resolve this issue.
+
 This documentation should be considered as an extension to the documentation provided for the *hybrid/overlay* pair style. Everything that is valid for the *hybrid/overlay* pair style is also valid for the *hybrid/overlay/mlml* unless stated otherwise here.
 
 The *hybrid/overlay/mlml* style is a variant of the *hybrid/overlay* style which allows for the use of multiple pair styles in one simulation. The *hybrid/overlay/mlml* style is part of the *mlmix* package. With the *hybrid/overlay/mlml* style, different pair styles can be evaluated in different spatial regions of the simulation domain. The full force vector is constructed through force-mixing, a method commonly used in QM/MM simulations.

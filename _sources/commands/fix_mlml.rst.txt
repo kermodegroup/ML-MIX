@@ -50,6 +50,19 @@ Examples
 
 Description
 """""""""""
+.. warning::
+
+   **Bug Warning**  
+   In the current version of LAMMPS, if a `pair_style` attempts to build a half neighbor list by pruning a full neighbor list created for a `fix`, it can result in all forces computed by that `pair_style` being zero (atoms effectively have no neighbors).
+
+   This issue affects `ML-MIX` in the following cases:
+
+   - `fix mlml` is defined (which requires a full neighbor list).
+   - *All* other `pair_style` definitions require half neighbor lists.  
+     (If at least one `pair_style`—such as `ACE` or `UF3`—requires a full neighbor list, then half neighbor lists are constructed correctly, and this issue does not occur.)
+
+   We are actively working to resolve this issue.
+
 This fix command is used to create and maintain a set of regions to be evaluated with 2 different pair_styles using the *hybrid/overlay/mlml* pair style in the *mlmix* package. In *hybrid/overlay/mlml*, different pair_styles are labelled either 1 or 2 to indicate evaluation region.
 
 This fix is used to build an evaluation region around user-specified seed atoms. All atoms which lie inside this region are marked for evaluation with pair_style 1, and all atoms outside it are marked for evaluation with potential 2.

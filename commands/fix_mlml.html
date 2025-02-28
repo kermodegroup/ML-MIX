@@ -137,6 +137,18 @@ fix mlml_fix all mlml 1 4.0 6.0 4.0 fix_classify av_ca 100 0.4 inf init_group in
 </section>
 <section id="description">
 <h2>Description<a class="headerlink" href="#description" title="Link to this heading"></a></h2>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p><strong>Bug Warning</strong>
+In the current version of LAMMPS, if a <cite>pair_style</cite> attempts to build a half neighbor list by pruning a full neighbor list created for a <cite>fix</cite>, it can result in all forces computed by that <cite>pair_style</cite> being zero (atoms effectively have no neighbors).</p>
+<p>This issue affects <cite>ML-MIX</cite> in the following cases:</p>
+<ul class="simple">
+<li><p><cite>fix mlml</cite> is defined (which requires a full neighbor list).</p></li>
+<li><p><em>All</em> other <cite>pair_style</cite> definitions require half neighbor lists.
+(If at least one <cite>pair_style</cite>—such as <cite>ACE</cite> or <cite>UF3</cite>—requires a full neighbor list, then half neighbor lists are constructed correctly, and this issue does not occur.)</p></li>
+</ul>
+<p>We are actively working to resolve this issue.</p>
+</div>
 <p>This fix command is used to create and maintain a set of regions to be evaluated with 2 different pair_styles using the <em>hybrid/overlay/mlml</em> pair style in the <em>mlmix</em> package. In <em>hybrid/overlay/mlml</em>, different pair_styles are labelled either 1 or 2 to indicate evaluation region.</p>
 <p>This fix is used to build an evaluation region around user-specified seed atoms. All atoms which lie inside this region are marked for evaluation with pair_style 1, and all atoms outside it are marked for evaluation with potential 2.</p>
 <p>The <em>group</em> keyword can be used to specify a fixed LAMMPS group of seed atoms to build regions around. The <em>fix_classify</em> keyword can be used to specify a different fix with ID <em>fix_id</em> that generates an output per-atom vector, which is used to classify atoms as seed atoms. Atoms which correspond to values between <em>lb</em> and <em>ub</em> of the fix output vector are used as seed atoms. <em>lb</em> can take the value of <em>-inf</em> and <em>ub</em> can take the value of <em>inf</em> to specify no lower or upper bound. <em>nfreq</em> specifies how often the fix output vector is queried. The evaluation frequency of the target fix must evenly divide <em>nfreq</em>.</p>
