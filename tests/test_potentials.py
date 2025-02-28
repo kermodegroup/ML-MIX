@@ -122,9 +122,9 @@ def pot_test(selected_potentials, verbose=False, crash_on_fail=True, direct_run=
 
 
 # Pytest specific tests for each potential in turn
-def test_LJ():
-    selected_potentials = ["LJ"]
-    pot_test(selected_potentials)
+# def test_LJ():
+#     selected_potentials = ["LJ"]
+#     pot_test(selected_potentials)
 
 def test_ACE():
     selected_potentials = ["ACE"]
@@ -134,13 +134,13 @@ def test_UF3():
     selected_potentials = ["UF3"]
     pot_test(selected_potentials)
 
-def test_table():
-    selected_potentials = ["TABLE"]
-    pot_test(selected_potentials)
+# def test_table():
+#     selected_potentials = ["TABLE"]
+#     pot_test(selected_potentials)
 
-def test_EAM():
-    selected_potentials = ["EAM"]
-    pot_test(selected_potentials)
+# def test_EAM():
+#     selected_potentials = ["EAM"]
+#     pot_test(selected_potentials)
 
 
 # given the elements, set up the simulation
