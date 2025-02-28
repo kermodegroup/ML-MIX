@@ -29,13 +29,13 @@ Examples
 
 .. code-block:: LAMMPS
 
-    pair_style hybrid/overlay/mlml lj/cut 2.5 lj/cut 3.5
-    pair_coeff * * lj/cut 1 1 1.0 1.0
-    pair_coeff * * lj/cut 2 2 1.5 0.8
+    pair_style hybrid/overlay/mlml lj/cut 5.0 pace
+    pair_coeff * * lj/cut 2 1.0 1.0
+    pair_coeff * * pace 1 Si.yace Si
 
-    pair_style hybrid/overlay/mlml lj/cut 2.5 eam/alloy
-    pair_coeff * * lj/cut 1 1.0 1.0
-    pair_coeff * * eam/alloy 2 AlCu.eam.alloy Al Cu
+    pair_style hybrid/overlay/mlml lj/cut 5.0 uf3 3
+    pair_coeff * * lj/cut 2 1.0 1.0
+    pair_coeff * * uf3 1 W.uf3 W
 
 Description
 """""""""""
