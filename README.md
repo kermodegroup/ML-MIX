@@ -21,7 +21,7 @@ All the code associated with this paper is included in this repository, in `pote
 
 More information can be found in the `README` files inside each subdirectory.
 
-⚠️ Bug Warning ⚠️
+## ⚠️ Bug Warning ⚠️
 In the current version of LAMMPS, if a pair_style tries to build a half neighborlist by pruning a full neighborlist that is built for a fix, it seems to lead to all the forces computed by that pair_style being 0 (atoms have no neighbors). This will be a problem when using ML-MIX if:
 - fix mlml is defined (which needs a full neighborlist)
 - *ALL* other pair_styles defined need half neighborlists (if there is even one pair_style defined which needs a full neighborlist, i.e, ACE, UF3, this isn't a problem as then half neighborlists are constructed correctly.)
