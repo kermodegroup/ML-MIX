@@ -41,9 +41,10 @@ class FixMLML : public Fix {
   double linear_blend(double *, double *);
   void allocate_regions();
   void update_global_QM_list();
+  class NeighList *list;
 
  protected:
-  class NeighList *list;
+  // class NeighList *list;
   // class NeighList *rqm_list;
   // class NeighList *rbl_list;
   // class NeighList *bw_list;
