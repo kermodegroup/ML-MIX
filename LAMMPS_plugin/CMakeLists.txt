@@ -74,6 +74,9 @@ endif()
 ##########################
 # building the plugins
 
+add_library(arg_store STATIC arg_store.cpp arg_store.h args_manager.cpp args_manager)
+set_target_properties(arg_store PROPERTIES POSITION_INDEPENDENT_CODE ON)
+
 add_library(langevinmlmlplugin MODULE langevinmlmlplugin.cpp fix_langevin_mlml.cpp fix_langevin_mlml.h)
 target_link_libraries(langevinmlmlplugin PRIVATE lammps)
 
@@ -81,7 +84,7 @@ add_library(mlmlplugin MODULE mlmlplugin.cpp fix_mlml.cpp)
 target_link_libraries(mlmlplugin PRIVATE lammps)
 
 add_library(hybridoverlaymlmlplugin MODULE hybridoverlaymlmlplugin.cpp pair_hybrid_overlay_mlml.cpp pair_hybrid_overlay_mlml.h)
-target_link_libraries(hybridoverlaymlmlplugin PRIVATE lammps)
+target_link_libraries(hybridoverlaymlmlplugin PRIVATE lammps arg_store)
 
 set_target_properties(hybridoverlaymlmlplugin mlmlplugin langevinmlmlplugin PROPERTIES PREFIX "" SUFFIX ".so")
 
