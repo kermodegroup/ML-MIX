@@ -31,6 +31,9 @@
 #include <cstring>
 #include <iostream>
 
+#include <map>
+#include <string>
+
 using namespace LAMMPS_NS;
 
 /* ---------------------------------------------------------------------- */
@@ -44,6 +47,8 @@ PairHybridOverlayMLML::PairHybridOverlayMLML(LAMMPS *lmp) : PairHybridOverlay(lm
   zero_flag = 0;
   last_ntot = -1;
   last_nlocal = -1;
+  style_counter = 0;
+  store_args = true;
 }
 
 PairHybridOverlayMLML::~PairHybridOverlayMLML() {
@@ -104,6 +109,7 @@ void PairHybridOverlayMLML::allocate_mem(){
   memory->create(f_copy, ntot, 3, "pair:f_copy");
   memory->create(pot_eval_arr, nstyles, "pair:pot_eval_arr");
   memory->create(f_summed, 3, "pair:f_summed");
+
   resize_arrays();
   if (respa_enable == 1) {
     error->warning(FLERR,"PairHybridOverlayMLML does not currently support RESPA, disabling");
@@ -117,6 +123,13 @@ void PairHybridOverlayMLML::allocate_mem(){
 
 void PairHybridOverlayMLML::coeff(int narg, char **arg)
 {
+  if (store_args){
+    style_counter++;
+    std::string style_counter_str = std::to_string(style_counter);
+    if (lmp->comm->me == 0) std::cout<<"Storing args for style: "<<style_counter_str<<std::endl;
+    manager.storeArgs(style_counter_str, narg, arg);
+  }
+
   if (narg < 3) error->all(FLERR,"Incorrect args for pair coefficients");
   if (!allocated) allocate_mem();
 
@@ -173,7 +186,7 @@ void PairHybridOverlayMLML::coeff(int narg, char **arg)
   // invoke sub-style coeff() starting with 1st remaining arg
 
   if (!none) styles[m]->coeff(narg-2-multflag,arg+2+multflag);
-
+  
   // set setflag and which type pairs map to which sub-style
   // if sub-style is none: set hybrid subflag, wipe out map
   // else: set hybrid setflag & map only if substyle setflag is set
@@ -211,7 +224,19 @@ void PairHybridOverlayMLML::compute(int eflag, int vflag)
   NeighList *list_m;
   int* ilist;
   bigint natoms = atom->natoms;
+  bigint current_timestep = update->ntimestep;
   
+  if (current_timestep == 60){
+    // invoke all coeff functions again
+    for (i = 1; i < nstyles+1; i++){
+      std::string style_counter_str = std::to_string(i);
+      StoredArgs args = manager.getArgs(style_counter_str);
+      char **pargs = args.toArgArray();
+      store_args=false;
+      if (lmp->comm->me == 0) std::cout<<"reloading pair_coeffs"<<std::endl;
+      coeff(args.nargs, pargs);
+    }
+  }
   resize_arrays();
   
   // get the i2_potential and d2_eval properties per atom
