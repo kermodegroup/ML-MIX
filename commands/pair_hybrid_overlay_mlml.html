@@ -117,6 +117,12 @@ pair_coeff * * pace 1 Si.yace Si
 pair_style hybrid/overlay/mlml lj/cut 5.0 uf3 3
 pair_coeff * * lj/cut 2 1.0 1.0
 pair_coeff * * uf3 1 W.uf3 W
+
+pair_style hybrid/overlay/mlml pace pace table spline 5000 table spline 5000
+pair_coeff * * pace 1 1 expensive_Si_ACE.yace Si
+pair_coeff 1 1 table 1 1 expensive_Si_ACE_pairpot.table Si_Si
+pair_coeff * * pace 2 2 cheap_Si_ACE.yace Si
+pair_coeff 1 1 table 2 2 cheap_Si_ACE_pairpot.table Si_Si
 </pre></div>
 </div>
 </section>
