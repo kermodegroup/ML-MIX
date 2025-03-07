@@ -49,6 +49,10 @@ class PairHybridOverlayMLML : public PairHybridOverlay {
   int last_nlocal;
   int style_counter;
   bool store_args;
+  bool on_fly_flag;
+  int fit_pot_tstep;
+  char *path_to_mlmix;
+  char *path_to_config;
 
 
 

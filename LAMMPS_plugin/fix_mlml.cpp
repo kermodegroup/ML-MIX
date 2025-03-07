@@ -159,7 +159,7 @@ FixMLML::FixMLML(LAMMPS *lmp, int narg, char **arg) : Fix(lmp, narg, arg)
       if (iarg + 3 > narg) error->all(FLERR,"Illegal fix mlml on-fly command");
 
       // first argument is a timestep
-      fit_pot_tstep = utils::numeric(FLERR,arg[iarg+1],false,lmp);
+      fit_pot_tstep = utils::inumeric(FLERR,arg[iarg+1],false,lmp);
 
       // next two arguments are paths
       path_to_mlmix = utils::strdup(arg[iarg+2]);

@@ -48,7 +48,7 @@ PairHybridOverlayMLML::PairHybridOverlayMLML(LAMMPS *lmp) : PairHybridOverlay(lm
   last_ntot = -1;
   last_nlocal = -1;
   style_counter = 0;
-  store_args = true;
+  on_fly_flag = false;
 }
 
 PairHybridOverlayMLML::~PairHybridOverlayMLML() {
@@ -80,22 +80,37 @@ void PairHybridOverlayMLML::resize_arrays(){
 
 
 void PairHybridOverlayMLML::settings(int narg, char **arg){
-  // check if the first argument is "zero"
-  if (strcmp(arg[0], "zero") == 0){
-    if (strcmp(arg[1], "yes") == 0){
-      zero_flag = 1;
-    } else if (strcmp(arg[1], "no") == 0){
-      zero_flag = 0;
+  zero_flag = 0;
+  on_fly_flag = false;
+
+  for (int i = 0; i < narg; i++) {
+    if (strcmp(arg[i], "zero") == 0) {
+        zero_flag = 1;
+    } else if (strcmp(arg[i], "on-fly") == 0) {
+        // first argument is a timestep
+        fit_pot_tstep = utils::inumeric(FLERR,arg[i+1],false,lmp);
+
+        // next two arguments are paths
+        path_to_mlmix = utils::strdup(arg[i+2]);
+        path_to_config = utils::strdup(arg[i+3]);
+        on_fly_flag=true;
     } else {
-      error->all(FLERR, "Invalid argument for zero flag: %s", arg[1]);
+        break;
     }
-    narg -= 2;
-    for (int i = 0; i < narg; i++){
-      arg[i] = arg[i+2];
-    }
-  }else{
-    zero_flag = 0;
   }
+  if (zero_flag){
+    narg -= 1;
+    for (int i = 0; i < narg; i++){
+      arg[i] = arg[i+1];
+    }
+  }
+  if (on_fly_flag){
+    narg -= 4;
+    for (int i = 0; i < narg; i++){
+      arg[i] = arg[i+4];
+    }
+  }
+
   PairHybridOverlay::PairHybrid::settings(narg, arg);
 }
 
@@ -123,7 +138,7 @@ void PairHybridOverlayMLML::allocate_mem(){
 
 void PairHybridOverlayMLML::coeff(int narg, char **arg)
 {
-  if (store_args){
+  if (on_fly_flag){
     style_counter++;
     std::string style_counter_str = std::to_string(style_counter);
     if (lmp->comm->me == 0) std::cout<<"Storing args for style: "<<style_counter_str<<std::endl;
@@ -226,14 +241,15 @@ void PairHybridOverlayMLML::compute(int eflag, int vflag)
   bigint natoms = atom->natoms;
   bigint current_timestep = update->ntimestep;
   
-  if (current_timestep == 60){
+  if ((current_timestep == fit_pot_tstep+1) && (on_fly_flag)){
     // invoke all coeff functions again
+    if (lmp->comm->me == 0) std::cout<<"reloading pair_coeffs"<<std::endl;
     for (i = 1; i < nstyles+1; i++){
       std::string style_counter_str = std::to_string(i);
       StoredArgs args = manager.getArgs(style_counter_str);
       char **pargs = args.toArgArray();
-      store_args=false;
-      if (lmp->comm->me == 0) std::cout<<"reloading pair_coeffs"<<std::endl;
+      on_fly_flag=false;
+      if (lmp->comm->me == 0) std::cout<<"reloading set "<< i <<std::endl;
       coeff(args.nargs, pargs);
     }
   }
