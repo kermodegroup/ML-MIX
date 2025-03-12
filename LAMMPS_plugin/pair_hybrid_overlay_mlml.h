@@ -32,6 +32,8 @@ class PairHybridOverlayMLML : public PairHybridOverlay {
   void compute(int, int) override;
   void allocate_mem();
   void resize_arrays();
+  void modify_neighbor_list(int, int **);
+  void restore_neighbor_list(int);
 
   ArgsManager manager;
 
