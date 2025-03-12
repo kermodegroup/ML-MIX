@@ -99,7 +99,6 @@ void PairHybridOverlayMLML::allocate_mem(){
   int nlocal = atom->nlocal;
   int nghost = atom->nghost;
   int ntot = nlocal + nghost;
-  memory->create(mace_flag, nstyles, "pair:mace_flag");
   memory->create(ilist_copy, nlocal, "pair:ilist_copy");
   memory->create(ilist_temp, nlocal, "pair:ilist_temp");
   memory->create(f_copy, ntot, 3, "pair:f_copy");
@@ -145,11 +144,6 @@ void PairHybridOverlayMLML::coeff(int narg, char **arg)
     }
   }
 
-  if(strcmp(keywords[m], "symmetrix/mace") == 0){
-    mace_flag[m] = 1;
-  } else {
-    mace_flag[m] = 0;
-  }
 
   // once multiples dealt with, set pot eval arr
   pot_eval_arr[m] = utils::inumeric(FLERR,arg[3],false,lmp);

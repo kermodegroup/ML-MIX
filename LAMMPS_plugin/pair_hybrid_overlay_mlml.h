@@ -33,10 +33,8 @@ class PairHybridOverlayMLML : public PairHybridOverlay {
   void resize_arrays();
   void modify_neighbor_list(int, int **);
   void restore_neighbor_list(int);
-  void restore_neighbor_list_mace(int);
 
  protected:
-  int* mace_flag;
   int* pot_eval_arr;
   double** f_copy;
   double* f_summed;
