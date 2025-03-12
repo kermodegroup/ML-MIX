@@ -144,6 +144,7 @@ void PairHybridOverlayMLML::coeff(int narg, char **arg)
     }
   }
 
+
   // once multiples dealt with, set pot eval arr
   pot_eval_arr[m] = utils::inumeric(FLERR,arg[3],false,lmp);
   if (pot_eval_arr[m] < 1) error->all(FLERR,"Index for potential evaluation must be greater than 1");
@@ -208,8 +209,6 @@ void PairHybridOverlayMLML::compute(int eflag, int vflag)
   double** f = atom->f;
   int nlocal = atom->nlocal;
   int nghost = atom->nghost;
-  NeighList *list_m;
-  int* ilist;
   bigint natoms = atom->natoms;
   
   resize_arrays();
@@ -261,17 +260,8 @@ void PairHybridOverlayMLML::compute(int eflag, int vflag)
 
     // invoke compute() unless compute flag is turned off or
     // outerflag is set and sub-natomsstyle has a compute_outer() method
-    list_m = styles[m]->list;
-    ilist = list_m->ilist;
-    inum_copy = list_m->inum;
-    inum_new = 0;
+    modify_neighbor_list(m, i2_potential);
 
-    // manually copy the data over
-    for (int i = 0; i < inum_copy; i++) {
-      ilist_copy[i] = ilist[i];
-    }
-
-    // print ilist pointer address
     // copy forces
     for (int i = 0; i < nlocal+nghost; i++) {
       f_copy[i][0] = f[i][0];
@@ -286,20 +276,6 @@ void PairHybridOverlayMLML::compute(int eflag, int vflag)
       f[i][2] = 0.0;
     }
 
-
-    for (i = 0; i < nlocal; i++){
-      ilist_temp[i] = 0;
-      if (i2_potential[i][pot_eval_arr[m]-1] == 1){
-        ilist_temp[inum_new] = ilist[i];
-        inum_new++;
-      }
-    }
-
-
-    list_m->inum = inum_new;
-    for (int i = 0; i < nlocal; i++) {
-      ilist[i] = ilist_temp[i];
-    }
     
     if (styles[m]->compute_flag == 0) continue;
     if (outerflag && styles[m]->respa_enable)
@@ -319,11 +295,7 @@ void PairHybridOverlayMLML::compute(int eflag, int vflag)
     }
 
     // restore neigh list
-    list_m->inum = inum_copy;
-    // restore ilist
-    for (int i = 0; i < nlocal; i++) {
-      ilist[i] = ilist_copy[i];
-    }
+    restore_neighbor_list(m);
 
     restore_special(saved_special);
 
@@ -402,4 +374,42 @@ void PairHybridOverlayMLML::compute(int eflag, int vflag)
   delete[] saved_special;
 
   if (vflag_fdotr) virial_fdotr_compute();
+}
+
+
+void PairHybridOverlayMLML::modify_neighbor_list(int m, int **i2_potential){
+  int nlocal = atom->nlocal;
+  NeighList *list_m = styles[m]->list;
+  int *ilist = list_m->ilist;
+  inum_copy = list_m->inum;
+  inum_new = 0;
+
+  // manually copy the data over
+  for (int i = 0; i < inum_copy; i++) {
+    ilist_copy[i] = ilist[i];
+  }
+
+  for (int i = 0; i < nlocal; i++){
+    ilist_temp[i] = 0;
+    if (i2_potential[i][pot_eval_arr[m]-1] == 1){
+      ilist_temp[inum_new] = ilist[i];
+      inum_new++;
+    }
+  }
+
+  list_m->inum = inum_new;
+  for (int i = 0; i < nlocal; i++) {
+    ilist[i] = ilist_temp[i];
+  }
+}
+
+void PairHybridOverlayMLML::restore_neighbor_list(int m){
+  int nlocal = atom->nlocal;
+  NeighList *list_m = styles[m]->list;
+  int *ilist = list_m->ilist;
+  list_m->inum = inum_copy;
+  // restore ilist
+  for (int i = 0; i < nlocal; i++) {
+    ilist[i] = ilist_copy[i];
+  }
 }
