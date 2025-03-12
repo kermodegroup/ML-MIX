@@ -2,3 +2,7 @@
 	path = external/uf3
 	url = https://github.com/Fraser-Birks/uf3.git
 	branch = UltraFastFeaturization
+[submodule "external/ACEpotentials.jl"]
+	path = external/ACEpotentials.jl
+	url = https://github.com/Fraser-Birks/ACEpotentials.jl.git
+	branch = 0.6.x_restored

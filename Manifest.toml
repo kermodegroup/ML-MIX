@@ -54,10 +54,10 @@ version = "0.1.17"
     Molly = "aa0f7f06-fcc0-5ec4-a7f3-a573f33f9c4c"
 
 [[deps.ACEpotentials]]
-deps = ["ACE1", "ACE1x", "ACEfit", "ACEmd", "ExtXYZ", "Interpolations", "JuLIP", "LazyArtifacts", "LinearAlgebra", "OrderedCollections", "Pkg", "PrettyTables", "Random", "Reexport", "StaticArrays", "UltraFastACE", "YAML"]
-git-tree-sha1 = "7aa4e471bd13052240cc551adb61729a24a20042"
+deps = ["ACE1", "ACE1x", "ACEfit", "ACEmd", "ExtXYZ", "Interpolations", "JuLIP", "LazyArtifacts", "LinearAlgebra", "OrderedCollections", "Pkg", "PrettyTables", "Random", "Reexport", "StaticArrays", "StatsBase", "UltraFastACE", "YAML"]
+path = "external/ACEpotentials.jl"
 uuid = "3b96b61c-0fcc-4693-95ed-1ef9f35fcc53"
-version = "0.6.9"
+version = "0.6.10"
 
 [[deps.ADTypes]]
 git-tree-sha1 = "016833eb52ba2d6bea9fcb50ca295980e728ee24"
