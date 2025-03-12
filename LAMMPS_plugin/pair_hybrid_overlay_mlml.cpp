@@ -266,11 +266,7 @@ void PairHybridOverlayMLML::compute(int eflag, int vflag)
 
     // invoke compute() unless compute flag is turned off or
     // outerflag is set and sub-natomsstyle has a compute_outer() method
-    if (mace_flag[m] != 1){
-      modify_neighbor_list(m, i2_potential);
-    } else {
-      modify_neighbor_list_mace(m, i2_potential);
-    }
+    modify_neighbor_list(m, i2_potential);
 
     // copy forces
     for (int i = 0; i < nlocal+nghost; i++) {
@@ -305,11 +301,7 @@ void PairHybridOverlayMLML::compute(int eflag, int vflag)
     }
 
     // restore neigh list
-    if (mace_flag[m] != 1){
-      restore_neighbor_list(m);
-    } else {
-      restore_neighbor_list_mace(m);
-    }
+    restore_neighbor_list(m);
 
     restore_special(saved_special);
 
@@ -426,12 +418,4 @@ void PairHybridOverlayMLML::restore_neighbor_list(int m){
   for (int i = 0; i < nlocal; i++) {
     ilist[i] = ilist_copy[i];
   }
-}
-
-void PairHybridOverlayMLML::modify_neighbor_list_mace(int m, int **i2_potential){
-  return;
-}
-
-void PairHybridOverlayMLML::restore_neighbor_list_mace(int m){
-  return;
 }

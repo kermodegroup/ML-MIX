@@ -32,7 +32,6 @@ class PairHybridOverlayMLML : public PairHybridOverlay {
   void allocate_mem();
   void resize_arrays();
   void modify_neighbor_list(int, int **);
-  void modify_neighbor_list_mace(int, int **);
   void restore_neighbor_list(int);
   void restore_neighbor_list_mace(int);
 
