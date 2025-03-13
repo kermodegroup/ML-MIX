@@ -100,7 +100,7 @@ FixMLML::FixMLML(LAMMPS *lmp, int narg, char **arg) : Fix(lmp, narg, arg)
     if (narg > 9) check_save_mask = true;
   // classify using the output of a different fix
   } else if (strcmp(arg[iarg], "fix_classify") == 0){
-    if (iarg + 5 > narg) error->all(FLERR,"Illegal fix mlml fix_classify command");
+    // if (iarg + 5 > narg) error->all(FLERR,"Illegal fix mlml fix_classify command");
     fix_id = utils::strdup(arg[iarg+1]);
     // error checking for fix is done when it is needed
 
@@ -137,12 +137,14 @@ FixMLML::FixMLML(LAMMPS *lmp, int narg, char **arg) : Fix(lmp, narg, arg)
         iarg = 14;
         if (narg > 14) check_save_mask = true;
       }else{
-        error->warning(FLERR, "FixMLML: fix_classify command does not have an initialisation group, all atoms will be evaluated with potential 1 until first fix evaluation");
-        all_pot_one_flag = true;
-        first_set = false;
-        iarg = 12;
-        if (narg > 12) check_save_mask = true;
+        check_save_mask = true;
       }
+    }else{
+      error->warning(FLERR, "FixMLML: fix_classify command does not have an initialisation group, all atoms will be evaluated with potential 1 until first fix evaluation");
+      all_pot_one_flag = true;
+      first_set = false;
+      iarg = 12;
+      if (narg > 12) check_save_mask = true;
     }
   } else error->all(FLERR,"Illegal fix mlml command");
 

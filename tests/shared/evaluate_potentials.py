@@ -105,7 +105,7 @@ def run_test(property_dict_1, property_dict_2, verbose=False, zero=False, comm=N
         
         lmps.command(f'fix mlml_fix all mlml 1 {r_core} {r_buff} {r_blend} group seed_atoms')
         if zero:
-            lmps.command(f'pair_style hybrid/overlay/mlml zero yes {cmds_1["style_name"]} {cmds_1["style_params"]} {cmds_2["style_name"]} {cmds_2["style_params"]}')
+            lmps.command(f'pair_style hybrid/overlay/mlml zero {cmds_1["style_name"]} {cmds_1["style_params"]} {cmds_2["style_name"]} {cmds_2["style_params"]}')
         else:
             lmps.command(f'pair_style hybrid/overlay/mlml {cmds_1["style_name"]} {cmds_1["style_params"]} {cmds_2["style_name"]} {cmds_2["style_params"]}')
             
