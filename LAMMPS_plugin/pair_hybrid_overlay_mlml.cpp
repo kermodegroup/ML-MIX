@@ -94,6 +94,7 @@ void PairHybridOverlayMLML::settings(int narg, char **arg){
         path_to_mlmix = utils::strdup(arg[i+2]);
         path_to_config = utils::strdup(arg[i+3]);
         on_fly_flag=true;
+        create_blank_potential();
     } else {
         break;
     }
@@ -240,17 +241,19 @@ void PairHybridOverlayMLML::compute(int eflag, int vflag)
   bigint natoms = atom->natoms;
   bigint current_timestep = update->ntimestep;
   
-  if ((current_timestep == fit_pot_tstep+1) && (on_fly_flag)){
+  if ((current_timestep == fit_pot_tstep) && (on_fly_flag)){
+    // fit potentials
+    fit_potentials();
     // invoke all coeff functions again
     if (lmp->comm->me == 0) std::cout<<"reloading pair_coeffs"<<std::endl;
     for (i = 1; i < nstyles+1; i++){
       std::string style_counter_str = std::to_string(i);
       StoredArgs args = manager.getArgs(style_counter_str);
       char **pargs = args.toArgArray();
-      on_fly_flag=false;
       if (lmp->comm->me == 0) std::cout<<"reloading set "<< i <<std::endl;
       coeff(args.nargs, pargs);
     }
+    on_fly_flag = false;
   }
   resize_arrays();
   
@@ -296,26 +299,36 @@ void PairHybridOverlayMLML::compute(int eflag, int vflag)
   }
 
   for (m = 0; m < nstyles; m++) {
-
+    
+    // if we are running on the fly, then skip 2nd style
+    if ((on_fly_flag) && (pot_eval_arr[m] == 2)){
+      continue;
+    } 
     set_special(m);
 
     // invoke compute() unless compute flag is turned off or
     // outerflag is set and sub-natomsstyle has a compute_outer() method
-    modify_neighbor_list(m, i2_potential);
 
-    // copy forces
-    for (int i = 0; i < nlocal+nghost; i++) {
-      f_copy[i][0] = f[i][0];
-      f_copy[i][1] = f[i][1];
-      f_copy[i][2] = f[i][2];
+    // modify neighbor list (if we are not waiting to fit potential on the fly)
+    if (!on_fly_flag){
+      modify_neighbor_list(m, i2_potential);
+      
+      // copy forces
+      for (int i = 0; i < nlocal+nghost; i++) {
+        f_copy[i][0] = f[i][0];
+        f_copy[i][1] = f[i][1];
+        f_copy[i][2] = f[i][2];
+      }
+
+      // zero original forces
+      for (int i = 0; i < nlocal+nghost; i++) {
+        f[i][0] = 0.0;
+        f[i][1] = 0.0;
+        f[i][2] = 0.0;
+      }
+
     }
 
-    // zero original forces
-    for (int i = 0; i < nlocal+nghost; i++) {
-      f[i][0] = 0.0;
-      f[i][1] = 0.0;
-      f[i][2] = 0.0;
-    }
 
     
     if (styles[m]->compute_flag == 0) continue;
@@ -324,19 +337,20 @@ void PairHybridOverlayMLML::compute(int eflag, int vflag)
     else styles[m]->compute(eflag,vflag_substyle);
 
 
-    // restore forces
-    for (int i = 0; i < nlocal+nghost; i++) {
-      f_copy[i][0] += f[i][0] * d2_eval[i][pot_eval_arr[m]-1];
-      f_copy[i][1] += f[i][1] * d2_eval[i][pot_eval_arr[m]-1];
-      f_copy[i][2] += f[i][2] * d2_eval[i][pot_eval_arr[m]-1];
+    // modify forces with d2_eval (only if we are not waiting to fit potential on the fly)
+    if (!on_fly_flag){
+      for (int i = 0; i < nlocal+nghost; i++) {
+        f_copy[i][0] += f[i][0] * d2_eval[i][pot_eval_arr[m]-1];
+        f_copy[i][1] += f[i][1] * d2_eval[i][pot_eval_arr[m]-1];
+        f_copy[i][2] += f[i][2] * d2_eval[i][pot_eval_arr[m]-1];
 
-      f[i][0] = f_copy[i][0];
-      f[i][1] = f_copy[i][1];
-      f[i][2] = f_copy[i][2];
+        f[i][0] = f_copy[i][0];
+        f[i][1] = f_copy[i][1];
+        f[i][2] = f_copy[i][2];
+      }
+      // restore neigh list
+      restore_neighbor_list(m);
     }
-
-    // restore neigh list
-    restore_neighbor_list(m);
 
     restore_special(saved_special);
 
@@ -453,4 +467,50 @@ void PairHybridOverlayMLML::restore_neighbor_list(int m){
   for (int i = 0; i < nlocal; i++) {
     ilist[i] = ilist_copy[i];
   }
+}
+
+void PairHybridOverlayMLML::execute_command(const char *code){
+  int err_code = 0;
+  if (lmp->comm->me == 0) {  // Only rank 0 executes the command
+    int ret_code = std::system(code);
+
+    if (WIFEXITED(ret_code) && WEXITSTATUS(ret_code) != 0) {
+      err_code = 1;
+    }else{
+      err_code = 0;
+    }
+  }
+  // communicate err_code to all processors
+  MPI_Bcast(&err_code, 1, MPI_INT, 0, lmp->world);
+  // crash if err_code non 0
+  if (err_code != 0){
+    const char* err_string = "FixMLML: Command (%s) failed";
+    char err_msg[200];
+    sprintf(err_msg, err_string, code);
+    error->all(FLERR, err_msg);
+  }
+  MPI_Barrier(lmp->world);
+}
+
+void PairHybridOverlayMLML::create_blank_potential() {
+  std::string path_to_mlmix_str = std::string(path_to_mlmix);
+  std::string path_to_config_str = std::string(path_to_config);
+  std::string julia_command = "julia " + path_to_mlmix_str + "/mix-on-the-fly/gen_blank_ace.jl " + path_to_mlmix_str + " " + path_to_config_str;
+  if (lmp->comm->me == 0) std::cout << julia_command << std::endl;
+  execute_command(julia_command.c_str());
+}
+
+void PairHybridOverlayMLML::fit_potentials() {
+  std::string path_to_mlmix_str = std::string(path_to_mlmix);
+  std::string path_to_config_str = std::string(path_to_config);
+  std::string subprocess_command = "['python', '" + path_to_mlmix_str + "/mix-on-the-fly/modify_dump_otf.py', '" + path_to_config_str + "']";
+  std::string python_command = "python -c \"import subprocess; subprocess.run(" + subprocess_command + ", check=True)\"";
+
+  if (lmp->comm->me == 0) std::cout << python_command << std::endl;
+  execute_command(python_command.c_str());  // Convert std::string to const char*
+
+  std::string julia_command = "julia " + path_to_mlmix_str + "/mix-on-the-fly/fit_ace_otf.jl " + path_to_mlmix_str + " " + path_to_config_str;
+  
+  if (lmp->comm->me == 0) std::cout << julia_command << std::endl;
+  execute_command(julia_command.c_str());
 }

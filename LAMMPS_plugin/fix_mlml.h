@@ -41,11 +41,9 @@ class FixMLML : public Fix {
   double linear_blend(double *, double *);
   void allocate_regions();
   void update_global_QM_list();
-  void fit_potentials();
-  void execute_command(const char *);
   void grow_per_atom_vector(int);
   class NeighList *list;
-  bool pre_fit;
+  bool save_mask;
 
  protected:
   // class NeighList *list;
