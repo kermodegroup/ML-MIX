@@ -40,7 +40,7 @@ git clone --recurse-submodules https://github.com/kermodegroup/ML-MIX.git
 ### Installing LAMMPS
 To compile the ML-MIX LAMMPS plugin, you first need to clone and build LAMMPS. LAMMPS can be cloned directly with
 ```
-git clone -b release https://github.com/lammps/lammps.git mylammps
+git clone -b release https://github.com/lammps/lammps.git lammps
 ```
 
 An example cmake LAMMPS build script is provided in `build_scripts/example_lammps_build_script.sh` which includes all required plugins.
@@ -114,7 +114,8 @@ pip install .
 <!-- feature error table start -->
 | Potential | Serial | Date and time | Parallel | Date and time |
 | --- | --- | --- | --- | --- |
-| Force zeroing | ✅ | 2025-02-27 23:06:23 | N/A | N/A |
+| Force zeroing | ✅ | 2025-03-13 15:54:08 | N/A | N/A |
+| Region building | ✅ | 2025-03-13 15:22:36 | N/A | N/A |
 
 <!-- feature error table end -->
 
@@ -123,7 +124,9 @@ pip install .
 <!-- error table start -->
 | Potential | Serial | Date and time | Parallel | Date and time |
 | --- | --- | --- | --- | --- |
-| ACE | ✅ | 2025-02-27 23:00:34 | ✅ | 2025-02-27 22:10:36 |
-| UF3 | ✅ | 2025-02-27 22:54:26 | ✅ | 2025-02-27 18:04:19 |
+| ACE | ✅ | 2025-03-13 15:48:44 | ✅ | 2025-03-12 12:12:01 |
+| table | ✅ | 2025-03-12 11:51:38 | ✅ | 2025-02-27 22:10:00 |
+| UF3 | ✅ | 2025-03-13 15:48:11 | ✅ | 2025-03-12 12:12:02 |
+| MACE | ✅ | 2025-03-12 12:09:03 | ✅ | 2025-03-12 12:11:34 |
 
 <!-- error table end -->
