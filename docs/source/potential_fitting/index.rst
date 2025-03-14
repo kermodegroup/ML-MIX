@@ -8,4 +8,5 @@ This section talks through one possible way to fit potentials for use with the M
    :maxdepth: 1
 
    constrained_linear_fit
+   on_the_fly
    examples

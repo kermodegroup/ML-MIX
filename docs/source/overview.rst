@@ -18,8 +18,13 @@ Why Use This Package?
 - In the realm of materials science, it is common to have systems in which regions of complex chemistry (where highly accurate potentials are required) are surrounded by large regions of simple chemistry (where a simpler potential is sufficient).
 - This package allows users to mix together different pair_styles in different spatial regions of the simulation domain, allowing for the use of expensive, accurate potentials only where they are needed.
 - It does this in a way which does not edit the pair_styles themselves, minimises overhead and is compatible with built in LAMMPS parallelisation strategies.
-- Selecting which atoms to evaluate expensively can be done two ways; either by specifying an immutable group of seed atoms, or by using the output vector of a different fix to classify. Through the fix implementation, a user can use built in LAMMPS criteria for classification (e.g, coordination analysis, common neighbour analysis) or could straightforwardly plug in their own custom fix.
+
+Key Features
+------------
+
+- Flexible selection of expensive atoms - can be done either by specifying an immutable group of seed atoms, or by using the output vector of a different fix to classify. Fix implementation allows user to flexibly classify regions, either using built in LAMMPS criteria for classification (e.g, coordination analysis, common neighbour analysis) or by straightforwardly plugging in their own custom fix.
 - Auxillary code is provided to allow for the fitting of constrained, lightweight linear ACE and UF3 models to approximate an expensive potential in a small region of potential energy space.
+- Cheap linear ACE potentials can also be generated during a simulation, fitting to the expensive potential on-the-fly.
 
 How it works: Data flow
 -----------------------
