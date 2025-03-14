@@ -2,7 +2,7 @@
 
 julia_version = "1.10.4"
 manifest_format = "2.0"
-project_hash = "fdf7a8c6e3c46ab51931b87fb86a67490f864428"
+project_hash = "e0a664e71cbe2817bb995f99efb979ec8c6cb871"
 
 [[deps.ACE1]]
 deps = ["ACEbase", "BenchmarkTools", "Combinatorics", "ForwardDiff", "InteractiveUtils", "Interpolations", "JuLIP", "LinearAlgebra", "NeighbourLists", "Parameters", "Pkg", "Printf", "QuadGK", "Random", "Reexport", "Roots", "SparseArrays", "StaticArrays", "Test"]
@@ -54,10 +54,10 @@ version = "0.1.17"
     Molly = "aa0f7f06-fcc0-5ec4-a7f3-a573f33f9c4c"
 
 [[deps.ACEpotentials]]
-deps = ["ACE1", "ACE1x", "ACEfit", "ACEmd", "ExtXYZ", "Interpolations", "JuLIP", "LazyArtifacts", "LinearAlgebra", "OrderedCollections", "Pkg", "PrettyTables", "Random", "Reexport", "StaticArrays", "UltraFastACE", "YAML"]
-git-tree-sha1 = "7aa4e471bd13052240cc551adb61729a24a20042"
+deps = ["ACE1", "ACE1x", "ACEfit", "ACEmd", "ExtXYZ", "Interpolations", "JuLIP", "LazyArtifacts", "LinearAlgebra", "OrderedCollections", "Pkg", "PrettyTables", "Random", "Reexport", "StaticArrays", "StatsBase", "UltraFastACE", "YAML"]
+path = "external/ACEpotentials.jl"
 uuid = "3b96b61c-0fcc-4693-95ed-1ef9f35fcc53"
-version = "0.6.9"
+version = "0.6.10"
 
 [[deps.ADTypes]]
 git-tree-sha1 = "016833eb52ba2d6bea9fcb50ca295980e728ee24"
@@ -2230,9 +2230,9 @@ version = "1.5.1+0"
 
 [[deps.YAML]]
 deps = ["Base64", "Dates", "Printf", "StringEncodings"]
-git-tree-sha1 = "dea63ff72079443240fbd013ba006bcbc8a9ac00"
+git-tree-sha1 = "b46894beba6c05cd185d174654479aaec09ea6b1"
 uuid = "ddb6d928-2868-570f-bddf-ab3f9cf99eb6"
-version = "0.4.12"
+version = "0.4.13"
 
 [[deps.ZipArchives]]
 deps = ["ArgCheck", "CodecInflate64", "CodecZlib", "InputBuffers", "PrecompileTools", "TranscodingStreams", "Zlib_jll"]

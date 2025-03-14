@@ -41,9 +41,12 @@ class FixMLML : public Fix {
   double linear_blend(double *, double *);
   void allocate_regions();
   void update_global_QM_list();
+  void grow_per_atom_vector(int);
+  class NeighList *list;
+  bool save_mask;
 
  protected:
-  class NeighList *list;
+  // class NeighList *list;
   // class NeighList *rqm_list;
   // class NeighList *rbl_list;
   // class NeighList *bw_list;
@@ -54,8 +57,11 @@ class FixMLML : public Fix {
 
   char *group2;
   char *fix_id;
+  char *path_to_mlmix;
+  char *path_to_config;
   int igroup2, group2bit;
   int nfreq;
+  int fit_pot_tstep;
 
   double lb, ub;
 
@@ -77,13 +83,3 @@ class FixMLML : public Fix {
 }    // namespace LAMMPS_NS
 
 #endif
-
-    /* ERROR/WARNING messages:
-
-E: Illegal ... command
-
-Self-explanatory.  Check the input script syntax and compare to the
-documentation for the command.  You can use -echo screen as a
-command-line option when running LAMMPS to see the offending line.
-
-*/

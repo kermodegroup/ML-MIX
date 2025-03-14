@@ -50,6 +50,19 @@ FixMLML::FixMLML(LAMMPS *lmp, int narg, char **arg) : Fix(lmp, narg, arg)
   prev_nlocal = -1;
   prev_qm_tot = -1;
   first_set = true;
+  save_mask = false;
+  peratom_flag = 1;
+  size_peratom_cols = 0;
+
+  FixMLML::grow_per_atom_vector(atom->nmax);
+  atom->add_callback(Atom::GROW);
+  int nlocal = atom->nlocal;
+
+  for (int i=0; i<nlocal; i++){
+    vector_atom[i] = 0.0;
+  }
+
+  bool check_save_mask = false;
 
   // fix 1 all mlml nevery rqm bw rblend type
   if (narg < 9) utils::missing_cmd_args(FLERR, "fix mlml", error);
@@ -77,17 +90,17 @@ FixMLML::FixMLML(LAMMPS *lmp, int narg, char **arg) : Fix(lmp, narg, arg)
 
   int iarg = 7;
   if (strcmp(arg[iarg],"group") == 0) {
-    if (iarg + 2 != narg) error->all(FLERR,"Illegal fix mlml group command");
     group2 = utils::strdup(arg[iarg+1]);
     igroup2 = group->find(arg[iarg+1]);
     if (igroup2 == -1)
       error->all(FLERR,"Group ID does not exist");
     group2bit = group->bitmask[igroup2];    
     gflag = true;
-  
+    iarg = 9;
+    if (narg > 9) check_save_mask = true;
   // classify using the output of a different fix
   } else if (strcmp(arg[iarg], "fix_classify") == 0){
-    if (iarg + 5 > narg) error->all(FLERR,"Illegal fix mlml fix_classify command");
+    // if (iarg + 5 > narg) error->all(FLERR,"Illegal fix mlml fix_classify command");
     fix_id = utils::strdup(arg[iarg+1]);
     // error checking for fix is done when it is needed
 
@@ -112,24 +125,38 @@ FixMLML::FixMLML(LAMMPS *lmp, int narg, char **arg) : Fix(lmp, narg, arg)
     }
     fflag=true;
     if (narg>12){
-      if (narg == 14){
-        // now check if we are using an initialisation group
-        if (strcmp(arg[iarg+5], "init_group")==0){
-          init_flag=true;
-          first_set=false;
-          group2 = utils::strdup(arg[iarg+6]);
-          igroup2 = group->find(group2);
-          if (igroup2 == -1)
-            error->all(FLERR,"Group ID does not exist");
-          group2bit = group->bitmask[igroup2];
-        }else error->all(FLERR,"Illegal fix mlml fix_classify command");
-      }else error->all(FLERR,"Illegal fix mlml fix_classify command");
+      // now check if we are using an initialisation group
+      if (strcmp(arg[iarg+5], "init_group")==0){
+        init_flag=true;
+        first_set=false;
+        group2 = utils::strdup(arg[iarg+6]);
+        igroup2 = group->find(group2);
+        if (igroup2 == -1)
+          error->all(FLERR,"Group ID does not exist");
+        group2bit = group->bitmask[igroup2];
+        iarg = 14;
+        if (narg > 14) check_save_mask = true;
+      }else{
+        check_save_mask = true;
+      }
     }else{
       error->warning(FLERR, "FixMLML: fix_classify command does not have an initialisation group, all atoms will be evaluated with potential 1 until first fix evaluation");
       all_pot_one_flag = true;
       first_set = false;
+      iarg = 12;
+      if (narg > 12) check_save_mask = true;
     }
   } else error->all(FLERR,"Illegal fix mlml command");
+
+  if (check_save_mask){
+    if (strcmp(arg[iarg], "output-mask") == 0){
+      // check there are no more arguments
+      if (iarg > narg) error->all(FLERR,"Illegal fix mlml on-fly command");
+      save_mask=true;
+    }else{
+      error->all(FLERR,"Illegal fix mlml command");
+    }
+  }
 
 }
 
@@ -224,6 +251,12 @@ void FixMLML::end_of_step()
 {
   // at the end of the timestep this is called
   this->allocate_regions();
+}
+
+
+void FixMLML::grow_per_atom_vector(int nmax)
+{
+  memory->grow(vector_atom, nmax, "FixMLML: vector_atom");
 }
 
 
@@ -442,6 +475,19 @@ void FixMLML::allocate_regions(){
   }
   // now forward comm to ensure d2_eval is correct on ghost atoms
   comm->forward_comm(this);
+
+
+  for (int i=0; i<nlocal; i++){
+    vector_atom[i] = 0.0;
+  }
+
+  if (save_mask){
+    for (int i=0; i<nlocal; i++){
+      if (d2_eval[i][1] > 0.0){
+        vector_atom[i] = 1.0;
+      }
+    }
+  }
 
   // clean up memory
   delete[] core_qm_idx;
