@@ -358,25 +358,47 @@ void PairHybridOverlayMLML::compute(int eflag, int vflag)
     // atom local values are multiplied by d2_eval
 
     if (eflag_global) {
-      eng_vdwl += 0.0; //styles[m]->eng_vdwl;
-      eng_coul += 0.0; //styles[m]->eng_coul;
+      if (!on_fly_flag){
+        eng_vdwl += 0.0; //styles[m]->eng_vdwl;
+        eng_coul += 0.0; //styles[m]->eng_coul;
+      } else {
+        eng_vdwl += styles[m]->eng_vdwl;
+        eng_coul += styles[m]->eng_coul;
+      }
     }
+
     if (vflag_global) {
-      for (n = 0; n < 6; n++) virial[n] += 0.0; //styles[m]->virial[n];
+      if (!on_fly_flag){
+        for (n = 0; n < 6; n++) virial[n] += 0.0;
+      } else {
+        for (n = 0; n < 6; n++) virial[n] += styles[m]->virial[n]; 
+      }
     }
+
     if (eflag_atom) {
       n = atom->nlocal;
       if (force->newton_pair) n += atom->nghost;
       double *eatom_substyle = styles[m]->eatom;
-      for (i = 0; i < n; i++) eatom[i] += eatom_substyle[i]*d2_eval[i][pot_eval_arr[m]-1];
+      if (!on_fly_flag){
+        for (i = 0; i < n; i++) eatom[i] += eatom_substyle[i]*d2_eval[i][pot_eval_arr[m]-1];
+      } else {
+        for (i = 0; i < n; i++) eatom[i] += eatom_substyle[i];
+      }
     }
+
     if (vflag_atom) {
       n = atom->nlocal;
       if (force->newton_pair) n += atom->nghost;
       double **vatom_substyle = styles[m]->vatom;
-      for (i = 0; i < n; i++)
-        for (j = 0; j < 6; j++)
-          vatom[i][j] += vatom_substyle[i][j]*d2_eval[i][pot_eval_arr[m]-1];
+      for (i = 0; i < n; i++){
+        for (j = 0; j < 6; j++){
+          if (!on_fly_flag){
+            vatom[i][j] += vatom_substyle[i][j]*d2_eval[i][pot_eval_arr[m]-1];
+          } else {
+            vatom[i][j] += vatom_substyle[i][j];
+          }
+        }
+      }
     }
 
     // substyles may be CENTROID_SAME or CENTROID_AVAIL
@@ -386,22 +408,35 @@ void PairHybridOverlayMLML::compute(int eflag, int vflag)
       if (force->newton_pair) n += atom->nghost;
       if (styles[m]->centroidstressflag == CENTROID_AVAIL) {
         double **cvatom_substyle = styles[m]->cvatom;
-        for (i = 0; i < n; i++)
-          for (j = 0; j < 9; j++)
-            cvatom[i][j] += cvatom_substyle[i][j]*d2_eval[i][pot_eval_arr[m]-1];
+        for (i = 0; i < n; i++){
+          for (j = 0; j < 9; j++){
+            if (!on_fly_flag){
+              cvatom[i][j] += cvatom_substyle[i][j]*d2_eval[i][pot_eval_arr[m]-1];
+            } else {
+              cvatom[i][j] += cvatom_substyle[i][j];
+            }
+          }
+        }
       } else {
         double **vatom_substyle = styles[m]->vatom;
         for (i = 0; i < n; i++) {
           for (j = 0; j < 6; j++) {
-            cvatom[i][j] += vatom_substyle[i][j]*d2_eval[i][pot_eval_arr[m]-1];
+            if (!on_fly_flag){
+              cvatom[i][j] += vatom_substyle[i][j]*d2_eval[i][pot_eval_arr[m]-1];
+            } else {
+              cvatom[i][j] += vatom_substyle[i][j];
+            }
           }
           for (j = 6; j < 9; j++) {
-            cvatom[i][j] += vatom_substyle[i][j-3]*d2_eval[i][pot_eval_arr[m]-1];
+            if (!on_fly_flag){
+              cvatom[i][j] += vatom_substyle[i][j-3]*d2_eval[i][pot_eval_arr[m]-1];
+            } else {
+              cvatom[i][j] += vatom_substyle[i][j-3];
+            }            
           }
         }
       }
     }
-
   }
   if (zero_flag){
     // get the sum of the forces over all processors
