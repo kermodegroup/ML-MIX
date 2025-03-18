@@ -79,7 +79,10 @@ for i, t_it in enumerate(traj):
     
 
     if default_keys:
-        forces = t.get_forces()
+        try:
+            forces = t.get_forces()
+        except RuntimeError:
+            raise ValueError("No forces with keys fx fy fz in trajectory")
         t.arrays['fit_forces'] = forces
         
     if not default_keys:

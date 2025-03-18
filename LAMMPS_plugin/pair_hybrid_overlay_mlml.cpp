@@ -244,6 +244,7 @@ void PairHybridOverlayMLML::compute(int eflag, int vflag)
   if ((current_timestep == fit_pot_tstep) && (on_fly_flag)){
     // fit potentials
     fit_potentials();
+    on_fly_flag = false;
     // invoke all coeff functions again
     if (lmp->comm->me == 0) std::cout<<"reloading pair_coeffs"<<std::endl;
     for (i = 1; i < nstyles+1; i++){
@@ -253,7 +254,6 @@ void PairHybridOverlayMLML::compute(int eflag, int vflag)
       if (lmp->comm->me == 0) std::cout<<"reloading set "<< i <<std::endl;
       coeff(args.nargs, pargs);
     }
-    on_fly_flag = false;
   }
   resize_arrays();
   
