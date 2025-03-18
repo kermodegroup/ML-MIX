@@ -16,24 +16,37 @@ def get_seed_atoms(struct):
     seed_atoms = idx[:2]
     return seed_atoms
 
-def build_regions_lammps(lmps, struct, r_core, r_blend, r_buff, pick_seed_with='group', nsteps=1, fix_nevery=10, comm=None, rank=0, path='./'):
+def build_regions_lammps(lmps, struct, r_core, r_blend, r_buff, pick_seed_with='group', nsteps=1, fix_nevery=10, comm=None, rank=0, path='./', dump_mask=False):
     largest_cutoff = np.max((r_core,r_buff,r_blend))
     lmps.command(f'comm_modify cutoff {largest_cutoff+2.0}')
     seed_atoms = get_seed_atoms(struct)
-    # set up dump
-    lmps.command(f'dump dump1 all custom {nsteps} {path}/dump.lammpstrj id type x y z fx fy fz i2_potential[1] i2_potential[2] d2_eval[1] d2_eval[2]')
-    lmps.command(f'dump_modify dump1 format float %20.15g')
+
     lmps.command(f'group seed_atoms id {" ".join([str(i+1) for i in seed_atoms])}')
     if pick_seed_with == 'group':
-        lmps.command(f'fix mlml_fix all mlml 1 {r_core} {r_buff} {r_blend} group seed_atoms')
+        fix_cmd = f'fix mlml_fix all mlml 1 {r_core} {r_buff} {r_blend} group seed_atoms'
+        # lmps.command(f'fix mlml_fix all mlml 1 {r_core} {r_buff} {r_blend} group seed_atoms')
     elif pick_seed_with == 'fix':
         lmps.command('compute ca all coord/atom cutoff 4.0')
         lmps.command(f'fix av_ca all ave/atom 1 1 {fix_nevery} c_ca')
-        lmps.command(f'fix mlml_fix all mlml 1 {r_core} {r_buff} {r_blend} fix_classify av_ca {fix_nevery} 45.5 inf')
+        # lmps.command(f'fix mlml_fix all mlml 1 {r_core} {r_buff} {r_blend} fix_classify av_ca {fix_nevery} 45.5 inf')
+        fix_cmd = f'fix mlml_fix all mlml 1 {r_core} {r_buff} {r_blend} fix_classify av_ca {fix_nevery} 45.5 inf'
     elif pick_seed_with == 'fix_and_init_group':
         lmps.command('compute ca all coord/atom cutoff 4.0')
         lmps.command(f'fix av_ca all ave/atom 1 1 {fix_nevery} c_ca')
-        lmps.command(f'fix mlml_fix all mlml 1 {r_core} {r_buff} {r_blend} fix_classify av_ca {fix_nevery} 45.5 inf init_group seed_atoms')
+        # lmps.command(f'fix mlml_fix all mlml 1 {r_core} {r_buff} {r_blend} fix_classify av_ca {fix_nevery} 45.5 inf init_group seed_atoms')
+        fix_cmd = f'fix mlml_fix all mlml 1 {r_core} {r_buff} {r_blend} fix_classify av_ca {fix_nevery} 45.5 inf init_group seed_atoms'
+    
+    if dump_mask:
+        fix_cmd = f'{fix_cmd} output-mask'
+
+    lmps.command(fix_cmd)
+
+    # set up dump
+    if dump_mask:
+        lmps.command(f'dump dump1 all custom {nsteps} {path}/dump.lammpstrj id type x y z fx fy fz i2_potential[1] i2_potential[2] d2_eval[1] d2_eval[2] f_mlml_fix')
+    else:
+        lmps.command(f'dump dump1 all custom {nsteps} {path}/dump.lammpstrj id type x y z fx fy fz i2_potential[1] i2_potential[2] d2_eval[1] d2_eval[2]')
+    lmps.command(f'dump_modify dump1 format float %20.15g')
 
     if pick_seed_with != 'group':    
         lmps.command(f'dump fix_dump all custom {fix_nevery} {path}/fix_dump.lammpstrj id type x y z fx fy fz i2_potential[1] i2_potential[2] d2_eval[1] d2_eval[2] f_av_ca')
@@ -51,19 +64,29 @@ def build_regions_lammps(lmps, struct, r_core, r_blend, r_buff, pick_seed_with='
         d2_eval = np.zeros((len(struct),2), dtype=float)
         d2_eval[:,0] = d2_eval_1.flatten()
         d2_eval[:,1] = d2_eval_2.flatten()
+        if dump_mask:
+            mask = out_dump.arrays['f_mlml_fix']
+
     else:
         d2_eval = None
         i2_potential = None
-    
+        if dump_mask:
+            mask = None
+
     if comm is not None:
         i2_potential = comm.bcast(i2_potential, root=0)
         d2_eval = comm.bcast(d2_eval, root=0)
+        if dump_mask:
+            mask = comm.bcast(mask, root=0)
     
     if pick_seed_with != 'group':
         lmps.command(f'undump fix_dump')
     lmps.command(f'undump dump1')
 
-    return i2_potential, d2_eval
+    if dump_mask:   
+        return i2_potential, d2_eval, mask
+    else:
+        return i2_potential, d2_eval
 
 
 def build_regions_python(struct, r_core, r_blend, r_buff, pick_seed_with='group', comm=None, rank=0, path='./'):

@@ -63,6 +63,7 @@ FixMLML::FixMLML(LAMMPS *lmp, int narg, char **arg) : Fix(lmp, narg, arg)
   }
 
   bool check_save_mask = false;
+  bool no_init_group = true;
 
   // fix 1 all mlml nevery rqm bw rblend type
   if (narg < 9) utils::missing_cmd_args(FLERR, "fix mlml", error);
@@ -127,6 +128,7 @@ FixMLML::FixMLML(LAMMPS *lmp, int narg, char **arg) : Fix(lmp, narg, arg)
     if (narg>12){
       // now check if we are using an initialisation group
       if (strcmp(arg[iarg+5], "init_group")==0){
+        no_init_group = false;
         init_flag=true;
         first_set=false;
         group2 = utils::strdup(arg[iarg+6]);
@@ -136,16 +138,15 @@ FixMLML::FixMLML(LAMMPS *lmp, int narg, char **arg) : Fix(lmp, narg, arg)
         group2bit = group->bitmask[igroup2];
         iarg = 14;
         if (narg > 14) check_save_mask = true;
-      }else{
+      } else {
         check_save_mask = true;
         iarg = 12;
       }
-    }else{
+    }
+    if (no_init_group){
       error->warning(FLERR, "FixMLML: fix_classify command does not have an initialisation group, all atoms will be evaluated with potential 1 until first fix evaluation");
       all_pot_one_flag = true;
       first_set = false;
-      iarg = 12;
-      if (narg > 12) check_save_mask = true;
     }
   } else error->all(FLERR,"Illegal fix mlml command");
 
