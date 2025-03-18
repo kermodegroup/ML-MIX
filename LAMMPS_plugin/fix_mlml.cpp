@@ -138,6 +138,7 @@ FixMLML::FixMLML(LAMMPS *lmp, int narg, char **arg) : Fix(lmp, narg, arg)
         if (narg > 14) check_save_mask = true;
       }else{
         check_save_mask = true;
+        iarg = 12;
       }
     }else{
       error->warning(FLERR, "FixMLML: fix_classify command does not have an initialisation group, all atoms will be evaluated with potential 1 until first fix evaluation");
