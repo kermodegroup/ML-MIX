@@ -108,6 +108,9 @@ jobs:
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
+      with:
+        submodules: recursive  # Fetch submodules
+        fetch-depth: 0
 
     - name: Set up Julia
       uses: julia-actions/setup-julia@v2
@@ -135,6 +138,10 @@ jobs:
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
+      with:
+        submodules: recursive  # Fetch submodules
+        fetch-depth: 0
+
     
     - name: Install dependencies
       run: |
