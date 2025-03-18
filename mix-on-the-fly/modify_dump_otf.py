@@ -20,8 +20,8 @@ if 'dump-name' not in config:
     raise ValueError("dump-name not in config file")
 if 'mask-key' not in config:
     config['mask-key'] = None
-if 'pae_key' not in config:
-    config['pae_key'] = None
+if 'pae-key' not in config:
+    config['pae-key'] = None
 if 'auto-mask' not in config:
     config['auto-mask'] = None
 
@@ -37,6 +37,7 @@ fit_elements = config['fit-elements']
 new_traj = []
 for i, t_it in enumerate(traj):
     t = t_it.copy()
+    t.calc = t_it.calc
     keep_arr_keys = ['positions', 'numbers', 'momenta']
 
     symbols = t.get_chemical_symbols()
@@ -90,8 +91,8 @@ for i, t_it in enumerate(traj):
     
     keep_arr_keys.append('fit_forces')
     
-    if config['pae_key'] is not None:
-        t.arrays['pae'] = t.arrays[config['pae_key']]
+    if config['pae-key'] is not None:
+        t.arrays['pae'] = t.arrays[config['pae-key']]
         keep_arr_keys.append('pae')
     
     # now, remove all the keys we don't want to keep

@@ -106,7 +106,7 @@ end
 open("otf-RMSE.txt", "w") do f
     write(f, "Force train RMSE: $force_RMSE\n")
     if pae_key != nothing
-        write(f, "PAE RMSE: $unconstrained_pae_err\n")
+        write(f, "PAE RMSE: $pae_RMSE\n")
     end
 end
 
