@@ -103,9 +103,34 @@ jobs:
     #     name: lammps
     #     path: lammps
 
+  build-julia:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Julia
+      uses: julia-actions/setup-julia@v2
+      with:
+        version: '1.10'
+
+    - name: Cache Julia packages
+      id: cache-julia
+      uses: actions/cache@v4
+      with:
+        path: |
+          ~/.julia/artifacts
+          ~/.julia/compiled
+        key: julia-${{ runner.os }}-${{ hashFiles('Manifest.toml') }}
+        restore-keys: julia-${{ runner.os }}-
+    
+    - name: Instantiate Julia environment (only if cache misses)
+      if: steps.cache-julia.outputs.cache-hit != 'true'
+      run: julia --project=. -e 'using Pkg; Pkg.Registry.add("General"); Pkg.Registry.add(RegistrySpec(url="https://github.com/ACEsuit/ACEregistry")); Pkg.instantiate()'
+
   run-tests:
     runs-on: ubuntu-latest
-    needs: build-python-lammps 
+    needs: [build-python-lammps, build-julia]
 
     steps:
     - name: Checkout code
@@ -124,7 +149,7 @@ jobs:
       uses: actions/cache@v4
       with:
         path: lammps
-        key: ${{ runner.os }}-lammps-${{ env.LAMMPS_VERSION }}     
+        key: ${{ runner.os }}-lammps-${{ env.LAMMPS_VERSION }}  
       
 
     - name: Build Plugin
@@ -146,6 +171,15 @@ jobs:
         path: .venv
         key: venv-${{ runner.os }}-${{ hashFiles('requirements.txt') }}
         restore-keys: venv-${{ runner.os }}-
+
+    - name: Restore cached Julia environment
+      uses: actions/cache@v4
+      with:
+        path: |
+          ~/.julia/artifacts
+          ~/.julia/compiled
+        key: julia-${{ runner.os }}-${{ hashFiles('Manifest.toml') }}
+        restore-keys: julia-${{ runner.os }}-
   
     - name: Activate virtual environment and run tests
       run: |
