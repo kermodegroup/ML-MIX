@@ -26,7 +26,7 @@ In the current version of LAMMPS, if a pair_style tries to build a half neighbor
 - fix mlml is defined (which needs a full neighborlist)
 - *ALL* other pair_styles defined need half neighborlists (if there is even one pair_style defined which needs a full neighborlist, i.e, ACE, UF3, this isn't a problem as then half neighborlists are constructed correctly.)
 
-We are working to resolve this issue.
+Update: this bug is now fixed on the latest `stable` release of LAMMPS.
 
 ## Setup
 
