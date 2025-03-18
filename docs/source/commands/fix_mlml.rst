@@ -61,7 +61,7 @@ Description
    - *All* other `pair_style` definitions require half neighbor lists.  
      (If at least one `pair_style`—such as `ACE` or `UF3`—requires a full neighbor list, then half neighbor lists are constructed correctly, and this issue does not occur.)
 
-   We are actively working to resolve this issue.
+   Update: as of 18/03/2025 this bug is now fixed on the latest `stable` release of LAMMPS.
 
 This fix command is used to create and maintain a set of regions to be evaluated with 2 different pair_styles using the *hybrid/overlay/mlml* pair style in the *mlmix* package. In *hybrid/overlay/mlml*, different pair_styles are labelled either 1 or 2 to indicate evaluation region.
 
