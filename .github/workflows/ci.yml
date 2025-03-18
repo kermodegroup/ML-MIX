@@ -124,7 +124,7 @@ jobs:
         path: |
           ~/.julia/artifacts
           ~/.julia/compiled
-        key: julia-${{ runner.os }}-${{ hashFiles('Manifest.toml') }}
+        key: julia-${{ runner.os }}-${{ hashFiles('Manifest.toml') }}-2
         restore-keys: julia-${{ runner.os }}-
     
     - name: Instantiate Julia environment (only if cache misses)
@@ -185,7 +185,7 @@ jobs:
         path: |
           ~/.julia/artifacts
           ~/.julia/compiled
-        key: julia-${{ runner.os }}-${{ hashFiles('Manifest.toml') }}
+        key: julia-${{ runner.os }}-${{ hashFiles('Manifest.toml') }}-2
         restore-keys: julia-${{ runner.os }}-
   
     - name: Activate virtual environment and run tests
