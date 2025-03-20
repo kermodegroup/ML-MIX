@@ -479,7 +479,7 @@ void PairHybridOverlayMLML::modify_neighbor_list(int m, int **i2_potential){
     ilist_copy[i] = ilist[i];
   }
 
-  for (int i = 0; i < nlocal; i++){
+  for (int i = 0; i < inum_copy; i++){
     ilist_temp[i] = 0;
     if (i2_potential[i][pot_eval_arr[m]-1] == 1){
       ilist_temp[inum_new] = ilist[i];
@@ -499,7 +499,7 @@ void PairHybridOverlayMLML::restore_neighbor_list(int m){
   int *ilist = list_m->ilist;
   list_m->inum = inum_copy;
   // restore ilist
-  for (int i = 0; i < nlocal; i++) {
+  for (int i = 0; i < inum_copy; i++) {
     ilist[i] = ilist_copy[i];
   }
 }
