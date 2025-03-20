@@ -116,7 +116,7 @@ pip install .
 | Potential | Serial | Date and time | Parallel | Date and time |
 | --- | --- | --- | --- | --- |
 | Force zeroing | ✅ | 2025-03-13 15:54:08 | N/A | N/A |
-| Region building | ✅ | 2025-03-13 15:22:36 | N/A | N/A |
+| Region building | ✅ | 2025-03-18 11:55:53 | N/A | N/A |
 
 <!-- feature error table end -->
 
