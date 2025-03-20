@@ -1,0 +1,38 @@
+# Configuration file for on-the-fly simulations
+#----- Data settings------#
+
+# Note that the mask_key here is the fix output vector
+dump-name: ./on-fly/dump_data/Fe_dump1.lammpstrj
+fit-elements:
+  - Fe
+
+# if simulation contains elements not in the fit-elements list
+# they will be auto-masked out to cutoff to prevent fit errors
+
+# NOTE - to avoid all fitting errors you should mask out to 2x
+# expensive potential cutoff.
+# auto-mask:
+#   auto-mask-cutoff: 12.0
+
+# These keys should match the LAMMPS dump file keys
+# the Python script that reads the dump file will remap them
+# to standardised keys for ACEfit
+
+# mask-key: f_mlml_fix
+force-keys:
+  fx: fx
+  fy: fy
+  fz: fz
+pae-key: c_pae
+
+#----- ACEfit settings------#
+# on the fly ACEfit only works in serial
+e_refs:
+  Fe: -3456.00113622806
+order: 2
+totaldegree: 10
+rcut: 5.5
+smoothness_prior_strength: 4
+
+#----- Output ACE settings------#
+output_name: otf_pot

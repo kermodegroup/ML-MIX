@@ -22,11 +22,12 @@ All the code associated with this paper is included in this repository, in `pote
 More information can be found in the `README` files inside each subdirectory.
 
 ## ⚠️ Bug Warning ⚠️
+Update: as of 18/03/2025 this bug is now fixed on the latest `stable` release of LAMMPS.
+
 In the current version of LAMMPS, if a pair_style tries to build a half neighborlist by pruning a full neighborlist that is built for a fix, it seems to lead to all the forces computed by that pair_style being 0 (atoms have no neighbors). This will be a problem when using ML-MIX if:
 - fix mlml is defined (which needs a full neighborlist)
 - *ALL* other pair_styles defined need half neighborlists (if there is even one pair_style defined which needs a full neighborlist, i.e, ACE, UF3, this isn't a problem as then half neighborlists are constructed correctly.)
 
-We are working to resolve this issue.
 
 ## Setup
 
@@ -40,7 +41,7 @@ git clone --recurse-submodules https://github.com/kermodegroup/ML-MIX.git
 ### Installing LAMMPS
 To compile the ML-MIX LAMMPS plugin, you first need to clone and build LAMMPS. LAMMPS can be cloned directly with
 ```
-git clone -b release https://github.com/lammps/lammps.git mylammps
+git clone -b release https://github.com/lammps/lammps.git lammps
 ```
 
 An example cmake LAMMPS build script is provided in `build_scripts/example_lammps_build_script.sh` which includes all required plugins.
@@ -114,7 +115,8 @@ pip install .
 <!-- feature error table start -->
 | Potential | Serial | Date and time | Parallel | Date and time |
 | --- | --- | --- | --- | --- |
-| Force zeroing | ✅ | 2025-02-27 23:06:23 | N/A | N/A |
+| Force zeroing | ✅ | 2025-03-13 15:54:08 | N/A | N/A |
+| Region building | ✅ | 2025-03-18 11:55:53 | N/A | N/A |
 
 <!-- feature error table end -->
 
@@ -123,7 +125,9 @@ pip install .
 <!-- error table start -->
 | Potential | Serial | Date and time | Parallel | Date and time |
 | --- | --- | --- | --- | --- |
-| ACE | ✅ | 2025-02-27 23:00:34 | ✅ | 2025-02-27 22:10:36 |
-| UF3 | ✅ | 2025-02-27 22:54:26 | ✅ | 2025-02-27 18:04:19 |
+| ACE | ✅ | 2025-03-13 15:48:44 | ✅ | 2025-03-12 12:12:01 |
+| table | ✅ | 2025-03-12 11:51:38 | ✅ | 2025-02-27 22:10:00 |
+| UF3 | ✅ | 2025-03-13 15:48:11 | ✅ | 2025-03-12 12:12:02 |
+| MACE | ✅ | 2025-03-12 12:09:03 | ✅ | 2025-03-12 12:11:34 |
 
 <!-- error table end -->

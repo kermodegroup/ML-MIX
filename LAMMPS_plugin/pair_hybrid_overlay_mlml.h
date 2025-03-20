@@ -17,6 +17,7 @@
 #define LMP_PAIR_HYBRID_OVERLAY_MLML_H
 
 #include "pair_hybrid_overlay.h"
+#include "args_manager.h"
 
 namespace LAMMPS_NS {
 
@@ -33,6 +34,11 @@ class PairHybridOverlayMLML : public PairHybridOverlay {
   void resize_arrays();
   void modify_neighbor_list(int, int **);
   void restore_neighbor_list(int);
+  void fit_potentials();
+  void execute_command(const char *);
+  void create_blank_potential();
+
+  ArgsManager manager;
 
  protected:
   int* pot_eval_arr;
@@ -46,6 +52,13 @@ class PairHybridOverlayMLML : public PairHybridOverlay {
   int inum_copy;
   int inum_new;
   int last_nlocal;
+  int style_counter;
+  bool store_args;
+  bool on_fly_flag;
+  int fit_pot_tstep;
+  char *path_to_mlmix;
+  char *path_to_config;
+
 
 
 //   void init_svector() override;
