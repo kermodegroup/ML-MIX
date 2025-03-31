@@ -66,6 +66,12 @@ There are two key timescales associated with `fix mlml`, the timescale associate
 How it works: Force mixing
 --------------------------
 
+.. warning::
+
+    **Pressure is not well defined**
+    In force-mixing, cell pressures are not well defined. LAMMPS will output pressure values, but (for now) these numbers are essentially meaningless. For this reason, you should not run NPT simulations.
+
+
 .. image:: _static/images/force_mixing_image.png
     :alt: Force mixing
     :align: center

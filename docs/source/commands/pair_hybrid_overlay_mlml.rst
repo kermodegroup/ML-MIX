@@ -59,6 +59,14 @@ Description
 
    We are actively working to resolve this issue.
 
+
+.. warning::
+
+    **Pressure is not well defined**
+    In force-mixing, cell pressures are not well defined. LAMMPS will output pressure values, but (for now) these numbers are essentially meaningless. For this reason, you should not run NPT simulations.
+
+
+
 This documentation should be considered as an extension to the documentation provided for the *hybrid/overlay* pair style. Everything that is valid for the *hybrid/overlay* pair style is also valid for the *hybrid/overlay/mlml* unless stated otherwise here.
 
 The *hybrid/overlay/mlml* style is a variant of the *hybrid/overlay* style which allows for the use of multiple pair styles in one simulation. The *hybrid/overlay/mlml* style is part of the *mlmix* package. With the *hybrid/overlay/mlml* style, different pair styles can be evaluated in different spatial regions of the simulation domain. The full force vector is constructed through force-mixing, a method commonly used in QM/MM simulations.
