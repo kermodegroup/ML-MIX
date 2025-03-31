@@ -140,6 +140,11 @@ fix<span class="w"> </span>eval_arr<span class="w"> </span>all<span class="w"> <
 </section>
 <section id="how-it-works-force-mixing">
 <h2>How it works: Force mixing<a class="headerlink" href="#how-it-works-force-mixing" title="Link to this heading"></a></h2>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p><strong>Pressure is not well defined</strong>
+In force-mixing, cell pressures are not well defined. LAMMPS will output pressure values, but (for now) these numbers are essentially meaningless. For this reason, you should not run NPT simulations.</p>
+</div>
 <img alt="Force mixing" class="align-center" src="_images/force_mixing_image.png" />
 <p>Whilst <cite>fix mlml</cite> is responsible for assigning atoms to regions and controlling force contributions, the <cite>pair hybrid/overlay/mlml</cite> command is responsible for actually evaluating the forces. The <cite>pair hybrid/overlay/mlml</cite> command is a variant of the <cite>pair hybrid/overlay</cite> command, which allows for the use of multiple pair_styles in one simulation. The <cite>pair hybrid/overlay/mlml</cite> command constructs the full force vector through force-mixing, a method commonly used in QM/MM simulations.</p>
 <p>The assignment of pair styles to type pairs is made via the <cite>pair_coeff</cite> command. For <cite>hybrid/overlay/mlml</cite>, an additional numeric argument must be specified after the sub-style name, which can either be 1 or 2. This value indicates the region to which <cite>pair_style</cite> should be applied. As many sub-styles can be specified as desired, and multiple sub-styles can be assigned to the same regions.</p>

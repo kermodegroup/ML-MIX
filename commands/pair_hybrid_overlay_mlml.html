@@ -140,6 +140,11 @@ In the current version of LAMMPS, if a <cite>pair_style</cite> attempts to build
 </ul>
 <p>We are actively working to resolve this issue.</p>
 </div>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p><strong>Pressure is not well defined</strong>
+In force-mixing, cell pressures are not well defined. LAMMPS will output pressure values, but (for now) these numbers are essentially meaningless. For this reason, you should not run NPT simulations.</p>
+</div>
 <p>This documentation should be considered as an extension to the documentation provided for the <em>hybrid/overlay</em> pair style. Everything that is valid for the <em>hybrid/overlay</em> pair style is also valid for the <em>hybrid/overlay/mlml</em> unless stated otherwise here.</p>
 <p>The <em>hybrid/overlay/mlml</em> style is a variant of the <em>hybrid/overlay</em> style which allows for the use of multiple pair styles in one simulation. The <em>hybrid/overlay/mlml</em> style is part of the <em>mlmix</em> package. With the <em>hybrid/overlay/mlml</em> style, different pair styles can be evaluated in different spatial regions of the simulation domain. The full force vector is constructed through force-mixing, a method commonly used in QM/MM simulations.</p>
 <p>The assignment of pair styles to type pairs is made via the <span class="xref std std-doc">pair_coeff</span> command.  For <em>hybrid/overlay/mlml</em>, an additional numeric argument must be specified after the sub-style name, which can either be 1 or 2. This value indicates the <em>mlmix</em> region to which the sub-style should be  applied.</p>
