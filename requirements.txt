@@ -1,4 +1,4 @@
-ase==3.24.0
+git+https://gitlab.com/ase/ase.git@master#egg=ase
 blosc2==2.7.1
 certifi==2025.1.31
 charset-normalizer==3.4.1
