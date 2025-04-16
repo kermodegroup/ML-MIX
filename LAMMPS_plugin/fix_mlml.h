@@ -36,6 +36,7 @@ class FixMLML : public Fix {
   void unpack_reverse_comm(int, int *, double *) override;
   int pack_forward_comm(int, int *, double *, int, int *) override;
   void unpack_forward_comm(int, int, double *) override;
+  void grow_arrays(int) override;
 
   bool check_cutoff(double *, double *, double);
   double linear_blend(double *, double *);
@@ -64,13 +65,18 @@ class FixMLML : public Fix {
 
   double dtv, dtf;
   double *step_respa;
-  int mass_require, is_type, type_val, prev_nlocal, prev_qm_tot;
+  int mass_require, is_type, type_val, prev_ntot, prev_qm_tot;
   int tot_qm;
   double rqm, bw, rblend;
 
   Fix *classify_fix;
   double *classify_vec;
   int *local_qm_atom_list, *all_qm, *core_qm_atom_idx;
+
+  double** d2_eval_prev;
+  bool time_decay_hysteresis;
+  double time_decay_constant;
+  bool initial_allocation;
 
 };
 
