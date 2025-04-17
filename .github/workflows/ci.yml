@@ -48,6 +48,7 @@ jobs:
   
     
     - name: Check if venv is valid (if venv cache hits)
+      id: check-venv
       if: ${{ steps.venv-cache.outputs.cache-hit == 'true' }}
       run: |
         if [ ! -f ".venv/bin/pytest" ]; then
@@ -169,4 +170,5 @@ jobs:
       run: |
         source .venv/bin/activate
         cd tests/
+        pip install pytest
         python -m pytest
