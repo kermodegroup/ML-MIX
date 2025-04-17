@@ -55,10 +55,13 @@ FixMLML::FixMLML(LAMMPS *lmp, int narg, char **arg) : Fix(lmp, narg, arg)
   initial_allocation = false;
   bool check_kwargs = false;
 
+  int nlocal = atom->nlocal;
+  int nghost = atom->nghost;
+  int ntot = nlocal + nghost;
 
   memory->create(core_qm_atom_idx, atom->nmax, "FixMLML: core_qm_atom_idx");
   memory->create(local_qm_atom_list, atom->nmax, "FixMLML: local_qm_atom_list");
-  
+
   atom->add_callback(Atom::GROW);
 
   bool no_init_group = true;
@@ -141,7 +144,6 @@ FixMLML::FixMLML(LAMMPS *lmp, int narg, char **arg) : Fix(lmp, narg, arg)
       }
     }
     if (no_init_group){
-      error->warning(FLERR, "FixMLML: fix_classify command does not have an initialisation group, all atoms will be evaluated with potential 1 until first fix evaluation");
       all_pot_one_flag = true;
       first_set = false;
     }
@@ -214,6 +216,7 @@ void FixMLML::setup_pre_force(int){
 
   // if no initial group set, then start all atoms as QM
   if (all_pot_one_flag){
+    error->warning(FLERR, "FixMLML: fix_classify command does not have an initialisation group, all atoms will be evaluated with potential 1 until first fix evaluation");
     int **i2_potential = (int**)atom->extract("i2_potential");
     double **d2_eval = (double**)atom->extract("d2_eval");
     int nlocal = atom->nlocal;
@@ -228,12 +231,24 @@ void FixMLML::setup_pre_force(int){
       d2_eval[i][0] = 1.0;
       d2_eval[i][1] = 0.0;
     }
-    
+
+    first_set = false;
+    // setting this to true here means that it will slowly decay from
+    // all expensive to the fix atoms after the first fix evaluation
+    initial_allocation = true;
   }else{
     // if there is an initial group, switch at the start
     // to doing it based on group. If not, then do it
     // with the fix
     if (init_flag){
+      if (update->ntimestep > 0) {
+        error->warning(FLERR, "FixMLML: switching back to initialisation group until first fix evaluation!");
+        first_set = false;
+        // setting this to true here means that it will slowly decay
+        // from the initial group atoms to the fix atoms after the
+        // first fix evaluation
+        initial_allocation = true;
+      }
       fflag = false;
       gflag = true;
     }
@@ -425,23 +440,16 @@ void FixMLML::allocate_regions(){
     // this is a discretised exponential decay of d2_eval[i][0]
     for (int i = 0; i < nlocal + nghost; i++){
       double change = ((d2_eval[i][0] - d2_eval_prev[i][0])/time_decay_constant)*dt*static_cast<double>(nevery);
-      // if (change > 0.0){
-      //   std::cout<<"i "<< i <<std::endl;
-      //   std::cout<<"Change "<< change << std::endl;
-      //   std::cout<<"d2_eval_prev[i][0] "<< d2_eval_prev[i][0] << std::endl;
-      //   std::cout<<"d2_eval[i][0] "<< d2_eval[i][0] << std::endl;
-      //   std::cout<<"d2_eval[i][0] - d2_eval_prev[i][0] "<< d2_eval[i][0] - d2_eval_prev[i][0] << std::endl;
-      //   std::cout<<"time_decay_constant "<< time_decay_constant << std::endl;
-      //   std::cout<<"dt "<< dt << std::endl;
-      //   std::cout<<"nevery "<< static_cast<double>(nevery) << std::endl;
-
-      // }
-      d2_eval[i][0] = change + d2_eval_prev[i][0];
-      // if the value is less than 0.05 and change is decreasing set it to 0
+      // only decay if change is negative
+      // atoms should enter QM region instantly but leave slowly
+      if (change < 0.0){
+        d2_eval[i][0] = change + d2_eval_prev[i][0];
+      }
+      // if the value is less than threshold and change is decreasing set it to 0
       if (change < 0 && d2_eval[i][0] < 0.01){
         d2_eval[i][0] = 0.0;
       }
-      // if the value is greater than 0.95 and change is increasing set it to 1
+      // if the value is greater than threshold and change is increasing set it to 1
       if (change > 0 && d2_eval[i][0] > 0.99){
         d2_eval[i][0] = 1.0;
       }
