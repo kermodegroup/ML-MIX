@@ -2,7 +2,7 @@
 import sys
 sys.path.append("./shared")
 from set_up_lammps import set_up_lammps
-from build_regions import build_regions_lammps, get_seed_atoms
+from build_regions import build_regions_lammps, get_seed_atoms, build_regions_python
 from lammps import lammps
 import ase.io
 from mpi4py import MPI
@@ -11,8 +11,19 @@ sys.path.append("../utils")
 from utils import read_lammps_dump
 import os
 
-def predict_d2_eval(d2_eval_prev, d2_eval_target, nevery, dt, tau):
-    change = ((d2_eval_target - d2_eval_prev) / tau) * dt * nevery
+def predict_d2_eval(d2_eval_prev, d2_eval_target, nevery, dt, tau_in, tau_out):
+    change = ((d2_eval_target - d2_eval_prev))
+
+    in_multiplier = dt*nevery/tau_in
+    out_multiplier = dt*nevery/tau_out
+
+    if in_multiplier > 1.0:
+        in_multiplier = 1.0
+    if out_multiplier > 1.0:
+        out_multiplier = 1.0
+    
+    change[change>0] = change[change>0] * in_multiplier
+    change[change<0] = change[change<0] * out_multiplier
 
     new_d2_eval = change + d2_eval_prev
 
@@ -41,7 +52,8 @@ def hysteresis_test(verbose=False,
                     pick_seed_with='group',
                     nsteps=1,
                     fix_nevery=10,
-                    hysteresis_time=0.01,
+                    hysteresis_time_in=0.001,
+                    hysteresis_time_out=0.01,
                     nevery=1):
     
     data_path = "./test_hysteresis_data"
@@ -87,7 +99,8 @@ def hysteresis_test(verbose=False,
                                 fix_nevery=fix_nevery,
                                 fix_lb=21,
                                 hysteresis=True,
-                                hysteresis_time=hysteresis_time,
+                                hysteresis_time_in=hysteresis_time_in,
+                                hysteresis_time_out=hysteresis_time_out,
                                 nevery=nevery)
 
     if pick_seed_with == 'group':
@@ -121,7 +134,7 @@ def hysteresis_test(verbose=False,
             if pick_seed_with == 'group':
                 d2_eval_prev = d2_eval_lammps[:,0]
                 d2_eval_target = np.zeros_like(d2_eval_prev)
-                d2_eval_predicted = predict_d2_eval(d2_eval_prev, d2_eval_target, nevery, dt, hysteresis_time)
+                d2_eval_predicted = predict_d2_eval(d2_eval_prev, d2_eval_target, nevery, dt, hysteresis_time_in, hysteresis_time_out)
                 next_d2_eval = dump[0].arrays['d2_eval[1]']
                 assert np.allclose(d2_eval_predicted, next_d2_eval), f"Prediction failed at step 0"
             elif pick_seed_with == 'fix':
@@ -138,7 +151,7 @@ def hysteresis_test(verbose=False,
                 image = dump[i]
                 d2_eval_prev = image.arrays['d2_eval[1]']
                 d2_eval_target = np.zeros_like(d2_eval_prev)
-                d2_eval_predicted = predict_d2_eval(d2_eval_prev, d2_eval_target, nevery, dt, hysteresis_time)
+                d2_eval_predicted = predict_d2_eval(d2_eval_prev, d2_eval_target, nevery, dt, hysteresis_time_in, hysteresis_time_out)
                 next_d2_eval = dump[i+1].arrays['d2_eval[1]']
                 # write all three cols to a file
                 assert np.allclose(d2_eval_predicted, next_d2_eval), f"Prediction failed at step {i+1}"
@@ -148,16 +161,43 @@ def hysteresis_test(verbose=False,
                 raise AssertionError("Test failed!")
             
 
-    #finally check to make sure that when atoms are added to group, it flickers in instantly
-    id = 1000
+    #finally check to make sure that when atoms are added to group, it flickers in according to hysteresis time in
+
     if pick_seed_with == "group":
+        seed_id = 1000
+        struct = dump[-1]
+        i2_potential_python, d2_eval_python = build_regions_python(struct, r_core, r_blend, r_buff, pick_seed_with='group', comm=comm, rank=rank, path=data_path, seed_id=seed_id)
         lmps.command(f'group seed_atoms delete')
-        lmps.command(f'group seed_atoms id {id+1}')
-        lmps.command(f'run 1')
+        lmps.command(f'group seed_atoms id {seed_id+1}')
+        lmps.command(f'run 10')
         if rank == 0:
-            try: 
-                struct = read_lammps_dump(f'{data_path}/dump_{pick_seed_with}.lammpstrj')[-1]
-                assert struct.arrays['d2_eval[1]'][id] == 1.0, f"Atoms do not enter QM region instantly"
+            try:
+                dump = read_lammps_dump(f'{data_path}/dump_{pick_seed_with}.lammpstrj')[-10:]
+                for i in range(len(dump)-1):
+                    # print("curr step", nsteps+20+i, "out of", nsteps+20+len(dump)-1)
+                    # print("next step", nsteps+20+i+1)
+                    if (nsteps+20+i) % nevery != 0:
+                        # print("skipping")
+                        continue
+                    image = dump[i]
+                    d2_eval_prev = image.arrays['d2_eval[1]']
+                    d2_eval_predicted = predict_d2_eval(d2_eval_prev, d2_eval_python[:,0], nevery, dt, hysteresis_time_in, hysteresis_time_out)
+                    next_d2_eval = dump[i+1].arrays['d2_eval[1]']
+                    # #save to numpy txt file
+                    # full_arr = np.column_stack((d2_eval_python[:,0], d2_eval_predicted))
+                    # diff = np.abs(d2_eval_predicted - next_d2_eval)
+                    # sum_diff = np.sum(diff)
+                    # print(f"max diff: {np.max(diff)}")
+                    # sum_prev = np.sum(np.abs(next_d2_eval-d2_eval_prev))
+                    # print(f"sum prev: {sum_prev}")
+                    # struct.arrays['d2_eval_predicted'] = d2_eval_predicted
+                    # struct.arrays['d2_eval_next'] = next_d2_eval
+                    # struct.arrays['d2_eval_target'] = d2_eval_python[:,0]
+                    # struct.arrays['d2_eval_diff'] = diff
+                    # ase.io.write(f"{data_path}/debug_{i}.xyz", struct, format='extxyz', parallel=False)
+                    # print(f"Sum of differences: {sum_diff}")
+                    # np.savetxt(f"{data_path}/predicted_{i}.txt", full_arr, header="id d2_eval_python d2_eval_predicted")
+                    assert np.allclose(d2_eval_predicted, next_d2_eval, atol=1e-4), f"Prediction failed at step {i+1}"
             except AssertionError:
                 err_code = "❌"
                 if crash_on_fail:
@@ -170,19 +210,28 @@ def hysteresis_test(verbose=False,
 
 
 def test_hysteresis_group():
-    hysteresis_test(pick_seed_with='group', hysteresis_time=0.01, nevery=1)
-    hysteresis_test(pick_seed_with='group', hysteresis_time=0.001, nevery=1)
-    hysteresis_test(pick_seed_with='group', hysteresis_time=0.001, nevery=5)
-    hysteresis_test(pick_seed_with='group', hysteresis_time=0.05, nevery=10)
+    hysteresis_test(pick_seed_with='group', hysteresis_time_out=0.01, nevery=1)
+    hysteresis_test(pick_seed_with='group', hysteresis_time_out=0.002, nevery=1)
+    hysteresis_test(pick_seed_with='group', hysteresis_time_out=0.001, nevery=5)
+    hysteresis_test(pick_seed_with='group', hysteresis_time_out=0.05, nevery=10)
+    hysteresis_test(pick_seed_with='group', hysteresis_time_out=0.01, nevery=1, hysteresis_time_in=0.01)
+    exit()
 
 def test_hysteresis_fix():
-    hysteresis_test(pick_seed_with='fix', hysteresis_time=0.01, nevery=1, nsteps=1, fix_nevery=5)
-    hysteresis_test(pick_seed_with='fix', hysteresis_time=0.001, nevery=1, nsteps=10, fix_nevery=5)
-    hysteresis_test(pick_seed_with='fix', hysteresis_time=0.001, nevery=5, nsteps=10, fix_nevery=10)
-    hysteresis_test(pick_seed_with='fix', hysteresis_time=0.05, nevery=10, nsteps=10, fix_nevery=10)
+    hysteresis_test(pick_seed_with='fix', hysteresis_time_out=0.01, nevery=1, nsteps=1, fix_nevery=5)
+    hysteresis_test(pick_seed_with='fix', hysteresis_time_out=0.001, nevery=1, nsteps=10, fix_nevery=5)
+    hysteresis_test(pick_seed_with='fix', hysteresis_time_out=0.001, nevery=5, nsteps=10, fix_nevery=10)
+    hysteresis_test(pick_seed_with='fix', hysteresis_time_out=0.05, nevery=10, nsteps=10, fix_nevery=10)
 
 def test_hysteresis_fix_and_init_group():
-    hysteresis_test(pick_seed_with='fix_and_init_group', hysteresis_time=0.01, nevery=1, nsteps=1, fix_nevery=5)
-    hysteresis_test(pick_seed_with='fix_and_init_group', hysteresis_time=0.001, nevery=1, nsteps=10, fix_nevery=5)
-    hysteresis_test(pick_seed_with='fix_and_init_group', hysteresis_time=0.001, nevery=5, nsteps=10, fix_nevery=10)
-    hysteresis_test(pick_seed_with='fix_and_init_group', hysteresis_time=0.05, nevery=10, nsteps=10, fix_nevery=10)
+    hysteresis_test(pick_seed_with='fix_and_init_group', hysteresis_time_out=0.01, nevery=1, nsteps=1, fix_nevery=5)
+    hysteresis_test(pick_seed_with='fix_and_init_group', hysteresis_time_out=0.001, nevery=1, nsteps=10, fix_nevery=5)
+    hysteresis_test(pick_seed_with='fix_and_init_group', hysteresis_time_out=0.001, nevery=5, nsteps=10, fix_nevery=10)
+    hysteresis_test(pick_seed_with='fix_and_init_group', hysteresis_time_out=0.05, nevery=10, nsteps=10, fix_nevery=10)
+
+
+
+if __name__ == "__main__":
+    test_hysteresis_group()
+    test_hysteresis_fix()
+    test_hysteresis_fix_and_init_group()

@@ -51,7 +51,7 @@ FixMLML::FixMLML(LAMMPS *lmp, int narg, char **arg) : Fix(lmp, narg, arg)
   prev_qm_tot = -1;
   first_set = true;
   time_decay_hysteresis = false;
-  time_decay_constant = 0.0;
+  time_decay_constant_in = 0.0;
   initial_allocation = false;
   bool check_kwargs = false;
 
@@ -151,12 +151,16 @@ FixMLML::FixMLML(LAMMPS *lmp, int narg, char **arg) : Fix(lmp, narg, arg)
   
   if (check_kwargs){
     if (strcmp(arg[iarg], "hysteresis-time") == 0){
-      // check there is only one more argument
+      // check there are two more arguments
       if (iarg > narg+1) error->all(FLERR,"Illegal fix mlml on-fly command");
       time_decay_hysteresis=true;
-      time_decay_constant = utils::numeric(FLERR,arg[iarg+1],false,lmp);
-      if (time_decay_constant <= 0.0){
-        error->all(FLERR,"Illegal fix mlml hysteresis-time value: {}", time_decay_constant);
+      time_decay_constant_in = utils::numeric(FLERR,arg[iarg+1],false,lmp);
+      if (time_decay_constant_in <= 0.0){
+        error->all(FLERR,"Illegal fix mlml hysteresis-time value: {}", time_decay_constant_in);
+      }
+      time_decay_constant_out = utils::numeric(FLERR,arg[iarg+2],false,lmp);
+      if (time_decay_constant_out <= 0.0){
+        error->all(FLERR,"Illegal fix mlml hysteresis-time value: {}", time_decay_constant_out);
       }
     }else{
       error->all(FLERR,"Illegal fix mlml command");
@@ -439,11 +443,24 @@ void FixMLML::allocate_regions(){
     // ((d2_eval[i][0] - d2_eval_prev[i][0])/time_const)*dt*Nevery + d2_eval_prev[i][0]
     // this is a discretised exponential decay of d2_eval[i][0]
     for (int i = 0; i < nlocal + nghost; i++){
-      double change = ((d2_eval[i][0] - d2_eval_prev[i][0])/time_decay_constant)*dt*static_cast<double>(nevery);
+      double change = (d2_eval[i][0] - d2_eval_prev[i][0]);
       // only decay if change is negative
       // atoms should enter QM region instantly but leave slowly
       if (change < 0.0){
-        d2_eval[i][0] = change + d2_eval_prev[i][0];
+        double multiplier = (dt*static_cast<double>(nevery))/time_decay_constant_out;
+        // if multiplier is greater than 1, set it to 1
+        if (multiplier > 1.0){
+          multiplier = 1.0;
+        }
+        d2_eval[i][0] = change*multiplier + d2_eval_prev[i][0];
+      }
+      if (change > 0.0){
+        double multiplier = (dt*static_cast<double>(nevery))/time_decay_constant_in;
+        // if multiplier is greater than 1, set it to 1
+        if (multiplier > 1.0){
+          multiplier = 1.0;
+        }
+        d2_eval[i][0] = change*multiplier + d2_eval_prev[i][0];
       }
       // if the value is less than threshold and change is decreasing set it to 0
       if (change < 0 && d2_eval[i][0] < 0.01){

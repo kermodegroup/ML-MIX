@@ -75,7 +75,7 @@ class FixMLML : public Fix {
 
   double** d2_eval_prev;
   bool time_decay_hysteresis;
-  double time_decay_constant;
+  double time_decay_constant_in, time_decay_constant_out;
   bool initial_allocation;
 
 };
