@@ -35,8 +35,8 @@ jobs:
       uses: actions/cache@v4
       with:
         path: .venv
-        key: venv-${{ runner.os }}-${{ hashFiles('requirements.txt') }}
-        restore-keys: venv-${{ runner.os }}-
+        key: venv-${{ runner.os }}-${{ hashFiles('requirements.txt') }}-${{ env.CACHE_DATE }}
+        # restore-keys: venv-${{ runner.os }}-
     
     - name: Create python venv (if venv cache misses)
       if: ${{ steps.venv-cache.outputs.cache-hit != 'true' }}
@@ -46,24 +46,6 @@ jobs:
         pip install -r requirements.txt
         deactivate
   
-    
-    - name: Check if venv is valid (if venv cache hits)
-      id: check-venv
-      if: ${{ steps.venv-cache.outputs.cache-hit == 'true' }}
-      run: |
-        if [ ! -f ".venv/bin/pytest" ]; then
-          echo "Cached venv is invalid or missing. Rebuilding..."
-          rm -rf .venv
-          python -m venv .venv
-          source .venv/bin/activate
-          pip install --upgrade pip setuptools wheel
-          pip install -r requirements.txt
-          echo "venv_rebuilt=true" >> $GITHUB_OUTPUT
-        else
-          echo "Cached venv is valid."
-          echo "venv_rebuilt=false" >> $GITHUB_OUTPUT
-        fi
-    
       
     - name: Clone and build LAMMPS (if lammps cache misses)
       if: ${{ steps.lammps-cache.outputs.cache-hit != 'true' }}
@@ -109,7 +91,7 @@ jobs:
         key: ${{ runner.os }}-lammps-${{ env.LAMMPS_VERSION }}
 
     - name: Upload venv cache after build (if cache miss or venv rebuilt)
-      if: ${{ steps.venv-cache.outputs.cache-hit != 'true' }} || ${{ steps.check-venv.outputs.venv_rebuilt == 'true' }}
+      if: ${{ steps.venv-cache.outputs.cache-hit != 'true' }}
       uses: actions/cache@v4
       with:
         path: .venv
