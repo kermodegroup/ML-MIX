@@ -215,7 +215,6 @@ def test_hysteresis_group():
     hysteresis_test(pick_seed_with='group', hysteresis_time_out=0.001, nevery=5)
     hysteresis_test(pick_seed_with='group', hysteresis_time_out=0.05, nevery=10)
     hysteresis_test(pick_seed_with='group', hysteresis_time_out=0.01, nevery=1, hysteresis_time_in=0.01)
-    exit()
 
 def test_hysteresis_fix():
     hysteresis_test(pick_seed_with='fix', hysteresis_time_out=0.01, nevery=1, nsteps=1, fix_nevery=5)
