@@ -24,14 +24,13 @@ jobs:
         python-version: '3.10'
     
     - name: Cache LAMMPS
-      id: lammps-cache
       uses: actions/cache@v4
       with:
         path: lammps
         key: ${{ runner.os }}-lammps-${{ env.LAMMPS_VERSION }}
     
     - name: Restore cached virtual environment
-      id: restore-venv
+      id: venv-cache
       uses: actions/cache@v4
       with:
         path: .venv
@@ -48,7 +47,6 @@ jobs:
   
     
     - name: Check if venv is valid (if venv cache hits)
-      id: check-venv
       if: ${{ steps.venv-cache.outputs.cache-hit == 'true' }}
       run: |
         if [ ! -f ".venv/bin/pytest" ]; then
