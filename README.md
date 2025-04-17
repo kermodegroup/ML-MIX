@@ -26,7 +26,8 @@ In the current version of LAMMPS, if a pair_style tries to build a half neighbor
 - fix mlml is defined (which needs a full neighborlist)
 - *ALL* other pair_styles defined need half neighborlists (if there is even one pair_style defined which needs a full neighborlist, i.e, ACE, UF3, this isn't a problem as then half neighborlists are constructed correctly.)
 
-We are working to resolve this issue.
+Update: This issue has been resolved in the [17/03/2025 LAMMPS Stable release](https://github.com/lammps/lammps/releases/tag/stable_29Aug2024_update2).
+
 
 ## Setup
 
@@ -114,7 +115,8 @@ pip install .
 <!-- feature error table start -->
 | Potential | Serial | Date and time | Parallel | Date and time |
 | --- | --- | --- | --- | --- |
-| Force zeroing | ✅ | 2025-02-27 23:06:23 | N/A | N/A |
+| Region building | ✅ | 2025-04-15 14:15:56 | N/A | N/A |
+| Force zeroing | ✅ | 2025-03-13 15:54:08 | N/A | N/A |
 
 <!-- feature error table end -->
 
@@ -123,7 +125,8 @@ pip install .
 <!-- error table start -->
 | Potential | Serial | Date and time | Parallel | Date and time |
 | --- | --- | --- | --- | --- |
-| ACE | ✅ | 2025-02-27 23:00:34 | ✅ | 2025-02-27 22:10:36 |
-| UF3 | ✅ | 2025-02-27 22:54:26 | ✅ | 2025-02-27 18:04:19 |
+| table | ✅ | 2025-03-12 11:51:38 | ✅ | 2025-02-27 22:10:00 |
+| UF3 | ✅ | 2025-04-15 14:40:22 | ✅ | 2025-03-12 12:12:02 |
+| ACE | ✅ | 2025-03-13 15:48:44 | ✅ | 2025-03-12 12:12:01 |
 
 <!-- error table end -->
