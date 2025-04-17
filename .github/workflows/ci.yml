@@ -34,15 +34,15 @@ jobs:
       id: venv-cache
       uses: actions/cache@v4
       with:
-        path: .venv
-        key: venv-${{ runner.os }}-${{ hashFiles('requirements.txt') }}-${{ env.CACHE_DATE }}
-        # restore-keys: venv-${{ runner.os }}-
+        path: venv
+        key: venv-${{ runner.os }}-${{ hashFiles('requirements.txt') }}
+        restore-keys: venv-${{ runner.os }}-
     
     - name: Create python venv (if venv cache misses)
       if: ${{ steps.venv-cache.outputs.cache-hit != 'true' }}
       run: |
-        python -m venv .venv
-        source .venv/bin/activate
+        python -m venv test_venv
+        source test_venv/bin/activate
         pip install -r requirements.txt
         deactivate
   
@@ -50,7 +50,7 @@ jobs:
     - name: Clone and build LAMMPS (if lammps cache misses)
       if: ${{ steps.lammps-cache.outputs.cache-hit != 'true' }}
       run: |
-        source .venv/bin/activate
+        source test_venv/bin/activate
         git clone -b stable https://github.com/lammps/lammps.git
         cd lammps
         mkdir build
@@ -78,7 +78,7 @@ jobs:
     - name: add LAMMPS to venv (if lammps cache hits, but venv misses)
       if: ${{ steps.lammps-cache.outputs.cache-hit == 'true' && steps.venv-cache.outputs.cache-hit != 'true' }}
       run: |
-        source .venv/bin/activate
+        source test_venv/bin/activate
         cd lammps/build
         make install-python
         cd ../..
@@ -94,7 +94,7 @@ jobs:
       if: ${{ steps.venv-cache.outputs.cache-hit != 'true' }}
       uses: actions/cache@v4
       with:
-        path: .venv
+        path: test_venv
         key: venv-${{ runner.os }}-${{ hashFiles('requirements.txt') }}
 
     
@@ -144,13 +144,13 @@ jobs:
     - name: Restore cached virtual environment
       uses: actions/cache@v4
       with:
-        path: .venv
+        path: test_venv
         key: venv-${{ runner.os }}-${{ hashFiles('requirements.txt') }}
         restore-keys: venv-${{ runner.os }}-
   
     - name: Activate virtual environment and run tests
       run: |
-        source .venv/bin/activate
+        source test_venv/bin/activate
         cd tests/
         pip install pytest
         python -m pytest
