@@ -63,6 +63,18 @@ For potential 2, the same process is followed. Note that many atoms which will b
 
 There are two key timescales associated with `fix mlml`, the timescale associated with rebuilding regions (taking the fixed seed atoms and re-determining the core, blending and buffer regions based on new positions), and (in the case of dynamic seed atoms) the timescale associated with querying the output vector of the fix to classify new seed atoms.
 
+Time Decay Hysteresis
+---------------------
+
+**New in version 0.2.0**, *time decay hysteresis* introduces a mechanism that allows atoms to **smoothly blend in and out** of the expensive potential region over time, rather than switching evaluation states instantaneously.
+
+Time decay hysteresis is controlled by two characteristic times:
+
+- **τ_in**: the characteristic time for an atom to ramp *into* region 1.
+- **τ_out**: the characteristic time for an atom to ramp *out of* region 1.
+
+This ramping is applied to the ``d2_eval[0][i]`` factor, which controls the contribution of the expensive potential to the final force. Instead of updating ``d2_eval`` based solely on geometric distance to the nearest seed atom, the final contribution is computed according to an exponential decay controlled by the respective time constants. See :ref:`fix-mlml` for more details.
+
 How it works: Force mixing
 --------------------------
 

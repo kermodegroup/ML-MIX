@@ -1,3 +1,5 @@
+.. _fix-mlml:
+
 .. index:: fix mlml
 
 fix mlml
@@ -16,9 +18,10 @@ Syntax
 * r_core = size of the core region (distance units)
 * r_buff = size of the buffer region (distance units)
 * r_blend = size of the blending region (distance units)
-* keyword = *group* or *fix_classify* or *init_group*
+* keyword = *group* or *fix_classify* or *init_group* or *hysteresis-time*
 * one of *group* or *fix_classify* keyword/args must be appended
-* *init_group* keyword/args is optional and can only be appended after *fix_classify* args
+* *init_group* keyword/args are optional and can only be appended after *fix_classify* args
+* *hysteresis-time* keyword/args are optional and can only be appended after *group* or *fix_classify* args
 
   .. parsed-literal::
        *group* arg = *group-ID*
@@ -30,6 +33,9 @@ Syntax
          *ub* = lower bound of fix output vector values to select as seed atoms
        *init_group* args = *group-ID*
          group-ID = ID of a group of seed atoms to initially build mlml regions around before the first time the fix output vector defined by *fix_classify* is queried
+        *hysteresis-time* args = *in_time* *out_time*
+         *in_time* = time decay constant (time units) for atoms entering the expensive potential region (region 1).
+         *out_time* = time decay constant (time units) for atoms leaving the expensive potential region (region 1).
          
 Examples
 """"""""
@@ -48,6 +54,11 @@ Examples
     group init_defect id 10 11 12
     fix mlml_fix all mlml 1 4.0 6.0 4.0 fix_classify av_ca 100 0.4 inf init_group init_defect
 
+    group He_group type 2
+    fix mlml_fix all mlml 1 4.0 6.0 4.0 group He_group hysteresis-time 0.001 0.01
+
+
+
 Description
 """""""""""
 .. warning::
@@ -61,7 +72,7 @@ Description
    - *All* other `pair_style` definitions require half neighbor lists.  
      (If at least one `pair_style`—such as `ACE` or `UF3`—requires a full neighbor list, then half neighbor lists are constructed correctly, and this issue does not occur.)
 
-   We are actively working to resolve this issue.
+   Update: This issue has been resolved in the `17/03/2025 LAMMPS Stable release <https://github.com/lammps/lammps/releases/tag/stable_29Aug2024_update2>`_.
 
 This fix command is used to create and maintain a set of regions to be evaluated with 2 different pair_styles using the *hybrid/overlay/mlml* pair style in the *mlmix* package. In *hybrid/overlay/mlml*, different pair_styles are labelled either 1 or 2 to indicate evaluation region.
 
@@ -98,6 +109,30 @@ The force on this blended atom is then determined by
    \mathbf{F}^{i} = p_{1} \mathbf{F}^{i}_{1} + (1 - p_{1}) \mathbf{F}^{i}_{2}
 
 There are two buffer regions, which are each constructed by taking the union of atoms contained within spheres of radius *r_buff* around blending atoms. The pair_style 1 buffer are atoms external to the blending and core regions, whilst the pair_style 2 buffer is only atoms contained within the core region. Note that if `*r_buff* > *r_core*`, pair_style 2 buffer will contain all core atoms. 
+
+If ``time-decay-hysteresis`` is enabled, the proportion of pair_style 1 force on each atom is updated at each region rebuild step using a discretised exponential decay. Rather than immediately transitioning to the :math:`p_{1}` values computed above, an exponentially decaying ramp is used from the previous :math:`p_{1}^{\text{prev}}` values to the newly computed set of :math:`p_{1}` values (the target :math:`p_{1}^{\text{target}}`). This introduces a smooth ramping behaviour.
+
+Two characteristic times control this:
+
+- ``in_time`` — controls the rate at which atoms ramp *into* the region.
+- ``out_time`` — controls the rate at which atoms ramp *out of* the region.
+
+The new proportion of potential 1 force on each atom is computed each update as:
+
+.. math::
+
+   p_{1} \leftarrow \Delta \cdot \min\left(\frac{dt \cdot nevery}{\tau}, 1\right) + p_{1}^{\text{prev}}
+
+where:
+
+- :math:`\Delta = p_{1}^{\text{target}} - p_{1}^{\text{prev}}`
+- :math:`\tau` is either ``in_time`` or ``out_time`` depending on the sign of :math:`\Delta`
+- ``dt`` is the simulation timestep
+- ``nevery`` is the number of steps between region rebuilds
+
+Thresholding is then applied such that atoms with :math:`p_{1} < 0.01` are evaluated with only potential 2 and atoms with :math:`p_{1} > 0.99` are evaluated with only potential 1. 
+
+This approach ensures a smooth transition in force evaluation when atoms move across region boundaries, reducing the 'flickering' behaviour that can be seen when atoms move quickly between regions.
 
 Restrictions
 """"""""""""

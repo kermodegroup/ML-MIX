@@ -45,12 +45,26 @@ FixMLML::FixMLML(LAMMPS *lmp, int narg, char **arg) : Fix(lmp, narg, arg)
   init_flag = false;
   comm_forward = 4;
   comm_reverse = 4;
-  setup_only=false;
-  all_pot_one_flag=false;
-  prev_nlocal = -1;
+  setup_only = false;
+  all_pot_one_flag = false;
+  prev_ntot = -1;
   prev_qm_tot = -1;
   first_set = true;
+  time_decay_hysteresis = false;
+  time_decay_constant_in = 0.0;
+  initial_allocation = false;
+  bool check_kwargs = false;
 
+  int nlocal = atom->nlocal;
+  int nghost = atom->nghost;
+  int ntot = nlocal + nghost;
+
+  memory->create(core_qm_atom_idx, atom->nmax, "FixMLML: core_qm_atom_idx");
+  memory->create(local_qm_atom_list, atom->nmax, "FixMLML: local_qm_atom_list");
+
+  atom->add_callback(Atom::GROW);
+
+  bool no_init_group = true;
   // fix 1 all mlml nevery rqm bw rblend type
   if (narg < 9) utils::missing_cmd_args(FLERR, "fix mlml", error);
 
@@ -60,7 +74,7 @@ FixMLML::FixMLML(LAMMPS *lmp, int narg, char **arg) : Fix(lmp, narg, arg)
     if (nevery == 0) setup_only = true;
     else error->all(FLERR,"Illegal fix mlml nevery value: {}", nevery);
   }
-
+  
   rqm = utils::numeric(FLERR,arg[4],false,lmp);
   if (rqm < 0.0)
     error->all(FLERR,"Illegal fix mlml rqm value: {}", rqm);
@@ -74,20 +88,20 @@ FixMLML::FixMLML(LAMMPS *lmp, int narg, char **arg) : Fix(lmp, narg, arg)
     error->all(FLERR,"Illegal fix mlml rblend value: {}", rblend);
   // now check for keyword arguments
   // group
-
+  
   int iarg = 7;
   if (strcmp(arg[iarg],"group") == 0) {
-    if (iarg + 2 != narg) error->all(FLERR,"Illegal fix mlml group command");
     group2 = utils::strdup(arg[iarg+1]);
     igroup2 = group->find(arg[iarg+1]);
     if (igroup2 == -1)
       error->all(FLERR,"Group ID does not exist");
     group2bit = group->bitmask[igroup2];    
     gflag = true;
-  
+    iarg = 9;
+    if (narg > 9) check_kwargs = true;
   // classify using the output of a different fix
   } else if (strcmp(arg[iarg], "fix_classify") == 0){
-    if (iarg + 5 > narg) error->all(FLERR,"Illegal fix mlml fix_classify command");
+    // if (iarg + 5 > narg) error->all(FLERR,"Illegal fix mlml fix_classify command");
     fix_id = utils::strdup(arg[iarg+1]);
     // error checking for fix is done when it is needed
 
@@ -112,30 +126,54 @@ FixMLML::FixMLML(LAMMPS *lmp, int narg, char **arg) : Fix(lmp, narg, arg)
     }
     fflag=true;
     if (narg>12){
-      if (narg == 14){
-        // now check if we are using an initialisation group
-        if (strcmp(arg[iarg+5], "init_group")==0){
-          init_flag=true;
-          first_set=false;
-          group2 = utils::strdup(arg[iarg+6]);
-          igroup2 = group->find(group2);
-          if (igroup2 == -1)
-            error->all(FLERR,"Group ID does not exist");
-          group2bit = group->bitmask[igroup2];
-        }else error->all(FLERR,"Illegal fix mlml fix_classify command");
-      }else error->all(FLERR,"Illegal fix mlml fix_classify command");
-    }else{
-      error->warning(FLERR, "FixMLML: fix_classify command does not have an initialisation group, all atoms will be evaluated with potential 1 until first fix evaluation");
+    // now check if we are using an initialisation group
+      if (strcmp(arg[iarg+5], "init_group")==0){
+        no_init_group = false;
+        init_flag=true;
+        first_set=false;
+        group2 = utils::strdup(arg[iarg+6]);
+        igroup2 = group->find(group2);
+        if (igroup2 == -1)
+          error->all(FLERR,"Group ID does not exist");
+        group2bit = group->bitmask[igroup2];
+        iarg = 14;
+        if (narg > 14) check_kwargs = true;
+      } else {
+        check_kwargs = true;
+        iarg = 12;
+      }
+    }
+    if (no_init_group){
       all_pot_one_flag = true;
       first_set = false;
     }
   } else error->all(FLERR,"Illegal fix mlml command");
+  
+  if (check_kwargs){
+    if (strcmp(arg[iarg], "hysteresis-time") == 0){
+      // check there are two more arguments
+      if (iarg > narg+1) error->all(FLERR,"Illegal fix mlml on-fly command");
+      time_decay_hysteresis=true;
+      time_decay_constant_in = utils::numeric(FLERR,arg[iarg+1],false,lmp);
+      if (time_decay_constant_in <= 0.0){
+        error->all(FLERR,"Illegal fix mlml hysteresis-time value: {}", time_decay_constant_in);
+      }
+      time_decay_constant_out = utils::numeric(FLERR,arg[iarg+2],false,lmp);
+      if (time_decay_constant_out <= 0.0){
+        error->all(FLERR,"Illegal fix mlml hysteresis-time value: {}", time_decay_constant_out);
+      }
+    }else{
+      error->all(FLERR,"Illegal fix mlml command");
+    }
+  }
 
 }
 
 FixMLML::~FixMLML()
 {
   if (local_qm_atom_list) memory->destroy(local_qm_atom_list);
+  if (core_qm_atom_idx) memory->destroy(core_qm_atom_idx);
+  if (d2_eval_prev) memory->destroy(d2_eval_prev);
 }
 
 /* ---------------------------------------------------------------------- */
@@ -163,17 +201,26 @@ void FixMLML::init_list(int id, NeighList *ptr)
   list = ptr;
 }
 
+void FixMLML::grow_arrays(int nmax)
+{
+  // grow the local_qm_atom_list array
+  memory->grow(local_qm_atom_list, nmax, "FixMLML: local_qm_atom_list");
+  memory->grow(core_qm_atom_idx, nmax, "FixMLML: core_qm_atom_idx");
+}
+
 void FixMLML::setup_pre_force(int){
   // called right at the start of simulation
   int nlocal = atom->nlocal;
-  memory->create(local_qm_atom_list, nlocal, "FixMLML: local_qm_atom_list");
-  memory->create(core_qm_atom_idx, nlocal, "FixMLML: core_qm_atom_idx");
-  prev_nlocal = nlocal;
+  int nghost = atom->nghost;
+  int ntot = nlocal + nghost;
+  prev_ntot = ntot;
+  memory->create(d2_eval_prev, ntot, 2, "FixMLML: d2_eval_prev");
 
   //std::cout<<"HERE HERE HERE HERE"<<std::endl;
 
   // if no initial group set, then start all atoms as QM
   if (all_pot_one_flag){
+    error->warning(FLERR, "FixMLML: fix_classify command does not have an initialisation group, all atoms will be evaluated with potential 1 until first fix evaluation");
     int **i2_potential = (int**)atom->extract("i2_potential");
     double **d2_eval = (double**)atom->extract("d2_eval");
     int nlocal = atom->nlocal;
@@ -188,12 +235,24 @@ void FixMLML::setup_pre_force(int){
       d2_eval[i][0] = 1.0;
       d2_eval[i][1] = 0.0;
     }
-    
+
+    first_set = false;
+    // setting this to true here means that it will slowly decay from
+    // all expensive to the fix atoms after the first fix evaluation
+    initial_allocation = true;
   }else{
     // if there is an initial group, switch at the start
     // to doing it based on group. If not, then do it
     // with the fix
     if (init_flag){
+      if (update->ntimestep > 0) {
+        error->warning(FLERR, "FixMLML: switching back to initialisation group until first fix evaluation!");
+        first_set = false;
+        // setting this to true here means that it will slowly decay
+        // from the initial group atoms to the fix atoms after the
+        // first fix evaluation
+        initial_allocation = true;
+      }
       fflag = false;
       gflag = true;
     }
@@ -241,9 +300,11 @@ void FixMLML::allocate_regions(){
   bool atom_is_qm;
   bool just_qm;
   int n_core_qm = 0;
+  int ntot = nlocal + nghost;
 
   bigint current_timestep = update->ntimestep;
   bigint natoms = atom->natoms;
+  double dt = update->dt;
 
   //std::cout<<"ALLOCATING REGIONS!!!"<<std::endl;
   
@@ -251,10 +312,9 @@ void FixMLML::allocate_regions(){
     error->all(FLERR, "FixMLML: both i2_potential and d2_eval must be allocated");
   }
 
-  if (prev_nlocal<nlocal){
-    prev_nlocal = nlocal;
-    memory->grow(local_qm_atom_list, nlocal, "FixMLML: local_qm_atom_list");
-    memory->grow(core_qm_atom_idx, nlocal, "FixMLML: core_qm_atom_idx");
+  if (prev_ntot<ntot){
+    prev_ntot = ntot;
+    memory->grow(d2_eval_prev, ntot, 2, "FixMLML: d2_eval_prev");
   }
 
 
@@ -290,9 +350,13 @@ void FixMLML::allocate_regions(){
   for (int i = 0; i < nlocal + nghost; i++){
     i2_potential[i][0] = 0;
     i2_potential[i][1] = 0;
+    d2_eval_prev[i][0] = d2_eval[i][0];
+    d2_eval_prev[i][1] = d2_eval[i][1];
     d2_eval[i][0] = 0.0;
     d2_eval[i][1] = 0.0;
   }
+
+
 
   // send these to all ghost atoms on other processors
   comm->forward_comm(this);
@@ -324,14 +388,14 @@ void FixMLML::allocate_regions(){
     // if the atom is QM, set it and all neighbours within r_core
     // to be evaluated with the QM potential
     if (atom_is_qm){
-      i2_potential[i][0] = 1;
+      // i2_potential[i][0] = 1;
       d2_eval[i][0] = 1.0;
       jlist = firstneigh[i];
       for (int jj = 0; jj < num_neigh[i]; jj++){
         int j = jlist[jj];
         j &= NEIGHMASK;
         if (check_cutoff(atom->x[i], atom->x[j], rqm)){
-          i2_potential[j][0] = 1;
+          // i2_potential[j][0] = 1;
           d2_eval[j][0] = 1.0;
         }
       }
@@ -342,44 +406,17 @@ void FixMLML::allocate_regions(){
   comm->reverse_comm(this);
   comm->forward_comm(this);
 
-
-  // now form the MM buffer region
-  // do this by iterating over all core QM atoms
-  // and checking if they are within the buffer width
-  // of any MM atoms.
+  // get ids of all core qm atoms
   int *core_qm_idx = new int[nlocal];
   for (int ii = 0; ii < inum; ii++){
     int i = ilist[ii];
-    // if the atom is in the QM region, store the ID
-    if (i2_potential[i][0] == 1){
+    // if the atom is only QM, store the ID
+    if (d2_eval[i][0] == 1.0){
       core_qm_idx[n_core_qm] = i;
       n_core_qm++;
-      just_qm = true;
-      jlist = firstneigh[i];
-      // iterate over it's neighbours
-      for (int jj = 0; jj < num_neigh[i]; jj++){
-        int j = jlist[jj];
-        j &= NEIGHMASK;
-        // if any neighbour is within the buffer width of an MM atom
-        // then it must be part of the MM buffer, so set just_qm to false
-        if (check_cutoff(atom->x[i], atom->x[j], bw)){
-          if (i2_potential[j][0] == 0){
-            just_qm = false;
-            break;
-          }
-        }
-      }
-      if (just_qm){
-        // this atom is outside the MM buffer
-        // so i2 should be set to 0
-        // note that we are setting it to 1 (?!)
-        // this is for communication reasons 
-        // (highest value gets taken in communication - ghost atoms would overrule a 0)
-        // at the end, we flip i2_potential[i][1] to 1-i2_potential[i][1]
-        i2_potential[i][1] = 1;
-      }
     }
   }
+  
 
   // create the blending region between the MM and QM regions.
   // do this by iterating over the neighbours of all core atoms
@@ -392,7 +429,7 @@ void FixMLML::allocate_regions(){
       j &= NEIGHMASK;
       if (check_cutoff(atom->x[i], atom->x[j], rblend)){
         d2_eval[j][0] = fmax(d2_eval[j][0], linear_blend(atom->x[i], atom->x[j]));
-        i2_potential[j][0] = 1;
+        // i2_potential[j][0] = 1;
       }
     }
   }
@@ -401,6 +438,46 @@ void FixMLML::allocate_regions(){
   comm->reverse_comm(this);
   comm->forward_comm(this);
 
+  if (time_decay_hysteresis && initial_allocation){
+    // iterate over d2_eval, setting d2_eval[i][0] to
+    // ((d2_eval[i][0] - d2_eval_prev[i][0])/time_const)*dt*Nevery + d2_eval_prev[i][0]
+    // this is a discretised exponential decay of d2_eval[i][0]
+    for (int i = 0; i < nlocal + nghost; i++){
+      double change = (d2_eval[i][0] - d2_eval_prev[i][0]);
+      // only decay if change is negative
+      // atoms should enter QM region instantly but leave slowly
+      if (change < 0.0){
+        double multiplier = (dt*static_cast<double>(nevery))/time_decay_constant_out;
+        // if multiplier is greater than 1, set it to 1
+        if (multiplier > 1.0){
+          multiplier = 1.0;
+        }
+        d2_eval[i][0] = change*multiplier + d2_eval_prev[i][0];
+      }
+      if (change > 0.0){
+        double multiplier = (dt*static_cast<double>(nevery))/time_decay_constant_in;
+        // if multiplier is greater than 1, set it to 1
+        if (multiplier > 1.0){
+          multiplier = 1.0;
+        }
+        d2_eval[i][0] = change*multiplier + d2_eval_prev[i][0];
+      }
+      // if the value is less than threshold and change is decreasing set it to 0
+      if (change < 0 && d2_eval[i][0] < 0.01){
+        d2_eval[i][0] = 0.0;
+      }
+      // if the value is greater than threshold and change is increasing set it to 1
+      if (change > 0 && d2_eval[i][0] > 0.99){
+        d2_eval[i][0] = 1.0;
+      }
+    }
+  }
+
+  // communicate new d2_eval
+  comm->reverse_comm(this);
+  comm->forward_comm(this);
+
+  // now we need to populate i2_potential
   
   // now create the QM buffer region
   // first get all QM atoms in core and blending region
@@ -408,7 +485,8 @@ void FixMLML::allocate_regions(){
   int n_qm_and_blend_idx = 0;
   for (int ii = 0; ii < inum; ii++){
     int i = ilist[ii];
-    if (i2_potential[i][0] == 1){
+    if (d2_eval[i][0] > 0.0){
+      i2_potential[i][0] = 1;
       qm_and_blend_idx[n_qm_and_blend_idx] = i;
       n_qm_and_blend_idx++;
     }
@@ -428,7 +506,44 @@ void FixMLML::allocate_regions(){
     }
   }
 
-  // communicate QM buffer atoms
+  // now form the MM buffer region
+  // do this by iterating over all QM atoms
+  // and checking if they are within the buffer width
+  // of any MM atoms.
+
+  for (int ii = 0; ii < n_qm_and_blend_idx; ii++){
+    int i = qm_and_blend_idx[ii];
+    if (d2_eval[i][0] == 1.0){
+      just_qm = true;
+      jlist = firstneigh[i];
+      // iterate over it's neighbours
+      for (int jj = 0; jj < num_neigh[i]; jj++){
+        int j = jlist[jj];
+        j &= NEIGHMASK;
+        // if any neighbour within the buffer width has an MM component
+        // atom i must be part of the MM buffer, so set just_qm to false
+        if (check_cutoff(atom->x[i], atom->x[j], bw)){
+          if (d2_eval[j][0] < 1.0){
+            just_qm = false;
+            break;
+          }
+        }
+      }
+
+      if (just_qm){
+        // this atom is outside the MM buffer
+        // so i2 should be set to 0
+        // note that we are setting it to 1 (?!)
+        // this is for communication reasons 
+        // (highest value gets taken in communication - ghost atoms would overrule a 0)
+        // at the end, we flip i2_potential[i][1] to 1-i2_potential[i][1]
+        i2_potential[i][1] = 1;
+      }
+    }
+  }
+
+
+  // communicate i2_potential to all procs
   comm->reverse_comm(this);
   comm->forward_comm(this);
 
@@ -446,6 +561,8 @@ void FixMLML::allocate_regions(){
   // clean up memory
   delete[] core_qm_idx;
   delete[] qm_and_blend_idx;
+
+  initial_allocation = true;
 }
 
 

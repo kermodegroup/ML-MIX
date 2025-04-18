@@ -16,24 +16,49 @@ def get_seed_atoms(struct):
     seed_atoms = idx[:2]
     return seed_atoms
 
-def build_regions_lammps(lmps, struct, r_core, r_blend, r_buff, pick_seed_with='group', nsteps=1, fix_nevery=10, comm=None, rank=0, path='./'):
+def build_regions_lammps(lmps, 
+                         struct, 
+                         r_core, 
+                         r_blend, 
+                         r_buff, 
+                         pick_seed_with='group', 
+                         nsteps=1, 
+                         fix_nevery=10,
+                         fix_lb=45.5, 
+                         comm=None, 
+                         rank=0, 
+                         path='./',
+                         hysteresis=False,
+                         hysteresis_time_in=0.0,
+                         hysteresis_time_out=0.0,
+                         nevery=1):
+
     largest_cutoff = np.max((r_core,r_buff,r_blend))
     lmps.command(f'comm_modify cutoff {largest_cutoff+2.0}')
     seed_atoms = get_seed_atoms(struct)
     # set up dump
-    lmps.command(f'dump dump1 all custom {nsteps} {path}/dump.lammpstrj id type x y z fx fy fz i2_potential[1] i2_potential[2] d2_eval[1] d2_eval[2]')
+    lmps.command(f'dump dump1 all custom 1 {path}/dump.lammpstrj id type x y z fx fy fz i2_potential[1] i2_potential[2] d2_eval[1] d2_eval[2]')
     lmps.command(f'dump_modify dump1 format float %20.15g')
     lmps.command(f'group seed_atoms id {" ".join([str(i+1) for i in seed_atoms])}')
     if pick_seed_with == 'group':
-        lmps.command(f'fix mlml_fix all mlml 1 {r_core} {r_buff} {r_blend} group seed_atoms')
+        if hysteresis:
+            lmps.command(f'fix mlml_fix all mlml {nevery} {r_core} {r_buff} {r_blend} group seed_atoms hysteresis-time {hysteresis_time_in} {hysteresis_time_out}')
+        else:
+            lmps.command(f'fix mlml_fix all mlml {nevery} {r_core} {r_buff} {r_blend} group seed_atoms')
     elif pick_seed_with == 'fix':
         lmps.command('compute ca all coord/atom cutoff 4.0')
         lmps.command(f'fix av_ca all ave/atom 1 1 {fix_nevery} c_ca')
-        lmps.command(f'fix mlml_fix all mlml 1 {r_core} {r_buff} {r_blend} fix_classify av_ca {fix_nevery} 45.5 inf')
+        if hysteresis:
+            lmps.command(f'fix mlml_fix all mlml {nevery} {r_core} {r_buff} {r_blend} fix_classify av_ca {fix_nevery} {fix_lb} inf hysteresis-time {hysteresis_time_in} {hysteresis_time_out}')
+        else:
+            lmps.command(f'fix mlml_fix all mlml {nevery} {r_core} {r_buff} {r_blend} fix_classify av_ca {fix_nevery} {fix_lb} inf')
     elif pick_seed_with == 'fix_and_init_group':
         lmps.command('compute ca all coord/atom cutoff 4.0')
         lmps.command(f'fix av_ca all ave/atom 1 1 {fix_nevery} c_ca')
-        lmps.command(f'fix mlml_fix all mlml 1 {r_core} {r_buff} {r_blend} fix_classify av_ca {fix_nevery} 45.5 inf init_group seed_atoms')
+        if hysteresis:
+            lmps.command(f'fix mlml_fix all mlml {nevery} {r_core} {r_buff} {r_blend} fix_classify av_ca {fix_nevery} {fix_lb} inf init_group seed_atoms hysteresis-time {hysteresis_time_in} {hysteresis_time_out}')
+        else:
+            lmps.command(f'fix mlml_fix all mlml {nevery} {r_core} {r_buff} {r_blend} fix_classify av_ca {fix_nevery} {fix_lb} inf init_group seed_atoms')
 
     if pick_seed_with != 'group':    
         lmps.command(f'dump fix_dump all custom {fix_nevery} {path}/fix_dump.lammpstrj id type x y z fx fy fz i2_potential[1] i2_potential[2] d2_eval[1] d2_eval[2] f_av_ca')
@@ -66,14 +91,16 @@ def build_regions_lammps(lmps, struct, r_core, r_blend, r_buff, pick_seed_with='
     return i2_potential, d2_eval
 
 
-def build_regions_python(struct, r_core, r_blend, r_buff, pick_seed_with='group', comm=None, rank=0, path='./'):
-    
+def build_regions_python(struct, r_core, r_blend, r_buff, pick_seed_with='group', comm=None, rank=0, path='./',seed_id=None):
     i2_potential = np.zeros((len(struct),2), dtype=bool)
     d2_eval = np.zeros((len(struct),2), dtype=float)
     core = np.zeros(len(struct), dtype=bool)
 
     if pick_seed_with == 'group':
-        seed_atoms = get_seed_atoms(struct)
+        if seed_id is None:
+            seed_atoms = get_seed_atoms(struct)
+        else:
+            seed_atoms = [seed_id]
     elif pick_seed_with == 'fix':
         i = neighbour_list('i', struct, 4.0)
         coord = np.bincount(i)
