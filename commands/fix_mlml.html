@@ -90,8 +90,8 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="fix-mlml">
-<span id="index-0"></span><h1>fix mlml<a class="headerlink" href="#fix-mlml" title="Link to this heading"></a></h1>
+  <section id="index-0">
+<span id="fix-mlml"></span><span id="id1"></span><h1>fix mlml<a class="headerlink" href="#index-0" title="Link to this heading"></a></h1>
 <section id="syntax">
 <h2>Syntax<a class="headerlink" href="#syntax" title="Link to this heading"></a></h2>
 <div class="highlight-LAMMPS notranslate"><div class="highlight"><pre><span></span>fix ID group-ID mlml nevery r_core r_buff r_blend keyword args ...
@@ -104,9 +104,10 @@
 <li><p>r_core = size of the core region (distance units)</p></li>
 <li><p>r_buff = size of the buffer region (distance units)</p></li>
 <li><p>r_blend = size of the blending region (distance units)</p></li>
-<li><p>keyword = <em>group</em> or <em>fix_classify</em> or <em>init_group</em></p></li>
+<li><p>keyword = <em>group</em> or <em>fix_classify</em> or <em>init_group</em> or <em>hysteresis-time</em></p></li>
 <li><p>one of <em>group</em> or <em>fix_classify</em> keyword/args must be appended</p></li>
-<li><p><em>init_group</em> keyword/args is optional and can only be appended after <em>fix_classify</em> args</p>
+<li><p><em>init_group</em> keyword/args are optional and can only be appended after <em>fix_classify</em> args</p></li>
+<li><p><em>hysteresis-time</em> keyword/args are optional and can only be appended after <em>group</em> or <em>fix_classify</em> args</p>
 <pre class="literal-block"><em>group</em> arg = <em>group-ID</em>
   group-ID = ID of a group of seed atoms to build region around
 <em>fix_classify</em> args = <em>fix_id</em> <em>nfreq</em> <em>lb</em> <em>ub</em>
@@ -115,7 +116,10 @@
   <em>lb</em> = lower bound of fix output vector values to select as seed atoms
   <em>ub</em> = lower bound of fix output vector values to select as seed atoms
 <em>init_group</em> args = <em>group-ID</em>
-  group-ID = ID of a group of seed atoms to initially build mlml regions around before the first time the fix output vector defined by <em>fix_classify</em> is queried</pre>
+  group-ID = ID of a group of seed atoms to initially build mlml regions around before the first time the fix output vector defined by <em>fix_classify</em> is queried
+ <em>hysteresis-time</em> args = <em>in_time</em> <em>out_time</em>
+  <em>in_time</em> = time decay constant (time units) for atoms entering the expensive potential region (region 1).
+  <em>out_time</em> = time decay constant (time units) for atoms leaving the expensive potential region (region 1).</pre>
 </li>
 </ul>
 </section>
@@ -132,6 +136,9 @@ compute ca all coord/atom cutoff 2.0
 fix av_ca all ave/atom 10 10 100 c_ca
 group init_defect id 10 11 12
 fix mlml_fix all mlml 1 4.0 6.0 4.0 fix_classify av_ca 100 0.4 inf init_group init_defect
+
+group He_group type 2
+fix mlml_fix all mlml 1 4.0 6.0 4.0 group He_group hysteresis-time 0.001 0.01
 </pre></div>
 </div>
 </section>
@@ -147,7 +154,7 @@ In the current version of LAMMPS, if a <cite>pair_style</cite> attempts to build
 <li><p><em>All</em> other <cite>pair_style</cite> definitions require half neighbor lists.
 (If at least one <cite>pair_style</cite>—such as <cite>ACE</cite> or <cite>UF3</cite>—requires a full neighbor list, then half neighbor lists are constructed correctly, and this issue does not occur.)</p></li>
 </ul>
-<p>We are actively working to resolve this issue.</p>
+<p>Update: This issue has been resolved in the <a class="reference external" href="https://github.com/lammps/lammps/releases/tag/stable_29Aug2024_update2">17/03/2025 LAMMPS Stable release</a>.</p>
 </div>
 <p>This fix command is used to create and maintain a set of regions to be evaluated with 2 different pair_styles using the <em>hybrid/overlay/mlml</em> pair style in the <em>mlmix</em> package. In <em>hybrid/overlay/mlml</em>, different pair_styles are labelled either 1 or 2 to indicate evaluation region.</p>
 <p>This fix is used to build an evaluation region around user-specified seed atoms. All atoms which lie inside this region are marked for evaluation with pair_style 1, and all atoms outside it are marked for evaluation with potential 2.</p>
@@ -172,6 +179,24 @@ The force on this blended atom is then determined by</p>
 <div class="math notranslate nohighlight">
 \[\mathbf{F}^{i} = p_{1} \mathbf{F}^{i}_{1} + (1 - p_{1}) \mathbf{F}^{i}_{2}\]</div>
 <p>There are two buffer regions, which are each constructed by taking the union of atoms contained within spheres of radius <em>r_buff</em> around blending atoms. The pair_style 1 buffer are atoms external to the blending and core regions, whilst the pair_style 2 buffer is only atoms contained within the core region. Note that if <cite>*r_buff* &gt; *r_core*</cite>, pair_style 2 buffer will contain all core atoms.</p>
+<p>If <code class="docutils literal notranslate"><span class="pre">time-decay-hysteresis</span></code> is enabled, the proportion of pair_style 1 force on each atom is updated at each region rebuild step using a discretised exponential decay. Rather than immediately transitioning to the <span class="math notranslate nohighlight">\(p_{1}\)</span> values computed above, an exponentially decaying ramp is used from the previous <span class="math notranslate nohighlight">\(p_{1}^{\text{prev}}\)</span> values to the newly computed set of <span class="math notranslate nohighlight">\(p_{1}\)</span> values (the target <span class="math notranslate nohighlight">\(p_{1}^{\text{target}}\)</span>). This introduces a smooth ramping behaviour.</p>
+<p>Two characteristic times control this:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">in_time</span></code> — controls the rate at which atoms ramp <em>into</em> the region.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">out_time</span></code> — controls the rate at which atoms ramp <em>out of</em> the region.</p></li>
+</ul>
+<p>The new proportion of potential 1 force on each atom is computed each update as:</p>
+<div class="math notranslate nohighlight">
+\[p_{1} \leftarrow \Delta \cdot \min\left(\frac{dt \cdot nevery}{\tau}, 1\right) + p_{1}^{\text{prev}}\]</div>
+<p>where:</p>
+<ul class="simple">
+<li><p><span class="math notranslate nohighlight">\(\Delta = p_{1}^{\text{target}} - p_{1}^{\text{prev}}\)</span></p></li>
+<li><p><span class="math notranslate nohighlight">\(\tau\)</span> is either <code class="docutils literal notranslate"><span class="pre">in_time</span></code> or <code class="docutils literal notranslate"><span class="pre">out_time</span></code> depending on the sign of <span class="math notranslate nohighlight">\(\Delta\)</span></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">dt</span></code> is the simulation timestep</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">nevery</span></code> is the number of steps between region rebuilds</p></li>
+</ul>
+<p>Thresholding is then applied such that atoms with <span class="math notranslate nohighlight">\(p_{1} &lt; 0.01\)</span> are evaluated with only potential 2 and atoms with <span class="math notranslate nohighlight">\(p_{1} &gt; 0.99\)</span> are evaluated with only potential 1.</p>
+<p>This approach ensures a smooth transition in force evaluation when atoms move across region boundaries, reducing the ‘flickering’ behaviour that can be seen when atoms move quickly between regions.</p>
 </section>
 <section id="restrictions">
 <h2>Restrictions<a class="headerlink" href="#restrictions" title="Link to this heading"></a></h2>

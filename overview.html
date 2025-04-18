@@ -51,6 +51,7 @@
 <li class="toctree-l2"><a class="reference internal" href="#why-use-this-package">Why Use This Package?</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#how-it-works-data-flow">How it works: Data flow</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#how-it-works-region-building">How it works: Region building</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#time-decay-hysteresis">Time Decay Hysteresis</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#how-it-works-force-mixing">How it works: Force mixing</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#mitigating-energy-drift">Mitigating energy drift</a></li>
 </ul>
@@ -137,6 +138,16 @@ fix<span class="w"> </span>eval_arr<span class="w"> </span>all<span class="w"> <
 </ul>
 <p>For potential 2, the same process is followed. Note that many atoms which will be evaluated by potential 1 will also be evaluated by potential 2 (i.e, those which lie in the buffer of 1, the blending region and the buffer of 2), but with d2_eval[1][i] = 1 - d2_eval[0][i].</p>
 <p>There are two key timescales associated with <cite>fix mlml</cite>, the timescale associated with rebuilding regions (taking the fixed seed atoms and re-determining the core, blending and buffer regions based on new positions), and (in the case of dynamic seed atoms) the timescale associated with querying the output vector of the fix to classify new seed atoms.</p>
+</section>
+<section id="time-decay-hysteresis">
+<h2>Time Decay Hysteresis<a class="headerlink" href="#time-decay-hysteresis" title="Link to this heading"></a></h2>
+<p><strong>New in version 0.2.0</strong>, <em>time decay hysteresis</em> introduces a mechanism that allows atoms to <strong>smoothly blend in and out</strong> of the expensive potential region over time, rather than switching evaluation states instantaneously.</p>
+<p>Time decay hysteresis is controlled by two characteristic times:</p>
+<ul class="simple">
+<li><p><strong>τ_in</strong>: the characteristic time for an atom to ramp <em>into</em> region 1.</p></li>
+<li><p><strong>τ_out</strong>: the characteristic time for an atom to ramp <em>out of</em> region 1.</p></li>
+</ul>
+<p>This ramping is applied to the <code class="docutils literal notranslate"><span class="pre">d2_eval[0][i]</span></code> factor, which controls the contribution of the expensive potential to the final force. Instead of updating <code class="docutils literal notranslate"><span class="pre">d2_eval</span></code> based solely on geometric distance to the nearest seed atom, the final contribution is computed according to an exponential decay controlled by the respective time constants. See <a class="reference internal" href="commands/fix_mlml.html#fix-mlml"><span class="std std-ref">fix mlml</span></a> for more details.</p>
 </section>
 <section id="how-it-works-force-mixing">
 <h2>How it works: Force mixing<a class="headerlink" href="#how-it-works-force-mixing" title="Link to this heading"></a></h2>
