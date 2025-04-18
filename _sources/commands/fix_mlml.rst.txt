@@ -110,12 +110,12 @@ The force on this blended atom is then determined by
 
 There are two buffer regions, which are each constructed by taking the union of atoms contained within spheres of radius *r_buff* around blending atoms. The pair_style 1 buffer are atoms external to the blending and core regions, whilst the pair_style 2 buffer is only atoms contained within the core region. Note that if `*r_buff* > *r_core*`, pair_style 2 buffer will contain all core atoms. 
 
-If ``time-decay-hysteresis`` is enabled, the proportion of pair_style 1 force on each atom is updated at each region rebuild step using a discretised exponential decay. Rather than immediately transitioning to the :math:`p_{1}` values computed above, an exponentially decaying ramp is used from the previous :math:`p_{1}^{\text{prev}}` values to the newly computed set of :math:`p_{1}` values (the target :math:`p_{1}^{\text{target}}`). This introduces a smooth ramping behaviour.
+**New in 0.2.0** If *time-decay-hysteresis* is enabled, the proportion of pair_style 1 force on each atom is updated at each region rebuild step using a discretised exponential decay. Rather than immediately transitioning to the :math:`p_{1}` values computed above, an exponentially decaying ramp is used from the previous :math:`p_{1}^{\text{prev}}` values to the newly computed set of :math:`p_{1}` values (the target :math:`p_{1}^{\text{target}}`). This introduces a smooth ramping behaviour.
 
 Two characteristic times control this:
 
-- ``in_time`` — controls the rate at which atoms ramp *into* the region.
-- ``out_time`` — controls the rate at which atoms ramp *out of* the region.
+- *in_time* — controls the rate at which atoms ramp *into* the region.
+- *out_time* — controls the rate at which atoms ramp *out of* the region.
 
 The new proportion of potential 1 force on each atom is computed each update as:
 
@@ -126,9 +126,9 @@ The new proportion of potential 1 force on each atom is computed each update as:
 where:
 
 - :math:`\Delta = p_{1}^{\text{target}} - p_{1}^{\text{prev}}`
-- :math:`\tau` is either ``in_time`` or ``out_time`` depending on the sign of :math:`\Delta`
-- ``dt`` is the simulation timestep
-- ``nevery`` is the number of steps between region rebuilds
+- :math:`\tau` is either *in_time* or *out_time* depending on the sign of :math:`\Delta`
+- *dt* is the simulation timestep
+- *nevery* is the number of steps between region rebuilds
 
 Thresholding is then applied such that atoms with :math:`p_{1} < 0.01` are evaluated with only potential 2 and atoms with :math:`p_{1} > 0.99` are evaluated with only potential 1. 
 

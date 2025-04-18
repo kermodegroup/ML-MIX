@@ -179,11 +179,11 @@ The force on this blended atom is then determined by</p>
 <div class="math notranslate nohighlight">
 \[\mathbf{F}^{i} = p_{1} \mathbf{F}^{i}_{1} + (1 - p_{1}) \mathbf{F}^{i}_{2}\]</div>
 <p>There are two buffer regions, which are each constructed by taking the union of atoms contained within spheres of radius <em>r_buff</em> around blending atoms. The pair_style 1 buffer are atoms external to the blending and core regions, whilst the pair_style 2 buffer is only atoms contained within the core region. Note that if <cite>*r_buff* &gt; *r_core*</cite>, pair_style 2 buffer will contain all core atoms.</p>
-<p>If <code class="docutils literal notranslate"><span class="pre">time-decay-hysteresis</span></code> is enabled, the proportion of pair_style 1 force on each atom is updated at each region rebuild step using a discretised exponential decay. Rather than immediately transitioning to the <span class="math notranslate nohighlight">\(p_{1}\)</span> values computed above, an exponentially decaying ramp is used from the previous <span class="math notranslate nohighlight">\(p_{1}^{\text{prev}}\)</span> values to the newly computed set of <span class="math notranslate nohighlight">\(p_{1}\)</span> values (the target <span class="math notranslate nohighlight">\(p_{1}^{\text{target}}\)</span>). This introduces a smooth ramping behaviour.</p>
+<p><strong>New in 0.2.0</strong> If <em>time-decay-hysteresis</em> is enabled, the proportion of pair_style 1 force on each atom is updated at each region rebuild step using a discretised exponential decay. Rather than immediately transitioning to the <span class="math notranslate nohighlight">\(p_{1}\)</span> values computed above, an exponentially decaying ramp is used from the previous <span class="math notranslate nohighlight">\(p_{1}^{\text{prev}}\)</span> values to the newly computed set of <span class="math notranslate nohighlight">\(p_{1}\)</span> values (the target <span class="math notranslate nohighlight">\(p_{1}^{\text{target}}\)</span>). This introduces a smooth ramping behaviour.</p>
 <p>Two characteristic times control this:</p>
 <ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">in_time</span></code> — controls the rate at which atoms ramp <em>into</em> the region.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">out_time</span></code> — controls the rate at which atoms ramp <em>out of</em> the region.</p></li>
+<li><p><em>in_time</em> — controls the rate at which atoms ramp <em>into</em> the region.</p></li>
+<li><p><em>out_time</em> — controls the rate at which atoms ramp <em>out of</em> the region.</p></li>
 </ul>
 <p>The new proportion of potential 1 force on each atom is computed each update as:</p>
 <div class="math notranslate nohighlight">
@@ -191,9 +191,9 @@ The force on this blended atom is then determined by</p>
 <p>where:</p>
 <ul class="simple">
 <li><p><span class="math notranslate nohighlight">\(\Delta = p_{1}^{\text{target}} - p_{1}^{\text{prev}}\)</span></p></li>
-<li><p><span class="math notranslate nohighlight">\(\tau\)</span> is either <code class="docutils literal notranslate"><span class="pre">in_time</span></code> or <code class="docutils literal notranslate"><span class="pre">out_time</span></code> depending on the sign of <span class="math notranslate nohighlight">\(\Delta\)</span></p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">dt</span></code> is the simulation timestep</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">nevery</span></code> is the number of steps between region rebuilds</p></li>
+<li><p><span class="math notranslate nohighlight">\(\tau\)</span> is either <em>in_time</em> or <em>out_time</em> depending on the sign of <span class="math notranslate nohighlight">\(\Delta\)</span></p></li>
+<li><p><em>dt</em> is the simulation timestep</p></li>
+<li><p><em>nevery</em> is the number of steps between region rebuilds</p></li>
 </ul>
 <p>Thresholding is then applied such that atoms with <span class="math notranslate nohighlight">\(p_{1} &lt; 0.01\)</span> are evaluated with only potential 2 and atoms with <span class="math notranslate nohighlight">\(p_{1} &gt; 0.99\)</span> are evaluated with only potential 1.</p>
 <p>This approach ensures a smooth transition in force evaluation when atoms move across region boundaries, reducing the ‘flickering’ behaviour that can be seen when atoms move quickly between regions.</p>
