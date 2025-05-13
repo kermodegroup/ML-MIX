@@ -111,7 +111,7 @@ for *blend linear* and
 
    p_{1} = 1.0 - \left(3\left(\frac{|\mathbf{r}|}{r_{\text{blend}}}\right)^{2} - 2\left(\frac{|\mathbf{r}|}{r_{\text{blend}}}\right)^{3}\right)
 
-for *blend cubic*, where :math:`\mathbf{r}` is the shortest vector from the atom to any seed atom.
+(**New in 0.2.0**) for *blend cubic*, where :math:`\mathbf{r}` is the shortest vector from the atom to any seed atom.
 
 The force on this blended atom is then determined by
 
