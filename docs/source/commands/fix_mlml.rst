@@ -33,9 +33,13 @@ Syntax
          *ub* = lower bound of fix output vector values to select as seed atoms
        *init_group* args = *group-ID*
          group-ID = ID of a group of seed atoms to initially build mlml regions around before the first time the fix output vector defined by *fix_classify* is queried
-        *hysteresis-time* args = *in_time* *out_time*
+       *hysteresis-time* args = *in_time* *out_time*
          *in_time* = time decay constant (time units) for atoms entering the expensive potential region (region 1).
          *out_time* = time decay constant (time units) for atoms leaving the expensive potential region (region 1).
+       *blend* args = *blend_type*
+         *blend_type* = type of blending to use for the core region
+           *linear* = linear blending (default)
+           *cubic* = cubic blending
          
 Examples
 """"""""
@@ -95,18 +99,26 @@ The core region is the union of atoms contained within spheres of radius *r_core
 
 The blending region is the union of atoms contained within spheres of radius 
 *r_blend* around each core atom, which is not already in the core region.
-Atoms within the blending region are evaluated with both pair_styles, and the forces are linearly blended between the two. The proportion of pair_style 1 force on any individual atom is determined by 
+Atoms within the blending region are evaluated with both pair_styles, and the forces are linearly blended between the two. The proportion of pair_style 1 force on any individual atom is determined by
 
 .. math::
 
    p_{1} = 1.0 - \left(\frac{|\mathbf{r}|}{r_{\text{blend}}}\right)
 
-where :math:`\mathbf{r}` is the shortest vector from the atom to any seed atom.
+for *blend linear* and
+
+.. math::
+
+   p_{1} = 1.0 - \left(3\left(\frac{|\mathbf{r}|}{r_{\text{blend}}}\right)^{2} - 2\left(\frac{|\mathbf{r}|}{r_{\text{blend}}}\right)^{3}\right)
+
+for *blend cubic*, where :math:`\mathbf{r}` is the shortest vector from the atom to any seed atom.
+
 The force on this blended atom is then determined by
 
 .. math::
 
    \mathbf{F}^{i} = p_{1} \mathbf{F}^{i}_{1} + (1 - p_{1}) \mathbf{F}^{i}_{2}
+
 
 There are two buffer regions, which are each constructed by taking the union of atoms contained within spheres of radius *r_buff* around blending atoms. The pair_style 1 buffer are atoms external to the blending and core regions, whilst the pair_style 2 buffer is only atoms contained within the core region. Note that if `*r_buff* > *r_core*`, pair_style 2 buffer will contain all core atoms. 
 
