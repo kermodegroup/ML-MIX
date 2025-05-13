@@ -39,7 +39,7 @@ class FixMLML : public Fix {
   void grow_arrays(int) override;
 
   bool check_cutoff(double *, double *, double);
-  double linear_blend(double *, double *);
+  double blend(double *, double *);
   void allocate_regions();
   void update_global_QM_list();
 
@@ -57,7 +57,8 @@ class FixMLML : public Fix {
   char *fix_id;
   int igroup2, group2bit;
   int nfreq;
-
+  int blend_type;
+  
   double lb, ub;
 
   bool gflag, fflag, setup_only, init_flag, all_pot_one_flag;

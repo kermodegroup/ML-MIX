@@ -31,7 +31,8 @@ def build_regions_lammps(lmps,
                          hysteresis=False,
                          hysteresis_time_in=0.0,
                          hysteresis_time_out=0.0,
-                         nevery=1):
+                         nevery=1,
+                         blend_type='linear'):
 
     largest_cutoff = np.max((r_core,r_buff,r_blend))
     lmps.command(f'comm_modify cutoff {largest_cutoff+2.0}')
@@ -40,26 +41,24 @@ def build_regions_lammps(lmps,
     lmps.command(f'dump dump1 all custom 1 {path}/dump.lammpstrj id type x y z fx fy fz i2_potential[1] i2_potential[2] d2_eval[1] d2_eval[2]')
     lmps.command(f'dump_modify dump1 format float %20.15g')
     lmps.command(f'group seed_atoms id {" ".join([str(i+1) for i in seed_atoms])}')
+    command = f'fix mlml_fix all mlml {nevery} {r_core} {r_buff} {r_blend}'
     if pick_seed_with == 'group':
-        if hysteresis:
-            lmps.command(f'fix mlml_fix all mlml {nevery} {r_core} {r_buff} {r_blend} group seed_atoms hysteresis-time {hysteresis_time_in} {hysteresis_time_out}')
-        else:
-            lmps.command(f'fix mlml_fix all mlml {nevery} {r_core} {r_buff} {r_blend} group seed_atoms')
+        command += f' group seed_atoms'
     elif pick_seed_with == 'fix':
         lmps.command('compute ca all coord/atom cutoff 4.0')
         lmps.command(f'fix av_ca all ave/atom 1 1 {fix_nevery} c_ca')
-        if hysteresis:
-            lmps.command(f'fix mlml_fix all mlml {nevery} {r_core} {r_buff} {r_blend} fix_classify av_ca {fix_nevery} {fix_lb} inf hysteresis-time {hysteresis_time_in} {hysteresis_time_out}')
-        else:
-            lmps.command(f'fix mlml_fix all mlml {nevery} {r_core} {r_buff} {r_blend} fix_classify av_ca {fix_nevery} {fix_lb} inf')
+        command += f' fix_classify av_ca {fix_nevery} {fix_lb} inf'
     elif pick_seed_with == 'fix_and_init_group':
+        command += f' fix_classify av_ca {fix_nevery} {fix_lb} inf init_group seed_atoms'
         lmps.command('compute ca all coord/atom cutoff 4.0')
         lmps.command(f'fix av_ca all ave/atom 1 1 {fix_nevery} c_ca')
-        if hysteresis:
-            lmps.command(f'fix mlml_fix all mlml {nevery} {r_core} {r_buff} {r_blend} fix_classify av_ca {fix_nevery} {fix_lb} inf init_group seed_atoms hysteresis-time {hysteresis_time_in} {hysteresis_time_out}')
-        else:
-            lmps.command(f'fix mlml_fix all mlml {nevery} {r_core} {r_buff} {r_blend} fix_classify av_ca {fix_nevery} {fix_lb} inf init_group seed_atoms')
 
+    if hysteresis:
+        command += f' hysteresis-time {hysteresis_time_in} {hysteresis_time_out}'
+    if blend_type == 'cubic':
+        command += ' blend cubic'
+    
+    lmps.command(command)
     if pick_seed_with != 'group':    
         lmps.command(f'dump fix_dump all custom {fix_nevery} {path}/fix_dump.lammpstrj id type x y z fx fy fz i2_potential[1] i2_potential[2] d2_eval[1] d2_eval[2] f_av_ca')
     lmps.command(f'run {nsteps}')
@@ -91,7 +90,7 @@ def build_regions_lammps(lmps,
     return i2_potential, d2_eval
 
 
-def build_regions_python(struct, r_core, r_blend, r_buff, pick_seed_with='group', comm=None, rank=0, path='./',seed_id=None):
+def build_regions_python(struct, r_core, r_blend, r_buff, pick_seed_with='group', comm=None, rank=0, path='./',seed_id=None, blend_type='linear'):
     i2_potential = np.zeros((len(struct),2), dtype=bool)
     d2_eval = np.zeros((len(struct),2), dtype=float)
     core = np.zeros(len(struct), dtype=bool)
@@ -138,7 +137,11 @@ def build_regions_python(struct, r_core, r_blend, r_buff, pick_seed_with='group'
         blend_adj_idx = np.where(blend_adj)[0]
         for idx_adj in blend_adj_idx:
             dist = dists[idx_adj]
-            d2_eval[idx_adj,0] = max(d2_eval[idx_adj,0], 1.0 - dist/r_blend)
+            if blend_type == 'linear':
+                d2_eval[idx_adj,0] = max(d2_eval[idx_adj,0], 1.0 - dist/r_blend)
+            elif blend_type == 'cubic':
+                x = dist/r_blend
+                d2_eval[idx_adj,0] = max(d2_eval[idx_adj,0], (1.0 - (3*(x**2) - 2*(x**3))))
         blend = blend_adj|blend
     
     i2_potential[blend,0] = True

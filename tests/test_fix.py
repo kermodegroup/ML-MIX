@@ -47,6 +47,12 @@ def parse_arguments():
         default="group",
         help="Method to pick seed atoms"
     )
+    parser.add_argument(
+        "--blend_type",
+        type=str,
+        default="linear",
+        help="Type of blending to use"
+    )
 
     return parser.parse_args()
 
@@ -56,7 +62,8 @@ def region_test(verbose=False,
                 direct_run=False,
                 pick_seed_with='group',
                 nsteps=1,
-                fix_nevery=10):
+                fix_nevery=10,
+                blend_type='linear'):
     data_path = "./test_fix_data"
     if rank == 0:
         if not os.path.exists(data_path):
@@ -93,7 +100,8 @@ def region_test(verbose=False,
                              comm=comm, 
                              rank=rank, 
                              path=data_path,
-                             pick_seed_with=python_pick_seed_with)
+                             pick_seed_with=python_pick_seed_with,
+                             blend_type=blend_type,)
 
     if verbose:
         lmps = lammps(comm=comm)
@@ -115,13 +123,16 @@ def region_test(verbose=False,
                              path=data_path,
                              pick_seed_with=pick_seed_with,
                              nsteps=nsteps,
-                             fix_nevery=fix_nevery)
+                             fix_nevery=fix_nevery,
+                             blend_type=blend_type,)
 
 
     d2_eval_diff = d2_eval_python - d2_eval_lammps
     d2_eval_diff = np.abs(d2_eval_diff)
     struct.arrays['i2_potential_python'] = i2_potential_python
     struct.arrays['i2_potential_lammps'] = i2_potential_lammps
+    struct.arrays['d2_eval_python'] = d2_eval_python
+    struct.arrays['d2_eval_lammps'] = d2_eval_lammps
     struct.arrays['d2_eval_diff'] = d2_eval_diff
     if rank == 0:
         ase.io.write(f"{data_path}/debug.xyz", struct, format='extxyz', parallel=False)
@@ -144,12 +155,14 @@ def region_test(verbose=False,
 
 def test_build_with_group():
     region_test(pick_seed_with='group')
+    region_test(pick_seed_with='group',blend_type='cubic')
 
 def test_build_with_fix():
     region_test(pick_seed_with='fix',nsteps=1,fix_nevery=10)
     region_test(pick_seed_with='fix',nsteps=5,fix_nevery=10)
     region_test(pick_seed_with='fix',nsteps=20,fix_nevery=10)
     region_test(pick_seed_with='fix',nsteps=55,fix_nevery=10)
+    region_test(pick_seed_with='fix',nsteps=2,fix_nevery=1,blend_type='cubic')
 
 
 def test_build_with_init_group():
@@ -157,6 +170,8 @@ def test_build_with_init_group():
     region_test(pick_seed_with='fix_and_init_group',nsteps=5,fix_nevery=10)
     region_test(pick_seed_with='fix_and_init_group',nsteps=20,fix_nevery=10)
     region_test(pick_seed_with='fix_and_init_group',nsteps=55,fix_nevery=10)
+    region_test(pick_seed_with='fix_and_init_group',nsteps=2,fix_nevery=1,blend_type='cubic')
+    region_test(pick_seed_with='fix_and_init_group',nsteps=55,fix_nevery=10,blend_type='cubic')
 
 
 
@@ -170,8 +185,9 @@ if __name__ == "__main__":
                            crash_on_fail=args.crash_on_fail,
                            direct_run=True, 
                            pick_seed_with=args.pick_seed_with, 
-                           nsteps=20,
-                           fix_nevery=10)
+                           nsteps=1,
+                           fix_nevery=10,
+                           blend_type=args.blend_type)
     results = {"Region building": {"result":err_code, "datetime":datetime.now().strftime("%Y-%m-%d %H:%M:%S")}}
     out_json = f"../feature_test_results_{test_type}.json"
     top_readme = "../README.md"

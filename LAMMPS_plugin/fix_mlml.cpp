@@ -53,6 +53,7 @@ FixMLML::FixMLML(LAMMPS *lmp, int narg, char **arg) : Fix(lmp, narg, arg)
   time_decay_hysteresis = false;
   time_decay_constant_in = 0.0;
   initial_allocation = false;
+  blend_type = 0; // linear blending by default
   bool check_kwargs = false;
 
   int nlocal = atom->nlocal;
@@ -65,6 +66,7 @@ FixMLML::FixMLML(LAMMPS *lmp, int narg, char **arg) : Fix(lmp, narg, arg)
   atom->add_callback(Atom::GROW);
 
   bool no_init_group = true;
+  bool blend_set = false;
   // fix 1 all mlml nevery rqm bw rblend type
   if (narg < 9) utils::missing_cmd_args(FLERR, "fix mlml", error);
 
@@ -147,26 +149,46 @@ FixMLML::FixMLML(LAMMPS *lmp, int narg, char **arg) : Fix(lmp, narg, arg)
       all_pot_one_flag = true;
       first_set = false;
     }
-  } else error->all(FLERR,"Illegal fix mlml command");
+  } else error->all(FLERR,"FixMLML: Illegal fix mlml command");
   
   if (check_kwargs){
-    if (strcmp(arg[iarg], "hysteresis-time") == 0){
-      // check there are two more arguments
-      if (iarg > narg+1) error->all(FLERR,"Illegal fix mlml on-fly command");
-      time_decay_hysteresis=true;
-      time_decay_constant_in = utils::numeric(FLERR,arg[iarg+1],false,lmp);
-      if (time_decay_constant_in <= 0.0){
-        error->all(FLERR,"Illegal fix mlml hysteresis-time value: {}", time_decay_constant_in);
+    while (true){
+      if (iarg >= narg) break;
+      if (strcmp(arg[iarg], "hysteresis-time") == 0){
+        if (time_decay_hysteresis) error->all(FLERR, "FixMLML: hysteresis-time specified multiple times");
+        // check there are two more arguments
+        if (iarg+2 > narg) error->all(FLERR,"FixMLML: Illegal fix mlml on-fly command");
+        time_decay_hysteresis=true;
+        time_decay_constant_in = utils::numeric(FLERR,arg[iarg+1],false,lmp);
+        if (time_decay_constant_in <= 0.0){
+          error->all(FLERR,"FixMLML: Illegal fix mlml hysteresis-time value: {}", time_decay_constant_in);
+        }
+        time_decay_constant_out = utils::numeric(FLERR,arg[iarg+2],false,lmp);
+        if (time_decay_constant_out <= 0.0){
+          error->all(FLERR,"FixMLML: Illegal fix mlml hysteresis-time value: {}", time_decay_constant_out);
+        }
+        iarg += 3;
+      } else if (strcmp(arg[iarg], "blend") == 0){
+        if (blend_set) error->all(FLERR, "FixMLML: blend specified multiple times");
+        blend_set = true;
+        // check there is one more argument
+        if (iarg+1 > narg) error->all(FLERR,"FixMLML: Illegal fix mlml on-fly command");
+        // if argument is "linear" set blend type to 0
+        // if argument is "cubic" set blend type to 1
+        // else error with unrecognised blend type
+        if (strcmp(arg[iarg+1], "linear") == 0){
+          blend_type = 0;
+        } else if (strcmp(arg[iarg+1], "cubic") == 0){
+          blend_type = 1;
+        } else {
+          error->all(FLERR,"FixMLML: Illegal fix mlml blend type: {}", arg[iarg+1]);
+        }
+        iarg += 2;
+      }else{
+        error->all(FLERR,"FixMLML: Unrecognised fix mlml keyword: {}", arg[iarg]);
       }
-      time_decay_constant_out = utils::numeric(FLERR,arg[iarg+2],false,lmp);
-      if (time_decay_constant_out <= 0.0){
-        error->all(FLERR,"Illegal fix mlml hysteresis-time value: {}", time_decay_constant_out);
-      }
-    }else{
-      error->all(FLERR,"Illegal fix mlml command");
     }
   }
-
 }
 
 FixMLML::~FixMLML()
@@ -428,7 +450,7 @@ void FixMLML::allocate_regions(){
       int j = jlist[jj];
       j &= NEIGHMASK;
       if (check_cutoff(atom->x[i], atom->x[j], rblend)){
-        d2_eval[j][0] = fmax(d2_eval[j][0], linear_blend(atom->x[i], atom->x[j]));
+        d2_eval[j][0] = fmax(d2_eval[j][0], blend(atom->x[i], atom->x[j]));
         // i2_potential[j][0] = 1;
       }
     }
@@ -642,7 +664,7 @@ bool FixMLML::check_cutoff(double *x1, double *x2, double cutoff)
   return false;
 }
 
-double FixMLML::linear_blend(double *x1, double *x2)
+double FixMLML::blend(double *x1, double *x2)
 {
 
   double delta[3];
@@ -651,8 +673,17 @@ double FixMLML::linear_blend(double *x1, double *x2)
   delta[1] = x1[1] - x2[1];
   delta[2] = x1[2] - x2[2];
   double r = sqrt(delta[0]*delta[0] + delta[1]*delta[1] + delta[2]*delta[2]);
+  double x = r/rblend;
+
+  if (blend_type==0) {
+    return 1.0 - x; // linear blending
+  } else if (blend_type==1) {
+    return 1.0 - ((3*(x * x)) - (2*(x * x * x))); //cubic blending
+  } else {
+    error->all(FLERR, "FixMLML: unrecognised blend type");
+    return 0.0;
+  }
   
-  return 1.0 - (r/rblend);
 }
 
 
