@@ -268,7 +268,7 @@ void FixMLML::setup_pre_force(int){
     // with the fix
     if (init_flag){
       if (update->ntimestep > 0) {
-        error->warning(FLERR, "FixMLML: switching back to initialisation group until first fix evaluation!");
+        error->warning(FLERR, "FixMLML: Using initialisation group until first fix evaluation!");
         first_set = false;
         // setting this to true here means that it will slowly decay
         // from the initial group atoms to the fix atoms after the

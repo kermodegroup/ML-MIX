@@ -382,6 +382,8 @@ void PairHybridOverlayMLML::modify_neighbor_list(int m, int **i2_potential){
   NeighList *list_m = styles[m]->list;
   int *ilist = list_m->ilist;
   inum_copy = list_m->inum;
+  int *type = atom->type;
+  int *iskip = list_m->iskip;
   inum_new = 0;
 
   // manually copy the data over
@@ -389,16 +391,24 @@ void PairHybridOverlayMLML::modify_neighbor_list(int m, int **i2_potential){
     ilist_copy[i] = ilist[i];
   }
 
-  for (int i = 0; i < inum_copy; i++){
+  int count = 0;
+  for (int i = 0; i < nlocal; i++){
     ilist_temp[i] = 0;
+    if (iskip != nullptr){
+      if (iskip[type[i]] == 1){
+        // skip this atom as not in ilists
+        continue;
+      }
+    }
     if (i2_potential[i][pot_eval_arr[m]-1] == 1){
-      ilist_temp[inum_new] = ilist[i];
+      ilist_temp[inum_new] = ilist[count];
       inum_new++;
     }
+    count++;
   }
 
   list_m->inum = inum_new;
-  for (int i = 0; i < nlocal; i++) {
+  for (int i = 0; i < inum_copy; i++) {
     ilist[i] = ilist_temp[i];
   }
 }
