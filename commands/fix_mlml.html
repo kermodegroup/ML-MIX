@@ -117,9 +117,13 @@
   <em>ub</em> = lower bound of fix output vector values to select as seed atoms
 <em>init_group</em> args = <em>group-ID</em>
   group-ID = ID of a group of seed atoms to initially build mlml regions around before the first time the fix output vector defined by <em>fix_classify</em> is queried
- <em>hysteresis-time</em> args = <em>in_time</em> <em>out_time</em>
+<em>hysteresis-time</em> args = <em>in_time</em> <em>out_time</em>
   <em>in_time</em> = time decay constant (time units) for atoms entering the expensive potential region (region 1).
-  <em>out_time</em> = time decay constant (time units) for atoms leaving the expensive potential region (region 1).</pre>
+  <em>out_time</em> = time decay constant (time units) for atoms leaving the expensive potential region (region 1).
+<em>blend</em> args = <em>blend_type</em>
+  <em>blend_type</em> = type of blending to use for the core region
+    <em>linear</em> = linear blending (default)
+    <em>cubic</em> = cubic blending</pre>
 </li>
 </ul>
 </section>
@@ -174,8 +178,11 @@ and a buffer region.</p>
 Atoms within the blending region are evaluated with both pair_styles, and the forces are linearly blended between the two. The proportion of pair_style 1 force on any individual atom is determined by</p>
 <div class="math notranslate nohighlight">
 \[p_{1} = 1.0 - \left(\frac{|\mathbf{r}|}{r_{\text{blend}}}\right)\]</div>
-<p>where <span class="math notranslate nohighlight">\(\mathbf{r}\)</span> is the shortest vector from the atom to any seed atom.
-The force on this blended atom is then determined by</p>
+<p>for <em>blend linear</em> and</p>
+<div class="math notranslate nohighlight">
+\[p_{1} = 1.0 - \left(3\left(\frac{|\mathbf{r}|}{r_{\text{blend}}}\right)^{2} - 2\left(\frac{|\mathbf{r}|}{r_{\text{blend}}}\right)^{3}\right)\]</div>
+<p><strong>New in 0.2.0</strong> for <em>blend cubic</em>, where <span class="math notranslate nohighlight">\(\mathbf{r}\)</span> is the shortest vector from the atom to any seed atom.</p>
+<p>The force on this blended atom is then determined by</p>
 <div class="math notranslate nohighlight">
 \[\mathbf{F}^{i} = p_{1} \mathbf{F}^{i}_{1} + (1 - p_{1}) \mathbf{F}^{i}_{2}\]</div>
 <p>There are two buffer regions, which are each constructed by taking the union of atoms contained within spheres of radius <em>r_buff</em> around blending atoms. The pair_style 1 buffer are atoms external to the blending and core regions, whilst the pair_style 2 buffer is only atoms contained within the core region. Note that if <cite>*r_buff* &gt; *r_core*</cite>, pair_style 2 buffer will contain all core atoms.</p>
