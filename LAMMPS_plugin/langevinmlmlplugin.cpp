@@ -36,7 +36,7 @@ extern "C" void lammpsplugin_init(void *lmp, void *handle, void *regfunc)
   plugin.version = LAMMPS_VERSION;
   plugin.style = "fix";
   plugin.name = "langevin/mlml";
-  plugin.info = "Langevin MLML fix style v0.1";
+  plugin.info = "Langevin MLML fix style v0.2.0";
   plugin.author = "Fraser Birks (fraser.birks@warwick.ac.uk)";
   plugin.creator.v2 = (lammpsplugin_factory2 *) &mlmlcreator;
   plugin.handle = handle;
