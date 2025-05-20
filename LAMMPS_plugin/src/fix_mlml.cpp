@@ -279,7 +279,7 @@ void FixMLML::setup_pre_force(int){
       gflag = true;
     }
 
-    this->allocate_regions(atom->x);
+    this->allocate_regions();
 
     if (init_flag){
       fflag = true;
@@ -304,7 +304,7 @@ void FixMLML::min_post_force(int)
 void FixMLML::end_of_step()
 {
   // at the end of the timestep this is called
-  this->allocate_regions(atom->x);
+  this->allocate_regions();
 }
 
 
@@ -416,7 +416,7 @@ void FixMLML::allocate_regions(){
       for (int jj = 0; jj < num_neigh[i]; jj++){
         int j = jlist[jj];
         j &= NEIGHMASK;
-        if (check_cutoff(x[i], x[j], rqm)){
+        if (check_cutoff(i, j, rqm)){
           // i2_potential[j][0] = 1;
           d2_eval[j][0] = 1.0;
         }
@@ -449,8 +449,8 @@ void FixMLML::allocate_regions(){
       jlist = firstneigh[i];
       int j = jlist[jj];
       j &= NEIGHMASK;
-      if (check_cutoff(x[i], x[j], rblend)){
-        d2_eval[j][0] = fmax(d2_eval[j][0], blend(x[i], x[j]));
+      if (check_cutoff(i, j, rblend)){
+        d2_eval[j][0] = fmax(d2_eval[j][0], blend(i, j));
         // i2_potential[j][0] = 1;
       }
     }
@@ -522,7 +522,7 @@ void FixMLML::allocate_regions(){
       jlist = firstneigh[i];
       int j = jlist[jj];
       j &= NEIGHMASK;
-      if (check_cutoff(x[i], x[j], bw)){
+      if (check_cutoff(i, j, bw)){
         i2_potential[j][0] = 1;
       }
     }
@@ -544,7 +544,7 @@ void FixMLML::allocate_regions(){
         j &= NEIGHMASK;
         // if any neighbour within the buffer width has an MM component
         // atom i must be part of the MM buffer, so set just_qm to false
-        if (check_cutoff(x[i], x[j], bw)){
+        if (check_cutoff(i, j, bw)){
           if (d2_eval[j][0] < 1.0){
             just_qm = false;
             break;
@@ -587,7 +587,10 @@ void FixMLML::allocate_regions(){
   initial_allocation = true;
 }
 
-
+double FixMLML::get_x(int i, int j)
+{
+  return atom->x[i][j];
+}
 int FixMLML::pack_reverse_comm(int n, int first, double *buf)
 {
   int i,m,last;
@@ -654,24 +657,24 @@ void FixMLML::unpack_forward_comm(int n, int first, double *buf)
   }
 }
 
-bool FixMLML::check_cutoff(double *x1, double *x2, double cutoff)
+bool FixMLML::check_cutoff(int i, int j, double cutoff)
 {
-  double dx = x1[0] - x2[0];
-  double dy = x1[1] - x2[1];
-  double dz = x1[2] - x2[2];
+  double dx = this->get_x(i, 0) - this->get_x(j, 0);
+  double dy = this->get_x(i, 1) - this->get_x(j, 1);
+  double dz = this->get_x(i, 2) - this->get_x(j, 2);
   double rsq = dx*dx + dy*dy + dz*dz;
   if (rsq < cutoff*cutoff) return true;
   return false;
 }
 
-double FixMLML::blend(double *x1, double *x2)
+double FixMLML::blend(int i, int j)
 {
 
   double delta[3];
 
-  delta[0] = x1[0] - x2[0];
-  delta[1] = x1[1] - x2[1];
-  delta[2] = x1[2] - x2[2];
+  delta[0] = this->get_x(i, 0) - this->get_x(j, 0);
+  delta[1] = this->get_x(i, 1) - this->get_x(j, 1);
+  delta[2] = this->get_x(i, 2) - this->get_x(j, 2);
   double r = sqrt(delta[0]*delta[0] + delta[1]*delta[1] + delta[2]*delta[2]);
   double x = r/rblend;
 

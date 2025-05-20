@@ -135,7 +135,7 @@ jobs:
         cd ../../LAMMPS_plugin
         mkdir build
         cd build
-        cmake .. \
+        cmake ../cmake \
           -D LAMMPS_SOURCE_DIR=$LAMMPS_SRC_DIR \
           -D BUILD_SHARED_LIBS=on
     

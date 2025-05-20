@@ -43,10 +43,12 @@ void FixMLMLKokkos<DeviceType>::allocate_regions(double**){
   x = atomKK->k_x.view<LMPHostType>();
   FixMLML::allocate_regions();
 }
+
 template<class DeviceType>
 double FixMLMLKokkos<DeviceType>::get_x(int i, int j){
   return x(i, j)
 }
+
 namespace LAMMPS_NS {
 template class FixMLMLKokkos<LMPDeviceType>;
 #ifdef LMP_KOKKOS_GPU

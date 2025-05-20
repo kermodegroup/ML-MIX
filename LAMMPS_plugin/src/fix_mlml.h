@@ -38,8 +38,8 @@ class FixMLML : public Fix {
   void unpack_forward_comm(int, int, double *) override;
   void grow_arrays(int) override;
 
-  bool check_cutoff(double *, double *, double);
-  double blend(double *, double *);
+  bool check_cutoff(int, int, double);
+  double blend(int, int);
   virtual void allocate_regions();
   virtual double get_x(int, int);
   void update_global_QM_list();
