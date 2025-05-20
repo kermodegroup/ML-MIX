@@ -33,7 +33,8 @@ class FixMLMLKokkos : public FixMLML {
  public:
   FixMLMLKokkos(class LAMMPS *, int, char **);
   ~FixMLMLKokkos();
-
+  void init() override;
+  void init_list(int, class NeighList *) override;
   void allocate_regions() override;
   double get_x(int, int) override;
  private:
