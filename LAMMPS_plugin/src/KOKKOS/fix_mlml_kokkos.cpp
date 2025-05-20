@@ -15,7 +15,8 @@
 
 #include "fix_mlml_kokkos.h"
 #include "atom_kokkos.h"
-
+#include "atom_masks.h"
+#include "kokkos_type.h"
 #include <iostream>
 
 using namespace LAMMPS_NS;
@@ -23,26 +24,32 @@ using namespace FixConst;
 
 /* ---------------------------------------------------------------------- */
 template<class DeviceType>
-FixMLMLKokkos::FixMLMLKokkos(LAMMPS *lmp, int narg, char **arg) : FixMLML(lmp, narg, arg)
+FixMLMLKokkos<DeviceType>::FixMLMLKokkos(LAMMPS *lmp, int narg, char **arg) : FixMLML(lmp, narg, arg)
 {
   kokkosable = 1;
   atomKK = (AtomKokkos *) atom;
   execution_space = ExecutionSpaceFromDevice<DeviceType>::space;
-  datamask_read = X_MASK //only reads atom positions from device, does not modify anything
+  datamask_read = X_MASK; //only reads atom positions from device, does not modify anything
+  memory->create(x_copy, atomKK->nmax, "FixMLML: Copy of x")
 }
 
-FixMLMLKokkos::~FixMLMLKokkos(){}
+template<class DeviceType>
+FixMLMLKokkos<DeviceType>::~FixMLMLKokkos(){}
 
-void FixMLMLKokkos::allocate_regions(double**){
+template<class DeviceType>
+void FixMLMLKokkos<DeviceType>::allocate_regions(double**){
   // kokkos version of allocate regions which handles device memory
-  atomKK->sync(LMPHostType,datamask_read);
+  atomKK->sync(Host,datamask_read);
   x = atomKK->k_x.view<LMPHostType>();
-  FixMLML::allocate_regions(x);
+  FixMLML::allocate_regions();
 }
-
+template<class DeviceType>
+double FixMLMLKokkos<DeviceType>::get_x(int i, int j){
+  return x(i, j)
+}
 namespace LAMMPS_NS {
-template class FixLearnKokkos<LMPDeviceType>;
+template class FixMLMLKokkos<LMPDeviceType>;
 #ifdef LMP_KOKKOS_GPU
-template class FixLearnKokkos<LMPHostType>;
+template class FixMLMLKokkos<LMPHostType>;
 #endif
 }

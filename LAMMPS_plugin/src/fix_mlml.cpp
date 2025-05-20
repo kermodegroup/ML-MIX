@@ -308,7 +308,7 @@ void FixMLML::end_of_step()
 }
 
 
-void FixMLML::allocate_regions(double **x){
+void FixMLML::allocate_regions(){
   int **i2_potential = (int**)atom->extract("i2_potential");
   double **d2_eval = (double**)atom->extract("d2_eval");
   int *ilist = list->ilist;

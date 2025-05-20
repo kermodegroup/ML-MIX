@@ -40,7 +40,8 @@ class FixMLML : public Fix {
 
   bool check_cutoff(double *, double *, double);
   double blend(double *, double *);
-  virtual void allocate_regions(double **);
+  virtual void allocate_regions();
+  virtual double get_x(int, int);
   void update_global_QM_list();
 
  protected:

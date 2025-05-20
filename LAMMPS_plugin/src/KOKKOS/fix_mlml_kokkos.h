@@ -14,9 +14,9 @@
 ------------------------------------------------------------------------- */
 #ifdef FIX_CLASS
 // clang-format off
-FixStyle(mlml/kk,FixLearnKokkos<LMPDeviceType>);
-FixStyle(mlml/kk/device,FixLearnKokkos<LMPDeviceType>);
-FixStyle(mlml/kk/host,FixLearnKokkos<LMPHostType>);
+FixStyle(mlml/kk,FixMLMLKokkos<LMPDeviceType>);
+FixStyle(mlml/kk/device,FixMLMLKokkos<LMPDeviceType>);
+FixStyle(mlml/kk/host,FixMLMLKokkos<LMPHostType>);
 // clang-format on
 #else
 // clang-format off
@@ -28,13 +28,16 @@ FixStyle(mlml/kk/host,FixLearnKokkos<LMPHostType>);
 #include "kokkos_type.h"
 
 namespace LAMMPS_NS {
-
-class FixMLML : public Fix {
+template <class DeviceType>
+class FixMLMLKokkos : public FixMLML {
  public:
   FixMLMLKokkos(class LAMMPS *, int, char **);
   ~FixMLMLKokkos();
 
-  void allocate_regions(double **) override;
+  void allocate_regions() override;
+  double get_x(int, int) override;
+ private:
+  typename ArrayTypes<LMPHostType>::t_x_array x;
 };
 
 }    // namespace LAMMPS_NS
