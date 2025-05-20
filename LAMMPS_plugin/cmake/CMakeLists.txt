@@ -73,14 +73,15 @@ endif()
 
 ##########################
 # building the plugins
+set(SRC_DIR ../src)
 
-add_library(langevinmlmlplugin MODULE langevinmlmlplugin.cpp fix_langevin_mlml.cpp fix_langevin_mlml.h)
+add_library(langevinmlmlplugin MODULE ${SRC_DIR}/langevinmlmlplugin.cpp ${SRC_DIR}/fix_langevin_mlml.cpp ${SRC_DIR}/fix_langevin_mlml.h)
 target_link_libraries(langevinmlmlplugin PRIVATE lammps)
 
-add_library(mlmlplugin MODULE mlmlplugin.cpp fix_mlml.cpp)
+add_library(mlmlplugin MODULE ${SRC_DIR}/mlmlplugin.cpp ${SRC_DIR}/fix_mlml.cpp)
 target_link_libraries(mlmlplugin PRIVATE lammps)
 
-add_library(hybridoverlaymlmlplugin MODULE hybridoverlaymlmlplugin.cpp pair_hybrid_overlay_mlml.cpp pair_hybrid_overlay_mlml.h)
+add_library(hybridoverlaymlmlplugin MODULE ${SRC_DIR}/hybridoverlaymlmlplugin.cpp ${SRC_DIR}/pair_hybrid_overlay_mlml.cpp ${SRC_DIR}/pair_hybrid_overlay_mlml.h)
 target_link_libraries(hybridoverlaymlmlplugin PRIVATE lammps)
 
 set_target_properties(hybridoverlaymlmlplugin mlmlplugin langevinmlmlplugin PROPERTIES PREFIX "" SUFFIX ".so")

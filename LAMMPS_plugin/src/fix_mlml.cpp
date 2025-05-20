@@ -279,7 +279,7 @@ void FixMLML::setup_pre_force(int){
       gflag = true;
     }
 
-    this->allocate_regions();
+    this->allocate_regions(atom->x);
 
     if (init_flag){
       fflag = true;
@@ -304,11 +304,11 @@ void FixMLML::min_post_force(int)
 void FixMLML::end_of_step()
 {
   // at the end of the timestep this is called
-  this->allocate_regions();
+  this->allocate_regions(atom->x);
 }
 
 
-void FixMLML::allocate_regions(){
+void FixMLML::allocate_regions(double **x){
   int **i2_potential = (int**)atom->extract("i2_potential");
   double **d2_eval = (double**)atom->extract("d2_eval");
   int *ilist = list->ilist;
@@ -416,7 +416,7 @@ void FixMLML::allocate_regions(){
       for (int jj = 0; jj < num_neigh[i]; jj++){
         int j = jlist[jj];
         j &= NEIGHMASK;
-        if (check_cutoff(atom->x[i], atom->x[j], rqm)){
+        if (check_cutoff(x[i], x[j], rqm)){
           // i2_potential[j][0] = 1;
           d2_eval[j][0] = 1.0;
         }
@@ -449,8 +449,8 @@ void FixMLML::allocate_regions(){
       jlist = firstneigh[i];
       int j = jlist[jj];
       j &= NEIGHMASK;
-      if (check_cutoff(atom->x[i], atom->x[j], rblend)){
-        d2_eval[j][0] = fmax(d2_eval[j][0], blend(atom->x[i], atom->x[j]));
+      if (check_cutoff(x[i], x[j], rblend)){
+        d2_eval[j][0] = fmax(d2_eval[j][0], blend(x[i], x[j]));
         // i2_potential[j][0] = 1;
       }
     }
@@ -522,7 +522,7 @@ void FixMLML::allocate_regions(){
       jlist = firstneigh[i];
       int j = jlist[jj];
       j &= NEIGHMASK;
-      if (check_cutoff(atom->x[i], atom->x[j], bw)){
+      if (check_cutoff(x[i], x[j], bw)){
         i2_potential[j][0] = 1;
       }
     }
@@ -544,7 +544,7 @@ void FixMLML::allocate_regions(){
         j &= NEIGHMASK;
         // if any neighbour within the buffer width has an MM component
         // atom i must be part of the MM buffer, so set just_qm to false
-        if (check_cutoff(atom->x[i], atom->x[j], bw)){
+        if (check_cutoff(x[i], x[j], bw)){
           if (d2_eval[j][0] < 1.0){
             just_qm = false;
             break;
