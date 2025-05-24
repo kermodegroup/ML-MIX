@@ -193,6 +193,7 @@ FixMLML::FixMLML(LAMMPS *lmp, int narg, char **arg) : Fix(lmp, narg, arg)
 
 FixMLML::~FixMLML()
 {
+  if (copymode) return;
   if (local_qm_atom_list) memory->destroy(local_qm_atom_list);
   if (core_qm_atom_idx) memory->destroy(core_qm_atom_idx);
   if (d2_eval_prev) memory->destroy(d2_eval_prev);
@@ -591,6 +592,7 @@ double FixMLML::get_x(int i, int j)
 {
   return atom->x[i][j];
 }
+
 int FixMLML::pack_reverse_comm(int n, int first, double *buf)
 {
   int i,m,last;
@@ -671,7 +673,6 @@ double FixMLML::blend(int i, int j)
 {
 
   double delta[3];
-
   delta[0] = this->get_x(i, 0) - this->get_x(j, 0);
   delta[1] = this->get_x(i, 1) - this->get_x(j, 1);
   delta[2] = this->get_x(i, 2) - this->get_x(j, 2);

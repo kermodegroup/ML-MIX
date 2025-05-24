@@ -25,20 +25,33 @@ FixStyle(mlml/kk/host,FixMLMLKokkos<LMPHostType>);
 #define LMP_FIX_MLML_KOKKOS_H
 
 #include "fix_mlml.h"
+#include "neigh_list_kokkos.h"
+#include "neigh_list_filter_kokkos.h"
 #include "kokkos_type.h"
 
 namespace LAMMPS_NS {
 template <class DeviceType>
 class FixMLMLKokkos : public FixMLML {
  public:
+  typedef ArrayTypes<DeviceType> AT;
+  NeighListKokkos<DeviceType> *k_list;
   FixMLMLKokkos(class LAMMPS *, int, char **);
   ~FixMLMLKokkos();
   void init() override;
-  void init_list(int, class NeighList *) override;
   void allocate_regions() override;
-  double get_x(int, int) override;
+  void setup_pre_force(int) override;
+  double get_x(int i, int j) override;
+  int pack_reverse_comm(int, int, double *) override;
+  void unpack_reverse_comm(int, int *, double *) override;
+  int pack_forward_comm(int, int *, double *, int, int *) override;
+  void unpack_forward_comm(int, int, double *) override;
+
  private:
-  typename ArrayTypes<LMPHostType>::t_x_array x;
+  int potential_1_idx, potential_2_idx;
+  int eval_1_idx, eval_2_idx;
+  double *d_eval_prev_1, *d_eval_prev_2;
+  // typename DAT::t_x_array x;
+  // typename DAT::tdual_float_2d k_dvector;
 };
 
 }    // namespace LAMMPS_NS
