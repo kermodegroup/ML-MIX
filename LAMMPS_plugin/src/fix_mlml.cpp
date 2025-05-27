@@ -192,7 +192,8 @@ FixMLML::~FixMLML()
   if (copymode) return;
   if (local_qm_atom_list) memory->destroy(local_qm_atom_list);
   if (core_qm_atom_idx) memory->destroy(core_qm_atom_idx);
-  if (d2_eval_prev) memory->destroy(d2_eval_prev);
+  atom->delete_callback(id, Atom::GROW);
+  //if (d2_eval_prev) memory->destroy(d2_eval_prev);
 }
 
 /* ---------------------------------------------------------------------- */

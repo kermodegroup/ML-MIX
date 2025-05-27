@@ -82,6 +82,8 @@ FixMLMLKokkos<DeviceType>::FixMLMLKokkos(LAMMPS *lmp, int narg, char **arg) : Fi
 template<class DeviceType>
 FixMLMLKokkos<DeviceType>::~FixMLMLKokkos(){
   if (copymode) return;
+  if (d_eval_prev_1) memory->destroy(d_eval_prev_1);
+  if (d_eval_prev_2) memory->destroy(d_eval_prev_1);
 }
 
 template<class DeviceType>

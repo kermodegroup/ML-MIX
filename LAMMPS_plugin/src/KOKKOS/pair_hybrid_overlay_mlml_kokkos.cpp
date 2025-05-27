@@ -91,6 +91,7 @@ PairHybridOverlayMLMLKokkos<DeviceType>::~PairHybridOverlayMLMLKokkos() {
   memoryKK->destroy_kokkos(k_f_copy, f_copy);
   memoryKK->destroy_kokkos(k_ilist_temp, ilist_temp);
   memoryKK->destroy_kokkos(k_ilist_copy, ilist_copy);
+  memoryKK->destroy_kokkos(k_pot_eval_arr, pot_eval_arr);
 }
 
 template <class DeviceType>
