@@ -47,7 +47,7 @@ PairHybridOverlayMLML::PairHybridOverlayMLML(LAMMPS *lmp) : PairHybridOverlay(lm
 }
 
 PairHybridOverlayMLML::~PairHybridOverlayMLML() {
-  // std::cout<< "destroying pairhybridoverlaymlml"<<std::endl;
+  if (copymode) return;
   memory->destroy(f_copy);
   memory->destroy(f_summed);
   if (ilist_temp) memory->destroy(ilist_temp);
@@ -205,7 +205,7 @@ void PairHybridOverlayMLML::coeff(int narg, char **arg)
 
 void PairHybridOverlayMLML::compute(int eflag, int vflag)
 {
-  int i,j,m,n;
+  int n;
   double** f = atom->f;
   int nlocal = atom->nlocal;
   int nghost = atom->nghost;
@@ -254,13 +254,13 @@ void PairHybridOverlayMLML::compute(int eflag, int vflag)
     }
   }
 
-  for (m = 0; m < nstyles; m++) {
+  for (int m = 0; m < nstyles; m++) {
 
     set_special(m);
 
     // invoke compute() unless compute flag is turned off or
     // outerflag is set and sub-natomsstyle has a compute_outer() method
-    modify_neighbor_list(m, i2_potential);
+    modify_neighbor_list(m);
 
     // copy forces
     for (int i = 0; i < nlocal+nghost; i++) {
@@ -307,21 +307,21 @@ void PairHybridOverlayMLML::compute(int eflag, int vflag)
       eng_coul += 0.0; //styles[m]->eng_coul;
     }
     if (vflag_global) {
-      for (n = 0; n < 6; n++) virial[n] += 0.0; //styles[m]->virial[n];
+      for (int n = 0; n < 6; n++) virial[n] += 0.0; //styles[m]->virial[n];
     }
     if (eflag_atom) {
       n = atom->nlocal;
       if (force->newton_pair) n += atom->nghost;
       double *eatom_substyle = styles[m]->eatom;
-      for (i = 0; i < n; i++) eatom[i] += eatom_substyle[i]*d2_eval[i][pot_eval_arr[m]-1];
+      for (int i = 0; i < n; i++) eatom[i] += 0.0; // eatom_substyle[i]*d2_eval[i][pot_eval_arr[m]-1];
     }
     if (vflag_atom) {
       n = atom->nlocal;
       if (force->newton_pair) n += atom->nghost;
       double **vatom_substyle = styles[m]->vatom;
-      for (i = 0; i < n; i++)
-        for (j = 0; j < 6; j++)
-          vatom[i][j] += vatom_substyle[i][j]*d2_eval[i][pot_eval_arr[m]-1];
+      for (int i = 0; i < n; i++)
+        for (int j = 0; j < 6; j++)
+          vatom[i][j] += 0.0; // vatom_substyle[i][j]*d2_eval[i][pot_eval_arr[m]-1];
     }
 
     // substyles may be CENTROID_SAME or CENTROID_AVAIL
@@ -331,17 +331,17 @@ void PairHybridOverlayMLML::compute(int eflag, int vflag)
       if (force->newton_pair) n += atom->nghost;
       if (styles[m]->centroidstressflag == CENTROID_AVAIL) {
         double **cvatom_substyle = styles[m]->cvatom;
-        for (i = 0; i < n; i++)
-          for (j = 0; j < 9; j++)
-            cvatom[i][j] += cvatom_substyle[i][j]*d2_eval[i][pot_eval_arr[m]-1];
+        for (int i = 0; i < n; i++)
+          for (int j = 0; j < 9; j++)
+            cvatom[i][j] += 0.0; // cvatom_substyle[i][j]*d2_eval[i][pot_eval_arr[m]-1];
       } else {
         double **vatom_substyle = styles[m]->vatom;
-        for (i = 0; i < n; i++) {
-          for (j = 0; j < 6; j++) {
-            cvatom[i][j] += vatom_substyle[i][j]*d2_eval[i][pot_eval_arr[m]-1];
+        for (int i = 0; i < n; i++) {
+          for (int j = 0; j < 6; j++) {
+            cvatom[i][j] += 0.0; // vatom_substyle[i][j]*d2_eval[i][pot_eval_arr[m]-1];
           }
-          for (j = 6; j < 9; j++) {
-            cvatom[i][j] += vatom_substyle[i][j-3]*d2_eval[i][pot_eval_arr[m]-1];
+          for (int j = 6; j < 9; j++) {
+            cvatom[i][j] += 0.0; // vatom_substyle[i][j-3]*d2_eval[i][pot_eval_arr[m]-1];
           }
         }
       }
@@ -377,7 +377,8 @@ void PairHybridOverlayMLML::compute(int eflag, int vflag)
 }
 
 
-void PairHybridOverlayMLML::modify_neighbor_list(int m, int **i2_potential){
+void PairHybridOverlayMLML::modify_neighbor_list(int m){
+  int** i2_potential = (int**)atom->extract("i2_potential");
   int nlocal = atom->nlocal;
   NeighList *list_m = styles[m]->list;
   int *ilist = list_m->ilist;
@@ -414,7 +415,6 @@ void PairHybridOverlayMLML::modify_neighbor_list(int m, int **i2_potential){
 }
 
 void PairHybridOverlayMLML::restore_neighbor_list(int m){
-  int nlocal = atom->nlocal;
   NeighList *list_m = styles[m]->list;
   int *ilist = list_m->ilist;
   list_m->inum = inum_copy;

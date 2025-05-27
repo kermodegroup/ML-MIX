@@ -12,6 +12,11 @@
 
    See the LICENSE file for details.
 ------------------------------------------------------------------------- */
+#ifdef FIX_CLASS
+// clang-format off
+FixStyle(mlml,FixMLML);
+// clang-format on
+#else
 
 #ifndef LMP_FIX_MLML_H
 #define LMP_FIX_MLML_H
@@ -95,3 +100,4 @@ documentation for the command.  You can use -echo screen as a
 command-line option when running LAMMPS to see the offending line.
 
 */
+#endif

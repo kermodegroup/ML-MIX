@@ -13,6 +13,12 @@
    See the LICENSE file for details.
 ------------------------------------------------------------------------- */
 
+#ifdef PAIR_CLASS
+// clang-format off
+PairStyle(hybrid/overlay/mlml,PairHybridOverlayMLML);
+// clang-format on
+#else
+
 #ifndef LMP_PAIR_HYBRID_OVERLAY_MLML_H
 #define LMP_PAIR_HYBRID_OVERLAY_MLML_H
 
@@ -29,10 +35,10 @@ class PairHybridOverlayMLML : public PairHybridOverlay {
   void settings(int, char**) override;
   void coeff(int, char **) override;
   void compute(int, int) override;
-  void allocate_mem();
-  void resize_arrays();
-  void modify_neighbor_list(int, int **);
-  void restore_neighbor_list(int);
+  virtual void allocate_mem();
+  virtual void resize_arrays();
+  virtual void modify_neighbor_list(int);
+  virtual void restore_neighbor_list(int);
 
  protected:
   int* pot_eval_arr;
@@ -54,4 +60,5 @@ class PairHybridOverlayMLML : public PairHybridOverlay {
 
 }    // namespace LAMMPS_NS
 
+#endif
 #endif

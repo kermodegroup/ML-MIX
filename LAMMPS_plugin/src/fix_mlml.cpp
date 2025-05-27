@@ -56,10 +56,6 @@ FixMLML::FixMLML(LAMMPS *lmp, int narg, char **arg) : Fix(lmp, narg, arg)
   blend_type = 0; // linear blending by default
   bool check_kwargs = false;
 
-  int nlocal = atom->nlocal;
-  int nghost = atom->nghost;
-  int ntot = nlocal + nghost;
-
   memory->create(core_qm_atom_idx, atom->nmax, "FixMLML: core_qm_atom_idx");
   memory->create(local_qm_atom_list, atom->nmax, "FixMLML: local_qm_atom_list");
 
@@ -319,14 +315,12 @@ void FixMLML::allocate_regions(){
   int nlocal = atom->nlocal;
   int nghost = atom->nghost;
   int inum = list->inum;
-  int core_tot = 0;
   bool atom_is_qm;
   bool just_qm;
   int n_core_qm = 0;
   int ntot = nlocal + nghost;
 
   bigint current_timestep = update->ntimestep;
-  bigint natoms = atom->natoms;
   double dt = update->dt;
 
   //std::cout<<"ALLOCATING REGIONS!!!"<<std::endl;

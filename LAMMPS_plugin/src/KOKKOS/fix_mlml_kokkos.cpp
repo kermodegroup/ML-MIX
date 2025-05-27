@@ -18,7 +18,6 @@
 #include "kokkos_type.h"
 #include "neigh_list_kokkos.h"
 #include "neigh_request.h"
-#include "neigh_list_filter_kokkos.h"
 #include "neighbor.h"
 #include "comm.h"
 #include "domain.h"

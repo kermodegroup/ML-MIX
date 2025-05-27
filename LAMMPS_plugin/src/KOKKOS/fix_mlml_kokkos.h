@@ -26,7 +26,6 @@ FixStyle(mlml/kk/host,FixMLMLKokkos<LMPHostType>);
 
 #include "fix_mlml.h"
 #include "neigh_list_kokkos.h"
-#include "neigh_list_filter_kokkos.h"
 #include "kokkos_type.h"
 
 namespace LAMMPS_NS {
@@ -50,8 +49,7 @@ class FixMLMLKokkos : public FixMLML {
   int potential_1_idx, potential_2_idx;
   int eval_1_idx, eval_2_idx;
   double *d_eval_prev_1, *d_eval_prev_2;
-  // typename DAT::t_x_array x;
-  // typename DAT::tdual_float_2d k_dvector;
+  
 };
 
 }    // namespace LAMMPS_NS
