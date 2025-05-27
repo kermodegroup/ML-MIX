@@ -55,6 +55,11 @@ def parse_arguments():
         action="store_true",
         help="Crash on the first failure"
     )
+    parser.add_argument(
+        "--kokkos",
+        action="store_true",
+        help="Use Kokkos for the simulation"
+    )
 
     return parser.parse_args()
 
@@ -100,7 +105,8 @@ def pot_test(selected_potentials, verbose=False, crash_on_fail=True, direct_run=
                                     comm=comm, 
                                     rank=rank, 
                                     path=data_path,
-                                    crash_on_fail=crash_on_fail)
+                                    crash_on_fail=crash_on_fail,
+                                    kokkos=args.kokkos)
             else:
                 with open(os.devnull, 'w') as devnull:
                     sys.stdout = devnull
@@ -109,7 +115,8 @@ def pot_test(selected_potentials, verbose=False, crash_on_fail=True, direct_run=
                                         comm=comm, 
                                         rank=rank, 
                                         path=data_path,
-                                        crash_on_fail=crash_on_fail)
+                                        crash_on_fail=crash_on_fail,
+                                        kokkos=args.kokkos)
                     sys.stdout = sys.__stdout__
 
             if rank == 0:

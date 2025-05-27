@@ -32,13 +32,19 @@ def build_regions_lammps(lmps,
                          hysteresis_time_in=0.0,
                          hysteresis_time_out=0.0,
                          nevery=1,
-                         blend_type='linear'):
+                         blend_type='linear',
+                         kokkos=False):
+
+    if kokkos:
+        dump_string = 'd_potential_1 d_potential_2 d_eval_1 d_eval_2'
+    else:
+        dump_string = 'i2_potential[1] i2_potential[2] d2_eval[1] d2_eval[2]'
 
     largest_cutoff = np.max((r_core,r_buff,r_blend))
     lmps.command(f'comm_modify cutoff {largest_cutoff+2.0}')
     seed_atoms = get_seed_atoms(struct)
     # set up dump
-    lmps.command(f'dump dump1 all custom 1 {path}/dump.lammpstrj id type x y z fx fy fz i2_potential[1] i2_potential[2] d2_eval[1] d2_eval[2]')
+    lmps.command(f'dump dump1 all custom 1 {path}/dump.lammpstrj id type x y z fx fy fz {dump_string}')
     lmps.command(f'dump_modify dump1 format float %20.15g')
     lmps.command(f'group seed_atoms id {" ".join([str(i+1) for i in seed_atoms])}')
     command = f'fix mlml_fix all mlml {nevery} {r_core} {r_buff} {r_blend}'
@@ -60,15 +66,21 @@ def build_regions_lammps(lmps,
     
     lmps.command(command)
     if pick_seed_with != 'group':    
-        lmps.command(f'dump fix_dump all custom {fix_nevery} {path}/fix_dump.lammpstrj id type x y z fx fy fz i2_potential[1] i2_potential[2] d2_eval[1] d2_eval[2] f_av_ca')
+        lmps.command(f'dump fix_dump all custom {fix_nevery} {path}/fix_dump.lammpstrj id type x y z fx fy fz {dump_string} f_av_ca')
     lmps.command(f'run {nsteps}')
     
     if rank == 0:
-        out_dump = read_lammps_dump(f'{path}/dump.lammpstrj')[-1]
-        i2_potential_1 = out_dump.arrays['i2_potential[1]']
-        i2_potential_2 = out_dump.arrays['i2_potential[2]']
-        d2_eval_1 = out_dump.arrays['d2_eval[1]']
-        d2_eval_2 = out_dump.arrays['d2_eval[2]']
+        out_dump = read_lammps_dump(f'{path}/dump.lammpstrj',kokkos=kokkos)[-1]
+        if kokkos:
+            i2_potential_1 = np.round(out_dump.arrays['d_potential_1']).astype(int)
+            i2_potential_2 = np.round(out_dump.arrays['d_potential_2']).astype(int)
+            d2_eval_1 = out_dump.arrays['d_eval_1']
+            d2_eval_2 = out_dump.arrays['d_eval_2']
+        else:
+            i2_potential_1 = out_dump.arrays['i2_potential[1]']
+            i2_potential_2 = out_dump.arrays['i2_potential[2]']
+            d2_eval_1 = out_dump.arrays['d2_eval[1]']
+            d2_eval_2 = out_dump.arrays['d2_eval[2]']
         i2_potential = np.zeros((len(struct),2), dtype=bool)
         i2_potential[:,0] = i2_potential_1.flatten()
         i2_potential[:,1] = i2_potential_2.flatten()

@@ -22,8 +22,12 @@ from set_up_lammps import set_up_lammps
 #             self.command(cmd)
 
 
-def run_test(property_dict_1, property_dict_2, verbose=False, zero=False, comm=None, rank=None, path='./', crash_on_fail=False):
+def run_test(property_dict_1, property_dict_2, verbose=False, zero=False, comm=None, rank=None, path='./', crash_on_fail=False, kokkos=False):
     # generate structure
+    if kokkos:
+        dump_string = 'd_potential_1 d_potential_2 d_eval_1 d_eval_2'
+    else:
+        dump_string = 'i2_potential[1] i2_potential[2] d2_eval[1] d2_eval[2]'
 
     elements_1 = property_dict_1["elements"]
     elements_2 = property_dict_2["elements"]
@@ -67,18 +71,25 @@ def run_test(property_dict_1, property_dict_2, verbose=False, zero=False, comm=N
         atomic_mass = ase.data.atomic_masses[atomic_num]
         mass_cmds.append(f"mass {i+1} {atomic_mass}")
     struct = build_struct(elements, rank=rank, path=path, structure=structure, a=a)
-    if not verbose:
-        lmps = lammps(cmdargs=["-log", "none", "-screen", "none"], comm=comm)
+    if kokkos:
+        args = ["-k", "on", "g","1",
+                "-sf", "kk",
+                "-pk", "kokkos", "newton", "on", "neigh", "half",
+]
     else:
-        lmps = lammps(comm=comm)
-        #lmps = LammpsMock()
-        
-    set_up_lammps(lmps, struct, mass_cmds,path=path)
+        args = []
+
+    if not verbose:
+        args = args + ["-log", "none", "-screen", "none"]
+
+    lmps = lammps(cmdargs=args, comm=comm)
+
+    set_up_lammps(lmps, struct, mass_cmds,path=path, kokkos=kokkos)
     
     r_core = 3.0
     r_blend = 3.0
     r_buff = np.max([cutoff_1, cutoff_2])
-    i2_potential, d2_eval = build_regions_lammps(lmps, struct, r_core, r_blend, r_buff,path=path)
+    i2_potential, d2_eval = build_regions_lammps(lmps, struct, r_core, r_blend, r_buff, path=path, kokkos=kokkos)
     #
     # Unfixing here is necessary as it turns out that if you have just fix mlml and a pair_style that
     # requests a half full neighbour list, the pair_style tries to get it from the neighbourlist
@@ -117,7 +128,7 @@ def run_test(property_dict_1, property_dict_2, verbose=False, zero=False, comm=N
             lmps.command(f'pair_coeff {cmds_2["coeff_types"]} {cmds_2["style_name"]} 2 {cmds_2["coeff_params"]}')
 
         lmps.command('run 0')
-        lmps.command(f'write_dump all custom {path}/both.lammpstrj id type xs ys zs fx fy fz i2_potential[1] i2_potential[2] d2_eval[1] d2_eval[2] modify format float %20.15g')
+        lmps.command(f'write_dump all custom {path}/both.lammpstrj id type xs ys zs fx fy fz {dump_string} modify format float %20.15g')
 
 
     except:
