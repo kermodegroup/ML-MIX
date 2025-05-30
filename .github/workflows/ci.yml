@@ -153,4 +153,4 @@ jobs:
         source test_venv/bin/activate
         cd tests/
         pip install pytest
-        python -m pytest
+        python -m pytest -s -v
