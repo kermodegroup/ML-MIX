@@ -74,8 +74,7 @@ def run_test(property_dict_1, property_dict_2, verbose=False, zero=False, comm=N
     if kokkos:
         args = ["-k", "on", "g","1",
                 "-sf", "kk",
-                "-pk", "kokkos", "newton", "on", "neigh", "half",
-]
+                "-pk", "kokkos", "newton", "on", "neigh", "half"]
     else:
         args = []
 

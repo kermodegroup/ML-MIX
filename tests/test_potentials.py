@@ -80,7 +80,7 @@ def process_potentials(args):
     return selected_potentials
 
 
-def pot_test(selected_potentials, verbose=False, crash_on_fail=True, direct_run=False):
+def pot_test(selected_potentials, verbose=False, crash_on_fail=True, direct_run=False, kokkos=False):
     data_path = "./test_potentials_data"
     if rank == 0:
         print("Selected potentials:", selected_potentials)
@@ -106,7 +106,7 @@ def pot_test(selected_potentials, verbose=False, crash_on_fail=True, direct_run=
                                     rank=rank, 
                                     path=data_path,
                                     crash_on_fail=crash_on_fail,
-                                    kokkos=args.kokkos)
+                                    kokkos=kokkos)
             else:
                 with open(os.devnull, 'w') as devnull:
                     sys.stdout = devnull
@@ -116,7 +116,7 @@ def pot_test(selected_potentials, verbose=False, crash_on_fail=True, direct_run=
                                         rank=rank, 
                                         path=data_path,
                                         crash_on_fail=crash_on_fail,
-                                        kokkos=args.kokkos)
+                                        kokkos=kokkos)
                     sys.stdout = sys.__stdout__
 
             if rank == 0:
@@ -154,7 +154,7 @@ def test_UF3():
 if __name__ == "__main__":
     args = parse_arguments()
     selected_potentials = process_potentials(args)
-    results = pot_test(selected_potentials, verbose=args.verbose, crash_on_fail=args.crash_on_fail, direct_run=True)
+    results = pot_test(selected_potentials, verbose=args.verbose, crash_on_fail=args.crash_on_fail, direct_run=True, kokkos=args.kokkos)
     out_json = f"test_results_{test_type}.json"
     top_readme = "../README.md"
     insert_key = "error table"
