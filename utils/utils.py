@@ -80,7 +80,7 @@ def make_vacancy(calc, n_cell=10, rattle=True):
     return si, r_vac, vac_pos
 
 
-def read_lammps_dump(filename):
+def read_lammps_dump(filename, kokkos=False):
     traj = ase.io.read(filename,parallel=False, index=':')
     if isinstance(traj, ase.Atoms):
         traj = [traj]
@@ -103,12 +103,18 @@ def read_lammps_dump(filename):
                 reading_atoms = True
             elif reading_atoms:
                 values = line.split()
-                if "i2_potential[1]" in headers or "i_potential[1]" in headers:
+                if "i2_potential[1]" in headers or "i_potential[1]" in headers or "d_potential_1" in headers:
                     id_idx = headers.index("id")
-                    i2_idx_1 = headers.index("i2_potential[1]") if "i2_potential[1]" in headers else headers.index("i_potential[1]")
-                    i2_idx_2 = headers.index("i2_potential[2]") if "i2_potential[2]" in headers else headers.index("i_potential[2]")
-                    d2_idx_1 = headers.index("d2_eval[1]")
-                    d2_idx_2 = headers.index("d2_eval[2]")
+                    if kokkos:
+                        i2_idx_1 = headers.index("d_potential_1")
+                        i2_idx_2 = headers.index("d_potential_2")
+                        d2_idx_1 = headers.index("d_eval_1")
+                        d2_idx_2 = headers.index("d_eval_2")
+                    else:
+                        i2_idx_1 = headers.index("i2_potential[1]") if "i2_potential[1]" in headers else headers.index("i_potential[1]")
+                        i2_idx_2 = headers.index("i2_potential[2]") if "i2_potential[2]" in headers else headers.index("i_potential[2]")
+                        d2_idx_1 = headers.index("d2_eval[1]")
+                        d2_idx_2 = headers.index("d2_eval[2]")
                     current_snapshot.append([int(values[id_idx]),
                                              int(values[i2_idx_1]), 
                                              int(values[i2_idx_2]), 
@@ -122,8 +128,14 @@ def read_lammps_dump(filename):
     # print(f'Read {len(snapshots)} snapshots')
     # print(snapshots)
     for i, t in enumerate(traj):
-        t.arrays['i2_potential[1]'] = snapshots[i][:,1]
-        t.arrays['i2_potential[2]'] = snapshots[i][:,2]
-        t.arrays['d2_eval[1]'] = snapshots[i][:,3]
-        t.arrays['d2_eval[2]'] = snapshots[i][:,4]
+        if kokkos:
+            t.arrays['d_potential_1'] = snapshots[i][:,1]
+            t.arrays['d_potential_2'] = snapshots[i][:,2]
+            t.arrays['d_eval_1'] = snapshots[i][:,3]
+            t.arrays['d_eval_2'] = snapshots[i][:,4]
+        else:
+            t.arrays['i2_potential[1]'] = snapshots[i][:,1]
+            t.arrays['i2_potential[2]'] = snapshots[i][:,2]
+            t.arrays['d2_eval[1]'] = snapshots[i][:,3]
+            t.arrays['d2_eval[2]'] = snapshots[i][:,4]
     return traj
