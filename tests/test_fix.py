@@ -154,13 +154,13 @@ def region_test(verbose=False,
     
 
 def test_build_with_group():
-    region_test(pick_seed_with='group')
-    region_test(pick_seed_with='group',blend_type='cubic')
+    region_test(pick_seed_with='group',verbose=True)
+    region_test(pick_seed_with='group',blend_type='cubic',verbose=True)
 
 def test_build_with_fix():
-    region_test(pick_seed_with='fix',nsteps=1,fix_nevery=10)
-    region_test(pick_seed_with='fix',nsteps=5,fix_nevery=10)
-    region_test(pick_seed_with='fix',nsteps=20,fix_nevery=10)
+    region_test(pick_seed_with='fix',nsteps=1,fix_nevery=10,verbose=True)
+    region_test(pick_seed_with='fix',nsteps=5,fix_nevery=10,verbose=True)
+    region_test(pick_seed_with='fix',nsteps=20,fix_nevery=10,verbose=True)
     region_test(pick_seed_with='fix',nsteps=55,fix_nevery=10)
     region_test(pick_seed_with='fix',nsteps=2,fix_nevery=1,blend_type='cubic')
 
