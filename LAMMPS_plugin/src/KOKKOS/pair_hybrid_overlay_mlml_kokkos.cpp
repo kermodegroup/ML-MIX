@@ -171,6 +171,8 @@ void PairHybridOverlayMLMLKokkos<DeviceType>::compute(int eflag, int vflag)
   int i,j,m,n;
   int nlocal = atom->nlocal;
   int nghost = atom->nghost;
+
+  resize_arrays();
   
   // get dvector view on device
   auto d_dvector = atomKK->k_dvector.view<DeviceType>();
@@ -179,7 +181,6 @@ void PairHybridOverlayMLMLKokkos<DeviceType>::compute(int eflag, int vflag)
   auto d_pot_eval_arr = k_pot_eval_arr.view<DeviceType>();
   int idx;
   
-  resize_arrays();
 
   // check if no_virial_fdotr_compute is set and global component of
   //   incoming vflag = VIRIAL_FDOTR
