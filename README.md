@@ -22,9 +22,9 @@ All the code associated with this paper is included in this repository, in `pote
 More information can be found in the `README` files inside each subdirectory.
 
 ## List of tested compatible pair_styles
-ML-MIX is designed to be a wrapper that is compatible with any generic LAMMPS pair_style which is compatible with pair_hybrid. However, for one reason or another (and particularly if a pair_style does something that is very 'non-standard') incompatibilities can arise (which may take the form of segmentation faults). 
+ML-MIX is designed to be a wrapper that is compatible with any generic LAMMPS pair_style (so long as that pair_style is compatible with pair_hybrid). However, for one reason or another (and particularly if a pair_style does something that is very 'non-standard') incompatibilities can arise (which may take the form of segmentation faults). 
 
-A common reason that a pair_style may be incompatible is if it involves an MPI communication *during compute()* (e.g, `EAM`). This MPI communication acts as a synchronisation point - meaning that all processors must halt and wait. This can *severely* bottle-neck runtimes. 
+A common reason that a pair_style may be incompatible is if it involves an MPI communication *during compute()* (e.g, `EAM`). This MPI communication acts as a synchronisation point - meaning that all processors must halt and wait. This can *severely* bottle-neck runtimes and make doing an ML/ML simulation essentially pointless.
 
 ### CPU pair_styles
 
@@ -59,12 +59,13 @@ There are likely to be many other compatible pair_styles which have not yet been
 If you believe that a pair_style should be compatible (e.g, because there are no MPI communications involved in *compute*) and think the issue may lie with ML-MIX, then please make a Github issue.
 
 
-## ⚠️ Bug Warning ⚠️
+## ⚠️ Bug Warning ⚠️ - **Fixed**
 Update: This issue has been resolved since the [17/03/2025 LAMMPS Stable release](https://github.com/lammps/lammps/releases/tag/stable_29Aug2024_update2).
 
-In the current version of LAMMPS, if a pair_style tries to build a half neighborlist by pruning a full neighborlist that is built for a fix, it seems to lead to all the forces computed by that pair_style being 0 (atoms have no neighbors). This will be a problem when using ML-MIX if:
+In versions of LAMMPS before 17/03/2025, if a pair_style tried to build a half neighborlist by pruning a full neighborlist that was built for a fix, it lead to all the forces computed by that pair_style being 0 (atoms had no neighbors). This is a problem when using ML-MIX if:
 - fix mlml is defined (which needs a full neighborlist)
 - *ALL* other pair_styles defined need half neighborlists (if there is even one pair_style defined which needs a full neighborlist, i.e, ACE, UF3, this isn't a problem as then half neighborlists are constructed correctly.)
+- To resolve this, please update to the latest version of LAMMPS.
 
 
 ## Setup
@@ -85,21 +86,20 @@ There are two ways to build ML-MIX
 Instructions for both types of builds can be found below.
 
 ### Cloning LAMMPS
-To compile the ML-MIX LAMMPS plugin, you first need to clone and build LAMMPS. LAMMPS can be cloned directly with
+The first step to building ML-MIX (either in-source or as a plugin) is cloning LAMMPS. LAMMPS can be cloned directly with
 ```
-git clone -b release https://github.com/lammps/lammps.git mylammps
+git clone -b release https://github.com/lammps/lammps.git lammps
 ```
 
-### Building LAMMPS
+### Building ML-MIX in source
 
-> **Note for In-Source Builds**
->
-> For in-source builds, you need to run the `install.sh` script located in the `LAMMPS_plugin/` directory, passing the path to LAMMPS. Use the following command:
->
-> ```
-> ./install.sh /path/to/lammps/
-> ```
-> This must be done *before* you build LAMMPS.
+ML-MIX can be built directly in the LAMMPS source, i.e by copying the `fix` and `pair` files into the `lammps/src` directory before starting the build. This *must* be done to use ml-mix-kokkos.
+
+Run the `install.sh` script located in the `LAMMPS_plugin/` directory, passing the path to LAMMPS. Use the following command:
+
+```
+./install.sh /path/to/lammps/
+```
 
 #### Build *without* KOKKOS
 
