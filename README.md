@@ -10,8 +10,7 @@ A LAMMPS plugin for efficiently mixing together forces from different machine-le
 ## Key Information
 
 > **ML-MIX is under active development**  
-> This package is still evolving, and functionality may change.
-> Major updates will be periodically merged from the `develop` branch into `main` and released as new versions.
+> Major updates and collections bugfixes will be periodically merged from the `develop` branch into `main` and released as new versions.
 > If you encounter any bugs or unexpected behaviour, please [open an issue](https://github.com/yourusername/ML-MIX/issues) or contact us directly via email at [fraser.birks@warwick.ac.uk](fraser.birks@warwick.ac.uk).
 
 Full documentation can be found here: https://kermodegroup.github.io/ML-MIX/
