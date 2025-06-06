@@ -38,7 +38,7 @@ extern "C" void lammpsplugin_init(void *lmp, void *handle, void *regfunc)
   plugin.version = LAMMPS_VERSION;
   plugin.style = "pair";
   plugin.name = "hybrid/overlay/mlml";
-  plugin.info = "MLML hybrid overlay pair style v0.2.0";
+  plugin.info = "MLML hybrid overlay pair style v0.3.0";
   plugin.author = "Fraser Birks (fraser.birks@warwick.ac.uk)";
   plugin.creator.v2 = (lammpsplugin_factory2 *) &mlmlcreator;
   plugin.handle = handle;
