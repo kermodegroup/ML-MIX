@@ -1,0 +1,33 @@
+# Define GPU specific property/atom vectors. These are different from the CPU versions 
+# because double vector property/atoms are automatically intialised as kokkos dual views on device.
+fix ml_mix_props all property/atom d_potential_1 d_potential_2 d_eval_1 d_eval_2 ghost yes
+
+units metal
+atom_style atomic
+atom_modify map yes
+newton on
+
+read_data data.in
+
+mass 1 28.085
+
+# This is an example of using a symmetrix/mace potential in no_mpi_message_passing mode. 
+# To use this, LAMMPS must be compiled with the symmetrix/mace package and kokkos!
+# See https://github.com/wcwitt/symmetrix
+
+# this simualation is useless, but shows how kokkos acceleration can be used.
+pair_style hybrid/overlay/mlml symmetrix/mace no_mpi_message_passing lj/cut 5.0
+pair_coeff * * symmetrix/mace 1 mace-mpa-0-medium-14.json Si
+pair_coeff * * lj/cut 2 1.0 1.0
+
+thermo 1
+
+# This is necessary because the fix neighbour lists are on host, and you need to set the maximum neighbours
+# when using kokkos.
+neigh_modify one 1000
+group expensive_atom id 1
+
+fix mlml_fix all mlml 1 6.0 8.0 0.0 group expensive_atom
+dump 1 all custom 1 dump.lammpstrj id type x y z fx fy fz d_eval_1 d_eval_2 d_potential_1 d_potential_2
+
+run 1

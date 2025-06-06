@@ -8,9 +8,61 @@ It does this through the use of two commands; `fix mlml` and `pair hybrid/overla
 
 Command overview
 ----------------
-- **fix mlml**: Used to allocate and track which atoms should be evaluated by which potential.
-- **pair hybrid/overlay/mlml**: Used to mix together different pair_styles in the different spatial regions of the simulation domain designated by fix mlml.
+- **fix mlml**: Used to allocate and track which atoms should be evaluated by which potential. This has a kokkos implementation which allows mixing of GPU accelerated pair_styles.
+- **pair hybrid/overlay/mlml**: Used to mix together different pair_styles in the different spatial regions of the simulation domain designated by fix mlml. This has a kokkos implementation which allows mixing of GPU accelerated pair_styles.
 - **fix langevin/mlml**: Used to apply a langevin thermostat to a specific spatial region of the simulation domain designated by fix mlml.
+
+Tested Compatible ``pair_style``s
+----------------------------------
+
+ML-MIX is designed to wrap any LAMMPS ``pair_style`` that is compatible with ``pair_style hybrid``. However, incompatibilities can still arise—especially when a ``pair_style`` does something non-standard. Such issues may manifest as segmentation faults.
+
+A common source of incompatibility is when a ``pair_style`` performs an MPI communication during its ``compute()`` routine (e.g., ``EAM``). This communication acts as a synchronization point, forcing all processors to halt. In ML/ML simulations, this can *severely* bottleneck performance and render the simulation impractical.
+
+CPU ``pair_style``s
+-------------------
+
+**Tested and compatible (non-KOKKOS):**
+
+- ``lj/cut``
+- ``pace``
+- ``uf3``
+- ``snap``
+- ``symmetrix/mace`` (in ``no_mpi_message_passing`` mode)
+- ``table``
+
+**Tested and currently incompatible:**
+
+- ``EAM`` and all derivatives
+- ``symmetrix/mace`` (in ``mpi_message_passing`` and ``no_domain_decomposition`` mode)
+- ``allegro``
+- ``mliappy mace``
+
+GPU ``pair_style``s
+-------------------
+
+**Tested and compatible (KOKKOS variants):**
+
+- ``lj/cut/kk``
+- ``symmetrix/mace/kk`` (in ``no_mpi_message_passing`` mode)
+- ``snap/kk``
+
+**Tested and currently incompatible:**
+
+- ``uf3/kk``
+- ``symmetrix/mace`` (in ``mpi_message_passing`` and ``no_domain_decomposition`` mode)
+
+Notes and Contributions
+-----------------------
+
+There are likely many other compatible ``pair_style``s that have not yet been tested. If you identify one, please get in touch with:
+
+- Fraser Birks (fraser.birks@warwick.ac.uk)
+
+It is also possible that currently incompatible ``pair_style``s could be made compatible with minor modifications (e.g., adding ghost atoms and disabling MPI messaging in ``EAM``). If this is important for your use case, please contact Fraser or raise a GitHub issue.
+
+If you believe that a ``pair_style`` should be compatible (for instance, because it avoids MPI in ``compute()``), and suspect that ML-MIX may be at fault, please also raise a GitHub issue.
+
 
 Why Use This Package?
 ----------------------
@@ -24,21 +76,37 @@ Why Use This Package?
 How it works: Data flow
 -----------------------
 
-Data for which potentials to be evaluated are stored in two user defined property/atom arrays: `i2_potential` and `d2_eval`.
+Data for which potentials are to be evaluated are stored in two user-defined ``property/atom`` arrays: ``i2_potential`` and ``d2_eval``.
 
-- `i2_potential` is an integer array which specifies which potential(s) should be evaluated for each atom.
-- `d2_eval` is a double array which specifies the proportion of the force which should be evaluated by each potential for each atom.
+- ``i2_potential`` is an integer array which specifies which potential(s) should be evaluated for each atom.
+- ``d2_eval`` is a double array which specifies the proportion of the force which should be evaluated by each potential for each atom.
 
-At the start of every input script, these two arrays must be initialised with 
+**CPU usage**
+
+At the start of every input script (CPU mode), these two arrays must be initialised with:
 
 .. code-block:: bash
 
     fix eval_pot all property/atom i2_potential 2 ghost yes
     fix eval_arr all property/atom d2_eval 2 ghost yes
 
-The first column of each of these arrays corresponds to the potential labelled 1, and the second column corresponds to the potential labelled 2.
+**KOKKOS (GPU) usage**
 
-The values held in these arrays can be dumped any time in the simulation with the `dump custom` command, allowing users to visualise which atoms are being evaluated by which potential.
+When using Kokkos-accelerated pair styles, these must instead be defined in a device-compatible form using double vector ``property/atom`` fields:
+
+.. code-block:: bash
+
+    fix ml-mix-arrs all property/atom d_potential_1 d_potential_2 d_eval_1 d_eval_2 ghost yes
+
+Here:
+
+- ``d_potential_1`` and ``d_potential_2`` replace the columns of ``i2_potential``
+- ``d_eval_1`` and ``d_eval_2`` replace the columns of ``d2_eval``
+
+**Notes**
+
+- The first column of each array corresponds to potential 1, and the second corresponds to potential 2.
+- These values can be dumped at any point in the simulation using the ``dump custom`` command, allowing users to visualise which atoms are being evaluated by which potential.
 
 
 How it works: Region building

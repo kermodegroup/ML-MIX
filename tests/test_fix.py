@@ -154,7 +154,7 @@ def region_test(verbose=False,
     
 
 def test_build_with_group():
-    region_test(pick_seed_with='group')
+    region_test(pick_seed_with='group',verbose=True)
     region_test(pick_seed_with='group',blend_type='cubic')
 
 def test_build_with_fix():

@@ -67,16 +67,16 @@ Description
 """""""""""
 .. warning::
 
-   **Bug Warning**  
-   In the current version of LAMMPS, if a `pair_style` attempts to build a half neighbor list by pruning a full neighbor list created for a `fix`, it can result in all forces computed by that `pair_style` being zero (atoms effectively have no neighbors).
+   **Bug Warning**
+    Update: This issue has been resolved in the `17/03/2025 LAMMPS Stable release <https://github.com/lammps/lammps/releases/tag/stable_29Aug2024_update2>`_. Please ensure you are using this version or later to avoid the issue described below.
 
-   This issue affects `ML-MIX` in the following cases:
+    In the current version of LAMMPS, if a `pair_style` attempts to build a half neighbor list by pruning a full neighbor list created for a `fix`, it can result in all forces computed by that `pair_style` being zero (atoms effectively have no neighbors).
 
-   - `fix mlml` is defined (which requires a full neighbor list).
-   - *All* other `pair_style` definitions require half neighbor lists.  
-     (If at least one `pair_style`—such as `ACE` or `UF3`—requires a full neighbor list, then half neighbor lists are constructed correctly, and this issue does not occur.)
+    This issue affects `ML-MIX` in the following cases:
 
-   Update: This issue has been resolved in the `17/03/2025 LAMMPS Stable release <https://github.com/lammps/lammps/releases/tag/stable_29Aug2024_update2>`_.
+    - `fix mlml` is defined (which requires a full neighbor list).
+    - *All* other `pair_style` definitions require half neighbor lists.  
+      (If at least one `pair_style`—such as `ACE` or `UF3`—requires a full neighbor list, then half neighbor lists are constructed correctly, and this issue does not occur.)
 
 This fix command is used to create and maintain a set of regions to be evaluated with 2 different pair_styles using the *hybrid/overlay/mlml* pair style in the *mlmix* package. In *hybrid/overlay/mlml*, different pair_styles are labelled either 1 or 2 to indicate evaluation region.
 
@@ -146,10 +146,26 @@ Thresholding is then applied such that atoms with :math:`p_{1} < 0.01` are evalu
 
 This approach ensures a smooth transition in force evaluation when atoms move across region boundaries, reducing the 'flickering' behaviour that can be seen when atoms move quickly between regions.
 
+Acceleration
+""""""""""""
+.. warning::
+
+  Kokkos acceleration for this fix is experimental and still in development. Some features may not work as expected, please report any issues you encounter.
+
+This fix has a kokkos enabled version, which exists in order to allow ML/ML simulations to be performed using GPU accelerated kokkos pair_styles. Please see the restrictions section below for information on how the use of this differs from the CPU version.
+
 Restrictions
 """"""""""""
+**CPU Version:**
 To use this fix, the i2_potential and d2_eval property/atoms must be defined.
 This fix is designed to be used in conjunction with the *hybrid/overlay/mlml* pair style.
+
+**GPU Version:**
+To use this fix, the d_potential_1, d_potential_2, d_eval_1 and d_eval_2 property/atoms must be defined (for device compatibility).
+
+
+This fix is designed to be used in conjunction with the *hybrid/overlay/mlml* pair style.
+
 Please see :doc:`pair_style hybrid/overlay/mlml <pair>` for more information.
 
 The group specified with this command must be all.
