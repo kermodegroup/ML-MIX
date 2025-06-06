@@ -85,11 +85,15 @@ A consequence of force mixing is that the total force on the system may not be z
 
 Acceleration
 """"""""""""
+**New in version 0.3.0**
+
 .. warning::
 
   Kokkos acceleration for this pair_style is experimental and still in development. Some features may not work as expected, please report any issues you encounter.
 
 This pair_style has a kokkos enabled version, which exists in order to allow ML/ML simulations to be performed using GPU accelerated kokkos pair_styles. Please see the restrictions section below for information on how the use of this differs from the CPU version.
+
+The kokkos version of this pair_style will be automatically enabled if LAMMPS is launched with the `kk` suffix.
 
 Restrictions
 """"""""""""
@@ -97,7 +101,7 @@ Restrictions
 To use this pair_style, the i2_potential and d2_eval property/atoms must be defined.
 This pair_style is designed to be used in conjunction with the *hybrid/overlay/mlml* pair style.
 
-**GPU Version:**
+**GPU Version: new in version 0.3.0**
 To use this pair_style, the d_potential_1, d_potential_2, d_eval_1 and d_eval_2 property/atoms must be defined (for device compatibility).
 
 

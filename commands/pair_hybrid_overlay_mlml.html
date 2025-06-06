@@ -6,14 +6,14 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>pair_style hybrid/overlay/mlml &mdash; ML-MIX 0.1 documentation</title>
+  <title>pair_style hybrid/overlay/mlml &mdash; ML-MIX 0.3.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
 
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=2709fde1"></script>
+      <script src="../_static/documentation_options.js?v=e259d695"></script>
       <script src="../_static/doctools.js?v=9bcbadda"></script>
       <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/js/theme.js"></script>
@@ -157,18 +157,20 @@ In force-mixing, cell pressures are not well defined. LAMMPS will output pressur
 </section>
 <section id="acceleration">
 <h2>Acceleration<a class="headerlink" href="#acceleration" title="Link to this heading"></a></h2>
+<p><strong>New in version 0.3.0</strong></p>
 <div class="admonition warning">
 <p class="admonition-title">Warning</p>
 <p>Kokkos acceleration for this pair_style is experimental and still in development. Some features may not work as expected, please report any issues you encounter.</p>
 </div>
 <p>This pair_style has a kokkos enabled version, which exists in order to allow ML/ML simulations to be performed using GPU accelerated kokkos pair_styles. Please see the restrictions section below for information on how the use of this differs from the CPU version.</p>
+<p>The kokkos version of this pair_style will be automatically enabled if LAMMPS is launched with the <cite>kk</cite> suffix.</p>
 </section>
 <section id="restrictions">
 <h2>Restrictions<a class="headerlink" href="#restrictions" title="Link to this heading"></a></h2>
 <p><strong>CPU Version:</strong>
 To use this pair_style, the i2_potential and d2_eval property/atoms must be defined.
 This pair_style is designed to be used in conjunction with the <em>hybrid/overlay/mlml</em> pair style.</p>
-<p><strong>GPU Version:</strong>
+<p><strong>GPU Version: new in version 0.3.0</strong>
 To use this pair_style, the d_potential_1, d_potential_2, d_eval_1 and d_eval_2 property/atoms must be defined (for device compatibility).</p>
 <p>As well as the restrictions that apply to the <em>hybrid/overlay</em> pair style, <span class="xref std std-doc">run_style respa</span> is completely disabled for <em>hybrid/overlay/mlml</em>.</p>
 <p>This fix is designed to be used in conjunction with the <em>hybrid/overlay/mlml</em> pair style.</p>

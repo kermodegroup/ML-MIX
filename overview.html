@@ -6,14 +6,14 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Package Overview &mdash; ML-MIX 0.1 documentation</title>
+  <title>Package Overview &mdash; ML-MIX 0.3.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
 
   
       <script src="_static/jquery.js?v=5d32c60e"></script>
       <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="_static/documentation_options.js?v=2709fde1"></script>
+      <script src="_static/documentation_options.js?v=e259d695"></script>
       <script src="_static/doctools.js?v=9bcbadda"></script>
       <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
       <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
@@ -50,8 +50,8 @@
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Package Overview</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#command-overview">Command overview</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#tested-compatible-pair-style-s">Tested Compatible ``pair_style``s</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#cpu-pair-style-s">CPU ``pair_style``s</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#gpu-pair-style-s">GPU ``pair_style``s</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#cpu-pair-styles">CPU pair_styles</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#gpu-pair-styles">GPU pair_styles</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#notes-and-contributions">Notes and Contributions</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#why-use-this-package">Why Use This Package?</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#how-it-works-data-flow">How it works: Data flow</a></li>
@@ -98,8 +98,8 @@ It does this through the use of two commands; <cite>fix mlml</cite> and <cite>pa
 <section id="command-overview">
 <h2>Command overview<a class="headerlink" href="#command-overview" title="Link to this heading"></a></h2>
 <ul class="simple">
-<li><p><strong>fix mlml</strong>: Used to allocate and track which atoms should be evaluated by which potential. This has a kokkos implementation which allows mixing of GPU accelerated pair_styles.</p></li>
-<li><p><strong>pair hybrid/overlay/mlml</strong>: Used to mix together different pair_styles in the different spatial regions of the simulation domain designated by fix mlml. This has a kokkos implementation which allows mixing of GPU accelerated pair_styles.</p></li>
+<li><p><strong>fix mlml</strong>: Used to allocate and track which atoms should be evaluated by which potential. <strong>new in version 0.3.0</strong> This fix has a kokkos implementation which allows mixing of GPU accelerated pair_styles.</p></li>
+<li><p><strong>pair hybrid/overlay/mlml</strong>: Used to mix together different pair_styles in the different spatial regions of the simulation domain designated by fix mlml. <strong>new in version 0.3.0</strong> This pair_style has a kokkos implementation which allows mixing of GPU accelerated pair_styles.</p></li>
 <li><p><strong>fix langevin/mlml</strong>: Used to apply a langevin thermostat to a specific spatial region of the simulation domain designated by fix mlml.</p></li>
 </ul>
 </section>
@@ -108,8 +108,8 @@ It does this through the use of two commands; <cite>fix mlml</cite> and <cite>pa
 <p>ML-MIX is designed to wrap any LAMMPS <code class="docutils literal notranslate"><span class="pre">pair_style</span></code> that is compatible with <code class="docutils literal notranslate"><span class="pre">pair_style</span> <span class="pre">hybrid</span></code>. However, incompatibilities can still arise—especially when a <code class="docutils literal notranslate"><span class="pre">pair_style</span></code> does something non-standard. Such issues may manifest as segmentation faults.</p>
 <p>A common source of incompatibility is when a <code class="docutils literal notranslate"><span class="pre">pair_style</span></code> performs an MPI communication during its <code class="docutils literal notranslate"><span class="pre">compute()</span></code> routine (e.g., <code class="docutils literal notranslate"><span class="pre">EAM</span></code>). This communication acts as a synchronization point, forcing all processors to halt. In ML/ML simulations, this can <em>severely</em> bottleneck performance and render the simulation impractical.</p>
 </section>
-<section id="cpu-pair-style-s">
-<h2>CPU <a href="#id3"><span class="problematic" id="id4">``</span></a>pair_style``s<a class="headerlink" href="#cpu-pair-style-s" title="Link to this heading"></a></h2>
+<section id="cpu-pair-styles">
+<h2>CPU pair_styles<a class="headerlink" href="#cpu-pair-styles" title="Link to this heading"></a></h2>
 <p><strong>Tested and compatible (non-KOKKOS):</strong></p>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">lj/cut</span></code></p></li>
@@ -127,8 +127,8 @@ It does this through the use of two commands; <cite>fix mlml</cite> and <cite>pa
 <li><p><code class="docutils literal notranslate"><span class="pre">mliappy</span> <span class="pre">mace</span></code></p></li>
 </ul>
 </section>
-<section id="gpu-pair-style-s">
-<h2>GPU <a href="#id5"><span class="problematic" id="id6">``</span></a>pair_style``s<a class="headerlink" href="#gpu-pair-style-s" title="Link to this heading"></a></h2>
+<section id="gpu-pair-styles">
+<h2>GPU pair_styles<a class="headerlink" href="#gpu-pair-styles" title="Link to this heading"></a></h2>
 <p><strong>Tested and compatible (KOKKOS variants):</strong></p>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">lj/cut/kk</span></code></p></li>
@@ -143,11 +143,11 @@ It does this through the use of two commands; <cite>fix mlml</cite> and <cite>pa
 </section>
 <section id="notes-and-contributions">
 <h2>Notes and Contributions<a class="headerlink" href="#notes-and-contributions" title="Link to this heading"></a></h2>
-<p>There are likely many other compatible <a href="#id7"><span class="problematic" id="id8">``</span></a>pair_style``s that have not yet been tested. If you identify one, please get in touch with:</p>
+<p>There are likely many other compatible <a href="#id3"><span class="problematic" id="id4">``</span></a>pair_style``s that have not yet been tested. If you identify one, please get in touch with:</p>
 <ul class="simple">
 <li><p>Fraser Birks (<a class="reference external" href="mailto:fraser&#46;birks&#37;&#52;&#48;warwick&#46;ac&#46;uk">fraser<span>&#46;</span>birks<span>&#64;</span>warwick<span>&#46;</span>ac<span>&#46;</span>uk</a>)</p></li>
 </ul>
-<p>It is also possible that currently incompatible <code class="docutils literal notranslate"><span class="pre">pair_style``s</span> <span class="pre">could</span> <span class="pre">be</span> <span class="pre">made</span> <span class="pre">compatible</span> <span class="pre">with</span> <span class="pre">minor</span> <span class="pre">modifications</span> <span class="pre">(e.g.,</span> <span class="pre">adding</span> <span class="pre">ghost</span> <span class="pre">atoms</span> <span class="pre">and</span> <span class="pre">disabling</span> <span class="pre">MPI</span> <span class="pre">messaging</span> <span class="pre">in</span> <span class="pre">``EAM</span></code>). If this is important for your use case, please contact Fraser or raise a GitHub issue.</p>
+<p>It is also possible that currently incompatible <code class="docutils literal notranslate"><span class="pre">pair_style``s</span> <span class="pre">could</span> <span class="pre">be</span> <span class="pre">made</span> <span class="pre">compatible</span> <span class="pre">with</span> <span class="pre">minor</span> <span class="pre">modifications</span> <span class="pre">(e.g.,</span> <span class="pre">adding</span> <span class="pre">ghost</span> <span class="pre">atoms</span> <span class="pre">and</span> <span class="pre">disabling</span> <span class="pre">MPI</span> <span class="pre">messaging</span> <span class="pre">in</span> <span class="pre">``EAM</span></code>). If this is important for your use case, please get in contact or raise a GitHub issue.</p>
 <p>If you believe that a <code class="docutils literal notranslate"><span class="pre">pair_style</span></code> should be compatible (for instance, because it avoids MPI in <code class="docutils literal notranslate"><span class="pre">compute()</span></code>), and suspect that ML-MIX may be at fault, please also raise a GitHub issue.</p>
 </section>
 <section id="why-use-this-package">

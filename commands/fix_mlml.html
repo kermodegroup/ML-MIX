@@ -6,14 +6,14 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>fix mlml &mdash; ML-MIX 0.1 documentation</title>
+  <title>fix mlml &mdash; ML-MIX 0.3.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
 
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=2709fde1"></script>
+      <script src="../_static/documentation_options.js?v=e259d695"></script>
       <script src="../_static/doctools.js?v=9bcbadda"></script>
       <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
       <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
@@ -211,18 +211,20 @@ Atoms within the blending region are evaluated with both pair_styles, and the fo
 </section>
 <section id="acceleration">
 <h2>Acceleration<a class="headerlink" href="#acceleration" title="Link to this heading"></a></h2>
-<div class="admonition warning">
-<p class="admonition-title">Warning</p>
-<p>Kokkos acceleration for this fix is experimental and still in development. Some features may not work as expected, please report any issues you encounter.</p>
+<p><strong>New in version 0.3.0</strong>
+.. warning:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Kokkos</span> <span class="n">acceleration</span> <span class="k">for</span> <span class="n">this</span> <span class="n">fix</span> <span class="ow">is</span> <span class="n">experimental</span> <span class="ow">and</span> <span class="n">still</span> <span class="ow">in</span> <span class="n">development</span><span class="o">.</span> <span class="n">Some</span> <span class="n">features</span> <span class="n">may</span> <span class="ow">not</span> <span class="n">work</span> <span class="k">as</span> <span class="n">expected</span><span class="p">,</span> <span class="n">please</span> <span class="n">report</span> <span class="nb">any</span> <span class="n">issues</span> <span class="n">you</span> <span class="n">encounter</span><span class="o">.</span>
+</pre></div>
 </div>
 <p>This fix has a kokkos enabled version, which exists in order to allow ML/ML simulations to be performed using GPU accelerated kokkos pair_styles. Please see the restrictions section below for information on how the use of this differs from the CPU version.</p>
+<p>The kokkos version of this pair_style will be automatically enabled if LAMMPS is launched with the <cite>kk</cite> suffix.</p>
 </section>
 <section id="restrictions">
 <h2>Restrictions<a class="headerlink" href="#restrictions" title="Link to this heading"></a></h2>
 <p><strong>CPU Version:</strong>
 To use this fix, the i2_potential and d2_eval property/atoms must be defined.
 This fix is designed to be used in conjunction with the <em>hybrid/overlay/mlml</em> pair style.</p>
-<p><strong>GPU Version:</strong>
+<p><strong>GPU Version: new in version 0.3.0</strong>
 To use this fix, the d_potential_1, d_potential_2, d_eval_1 and d_eval_2 property/atoms must be defined (for device compatibility).</p>
 <p>This fix is designed to be used in conjunction with the <em>hybrid/overlay/mlml</em> pair style.</p>
 <p>Please see <span class="xref std std-doc">pair_style hybrid/overlay/mlml</span> for more information.</p>
