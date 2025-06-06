@@ -9,7 +9,7 @@
 project = 'ML-MIX'
 copyright = '2025, Fraser Birks'
 author = 'Fraser Birks'
-release = '0.1'
+release = '0.3.0'
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration

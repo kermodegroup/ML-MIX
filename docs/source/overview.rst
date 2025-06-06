@@ -8,8 +8,8 @@ It does this through the use of two commands; `fix mlml` and `pair hybrid/overla
 
 Command overview
 ----------------
-- **fix mlml**: Used to allocate and track which atoms should be evaluated by which potential. This has a kokkos implementation which allows mixing of GPU accelerated pair_styles.
-- **pair hybrid/overlay/mlml**: Used to mix together different pair_styles in the different spatial regions of the simulation domain designated by fix mlml. This has a kokkos implementation which allows mixing of GPU accelerated pair_styles.
+- **fix mlml**: Used to allocate and track which atoms should be evaluated by which potential. **new in version 0.3.0** This fix has a kokkos implementation which allows mixing of GPU accelerated pair_styles.
+- **pair hybrid/overlay/mlml**: Used to mix together different pair_styles in the different spatial regions of the simulation domain designated by fix mlml. **new in version 0.3.0** This pair_style has a kokkos implementation which allows mixing of GPU accelerated pair_styles.
 - **fix langevin/mlml**: Used to apply a langevin thermostat to a specific spatial region of the simulation domain designated by fix mlml.
 
 Tested Compatible ``pair_style``s
@@ -19,7 +19,7 @@ ML-MIX is designed to wrap any LAMMPS ``pair_style`` that is compatible with ``p
 
 A common source of incompatibility is when a ``pair_style`` performs an MPI communication during its ``compute()`` routine (e.g., ``EAM``). This communication acts as a synchronization point, forcing all processors to halt. In ML/ML simulations, this can *severely* bottleneck performance and render the simulation impractical.
 
-CPU ``pair_style``s
+CPU pair_styles
 -------------------
 
 **Tested and compatible (non-KOKKOS):**
@@ -38,7 +38,7 @@ CPU ``pair_style``s
 - ``allegro``
 - ``mliappy mace``
 
-GPU ``pair_style``s
+GPU pair_styles
 -------------------
 
 **Tested and compatible (KOKKOS variants):**
@@ -59,7 +59,7 @@ There are likely many other compatible ``pair_style``s that have not yet been te
 
 - Fraser Birks (fraser.birks@warwick.ac.uk)
 
-It is also possible that currently incompatible ``pair_style``s could be made compatible with minor modifications (e.g., adding ghost atoms and disabling MPI messaging in ``EAM``). If this is important for your use case, please contact Fraser or raise a GitHub issue.
+It is also possible that currently incompatible ``pair_style``s could be made compatible with minor modifications (e.g., adding ghost atoms and disabling MPI messaging in ``EAM``). If this is important for your use case, please get in contact or raise a GitHub issue.
 
 If you believe that a ``pair_style`` should be compatible (for instance, because it avoids MPI in ``compute()``), and suspect that ML-MIX may be at fault, please also raise a GitHub issue.
 

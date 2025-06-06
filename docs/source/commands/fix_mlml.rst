@@ -148,11 +148,14 @@ This approach ensures a smooth transition in force evaluation when atoms move ac
 
 Acceleration
 """"""""""""
+**New in version 0.3.0**
 .. warning::
 
   Kokkos acceleration for this fix is experimental and still in development. Some features may not work as expected, please report any issues you encounter.
 
 This fix has a kokkos enabled version, which exists in order to allow ML/ML simulations to be performed using GPU accelerated kokkos pair_styles. Please see the restrictions section below for information on how the use of this differs from the CPU version.
+
+The kokkos version of this pair_style will be automatically enabled if LAMMPS is launched with the `kk` suffix.
 
 Restrictions
 """"""""""""
@@ -160,7 +163,7 @@ Restrictions
 To use this fix, the i2_potential and d2_eval property/atoms must be defined.
 This fix is designed to be used in conjunction with the *hybrid/overlay/mlml* pair style.
 
-**GPU Version:**
+**GPU Version: new in version 0.3.0**
 To use this fix, the d_potential_1, d_potential_2, d_eval_1 and d_eval_2 property/atoms must be defined (for device compatibility).
 
 
