@@ -46,6 +46,7 @@
               <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../setup.html">Setup</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../setup.html#building-ml-mix">Building ML-MIX</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../overview.html">Package Overview</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../examples.html">Examples</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="index.html">LAMMPS Style Documentation</a><ul class="current">
@@ -53,6 +54,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#syntax">Syntax</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#examples">Examples</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#description">Description</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#acceleration">Acceleration</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#restrictions">Restrictions</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#related-commands">Related commands</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#default">Default</a></li>
@@ -150,15 +152,17 @@ fix mlml_fix all mlml 1 4.0 6.0 4.0 group He_group hysteresis-time 0.001 0.01
 <h2>Description<a class="headerlink" href="#description" title="Link to this heading"></a></h2>
 <div class="admonition warning">
 <p class="admonition-title">Warning</p>
-<p><strong>Bug Warning</strong>
-In the current version of LAMMPS, if a <cite>pair_style</cite> attempts to build a half neighbor list by pruning a full neighbor list created for a <cite>fix</cite>, it can result in all forces computed by that <cite>pair_style</cite> being zero (atoms effectively have no neighbors).</p>
+<dl>
+<dt><strong>Bug Warning</strong></dt><dd><p>Update: This issue has been resolved in the <a class="reference external" href="https://github.com/lammps/lammps/releases/tag/stable_29Aug2024_update2">17/03/2025 LAMMPS Stable release</a>. Please ensure you are using this version or later to avoid the issue described below.</p>
+<p>In the current version of LAMMPS, if a <cite>pair_style</cite> attempts to build a half neighbor list by pruning a full neighbor list created for a <cite>fix</cite>, it can result in all forces computed by that <cite>pair_style</cite> being zero (atoms effectively have no neighbors).</p>
 <p>This issue affects <cite>ML-MIX</cite> in the following cases:</p>
 <ul class="simple">
 <li><p><cite>fix mlml</cite> is defined (which requires a full neighbor list).</p></li>
 <li><p><em>All</em> other <cite>pair_style</cite> definitions require half neighbor lists.
 (If at least one <cite>pair_style</cite>—such as <cite>ACE</cite> or <cite>UF3</cite>—requires a full neighbor list, then half neighbor lists are constructed correctly, and this issue does not occur.)</p></li>
 </ul>
-<p>Update: This issue has been resolved in the <a class="reference external" href="https://github.com/lammps/lammps/releases/tag/stable_29Aug2024_update2">17/03/2025 LAMMPS Stable release</a>.</p>
+</dd>
+</dl>
 </div>
 <p>This fix command is used to create and maintain a set of regions to be evaluated with 2 different pair_styles using the <em>hybrid/overlay/mlml</em> pair style in the <em>mlmix</em> package. In <em>hybrid/overlay/mlml</em>, different pair_styles are labelled either 1 or 2 to indicate evaluation region.</p>
 <p>This fix is used to build an evaluation region around user-specified seed atoms. All atoms which lie inside this region are marked for evaluation with pair_style 1, and all atoms outside it are marked for evaluation with potential 2.</p>
@@ -205,11 +209,23 @@ Atoms within the blending region are evaluated with both pair_styles, and the fo
 <p>Thresholding is then applied such that atoms with <span class="math notranslate nohighlight">\(p_{1} &lt; 0.01\)</span> are evaluated with only potential 2 and atoms with <span class="math notranslate nohighlight">\(p_{1} &gt; 0.99\)</span> are evaluated with only potential 1.</p>
 <p>This approach ensures a smooth transition in force evaluation when atoms move across region boundaries, reducing the ‘flickering’ behaviour that can be seen when atoms move quickly between regions.</p>
 </section>
+<section id="acceleration">
+<h2>Acceleration<a class="headerlink" href="#acceleration" title="Link to this heading"></a></h2>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>Kokkos acceleration for this fix is experimental and still in development. Some features may not work as expected, please report any issues you encounter.</p>
+</div>
+<p>This fix has a kokkos enabled version, which exists in order to allow ML/ML simulations to be performed using GPU accelerated kokkos pair_styles. Please see the restrictions section below for information on how the use of this differs from the CPU version.</p>
+</section>
 <section id="restrictions">
 <h2>Restrictions<a class="headerlink" href="#restrictions" title="Link to this heading"></a></h2>
-<p>To use this fix, the i2_potential and d2_eval property/atoms must be defined.
-This fix is designed to be used in conjunction with the <em>hybrid/overlay/mlml</em> pair style.
-Please see <span class="xref std std-doc">pair_style hybrid/overlay/mlml</span> for more information.</p>
+<p><strong>CPU Version:</strong>
+To use this fix, the i2_potential and d2_eval property/atoms must be defined.
+This fix is designed to be used in conjunction with the <em>hybrid/overlay/mlml</em> pair style.</p>
+<p><strong>GPU Version:</strong>
+To use this fix, the d_potential_1, d_potential_2, d_eval_1 and d_eval_2 property/atoms must be defined (for device compatibility).</p>
+<p>This fix is designed to be used in conjunction with the <em>hybrid/overlay/mlml</em> pair style.</p>
+<p>Please see <span class="xref std std-doc">pair_style hybrid/overlay/mlml</span> for more information.</p>
 <p>The group specified with this command must be all.</p>
 </section>
 <section id="related-commands">

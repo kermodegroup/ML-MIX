@@ -46,8 +46,12 @@
 <ul class="current">
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Setup</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#cloning-this-repository">Cloning this Repository</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#installing-lammps">Installing LAMMPS</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#building-the-ml-mix-plugin">Building the ML-MIX Plugin</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#cloning-lammps">Cloning LAMMPS</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="#building-ml-mix">Building ML-MIX</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#in-source-build-required-for-kokkos">In-Source Build (Required for KOKKOS)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#plugin-build-without-kokkos">Plugin Build (Without KOKKOS)</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#loading-the-ml-mix-plugin">Loading the ML-MIX Plugin</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#installing-python-packages">Installing Python Packages</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#installing-acepotentials-jl-for-ace-fitting">Installing ACEpotentials.jl for ACE fitting</a></li>
@@ -93,48 +97,75 @@
 </pre></div>
 </div>
 </section>
-<section id="installing-lammps">
-<h2>Installing LAMMPS<a class="headerlink" href="#installing-lammps" title="Link to this heading"></a></h2>
-<p>To compile the ML-MIX LAMMPS plugin, first clone and build LAMMPS:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>git<span class="w"> </span>clone<span class="w"> </span>-b<span class="w"> </span>release<span class="w"> </span>https://github.com/lammps/lammps.git<span class="w"> </span>mylammps
+<section id="cloning-lammps">
+<h2>Cloning LAMMPS<a class="headerlink" href="#cloning-lammps" title="Link to this heading"></a></h2>
+<p>Before building ML-MIX, you must clone the LAMMPS source code:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>git<span class="w"> </span>clone<span class="w"> </span>-b<span class="w"> </span>release<span class="w"> </span>https://github.com/lammps/lammps.git<span class="w"> </span>lammps
 </pre></div>
 </div>
-<p>Follow the <a class="reference external" href="https://docs.lammps.org/Build.html">official build instructions</a>.</p>
+</section>
+</section>
+<section id="building-ml-mix">
+<h1>Building ML-MIX<a class="headerlink" href="#building-ml-mix" title="Link to this heading"></a></h1>
+<p>There are two ways to build ML-MIX:</p>
+<ol class="arabic simple">
+<li><p>In-source (required for KOKKOS integration)</p></li>
+<li><p>As a plugin</p></li>
+</ol>
+<p>Instructions for both are given below.</p>
+<section id="in-source-build-required-for-kokkos">
+<h2>In-Source Build (Required for KOKKOS)<a class="headerlink" href="#in-source-build-required-for-kokkos" title="Link to this heading"></a></h2>
+<p>This method copies the <cite>fix</cite> and <cite>pair</cite> files into the <cite>lammps/src/</cite> directory. Run the installation script:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>./install.sh<span class="w"> </span>/path/to/lammps/
+</pre></div>
+</div>
+<p><strong>Without KOKKOS</strong></p>
+<p>To build without KOKKOS, a reference build script is provided:</p>
+<ul class="simple">
+<li><p><cite>build_scripts/example_lammps_build_script.sh</cite></p></li>
+</ul>
 <p>Required LAMMPS packages:</p>
 <ul class="simple">
 <li><p>PLUGIN</p></li>
-<li><p>ML-PACE which can be added using the instructions found <a class="reference external" href="https://acesuit.github.io/ACEpotentials.jl/v0.6/tutorials/lammps/">here</a>.</p></li>
+<li><p>ML-PACE (see <a class="reference external" href="https://acesuit.github.io/ACEpotentials.jl/v0.6/tutorials/lammps/">ACEpotentials.jl tutorial</a>)</p></li>
 <li><p>ML-UF3</p></li>
-<li><p>RIGID (for Si stretched bond case study)</p></li>
-<li><p>REPLICA (for nudged-elastic-band calculations)</p></li>
+<li><p>RIGID (required for the Si stretched bond case study)</p></li>
+<li><p>REPLICA (required for nudged-elastic-band calculations)</p></li>
 </ul>
-<p>The ML-MIX case studies (given in <cite>case_studies/</cite>) use Python-LAMMPS integration.
-To install LAMMPS with this enabled, follow the <a class="reference external" href="https://docs.lammps.org/Python_install.html">Python installation guide</a>.
-Installation into a virtual environment is highly recommended.</p>
-<p><strong>Example LAMMPS build script:</strong> <cite>build_scripts/example_lammps_build_script.sh</cite>.</p>
+<p>The ML-MIX case studies require Python access to LAMMPS via its shared library interface. To enable this, follow the <a class="reference external" href="https://docs.lammps.org/Python_install.html">LAMMPS Python installation guide</a>.
+Installing into a virtual environment is strongly recommended.</p>
+<p><strong>With KOKKOS</strong></p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>ML-MIX-kokkos is currently in beta. Bugs are expected and only a limited number of KOKKOS pair styles are supported.</p>
+</div>
+<p>An in-source build is required for KOKKOS. Use the <cite>install.sh</cite> script as above. Then follow the example script:</p>
+<ul class="simple">
+<li><p><cite>build_scripts/example_lammps_build_script_with_kokkos.sh</cite></p></li>
+</ul>
+<p>Refer to the <a class="reference external" href="https://docs.lammps.org/Build_extras.html#kokkos">LAMMPS KOKKOS build documentation</a> for guidance. Note that KOKKOS builds can be significantly slower to compile due to C++ templating.</p>
 </section>
-<section id="building-the-ml-mix-plugin">
-<h2>Building the ML-MIX Plugin<a class="headerlink" href="#building-the-ml-mix-plugin" title="Link to this heading"></a></h2>
-<p>To build the ML-MIX plugin, navigate to the <cite>LAMMPS_plugin</cite> directory and run:</p>
+<section id="plugin-build-without-kokkos">
+<h2>Plugin Build (Without KOKKOS)<a class="headerlink" href="#plugin-build-without-kokkos" title="Link to this heading"></a></h2>
+<p>This method builds ML-MIX separately using the plugin infrastructure. Run:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>mkdir<span class="w"> </span>build
 <span class="nb">cd</span><span class="w"> </span>build
 cmake<span class="w"> </span>..<span class="w"> </span>-D<span class="w"> </span><span class="nv">LAMMPS_SOURCE_DIR</span><span class="o">=</span>/path/to/lammps/src
 cmake<span class="w"> </span>--build<span class="w"> </span>.<span class="w"> </span>-j<span class="w"> </span><span class="m">1</span>
 </pre></div>
 </div>
-<p>Ensuring to replace <cite>/path/to/lammps/src</cite> with the path to the cloned LAMMPS source directory.</p>
-<p>Example script: <cite>build_scripts/example_plugin_build_script.sh</cite>.</p>
+<p>See also: <cite>build_scripts/example_plugin_build_script.sh</cite>.</p>
 </section>
 <section id="loading-the-ml-mix-plugin">
 <h2>Loading the ML-MIX Plugin<a class="headerlink" href="#loading-the-ml-mix-plugin" title="Link to this heading"></a></h2>
-<p>To load the ML-MIX plugin files, add the following lines to your LAMMPS input script:</p>
+<p>To use ML-MIX via the plugin interface, load both the <cite>fix</cite> and <cite>pair_style</cite> libraries in your LAMMPS input script:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>plugin<span class="w"> </span>load<span class="w"> </span>path/to/LAMMPS_plugin/build/hybridoverlaymlmlplugin.so
-plugin<span class="w"> </span>load<span class="w"> </span>path/to/LAMMPS_plugin/build/langevinmlmlplugin.so
 plugin<span class="w"> </span>load<span class="w"> </span>path/to/LAMMPS_plugin/build/mlmlplugin.so
 </pre></div>
 </div>
-<p>If the plugins are loaded successfully, you should see outputs similar to the following for each:</p>
+<p>On successful load, you should see:</p>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>Loading plugin: MLML hybrid overlay pair style v0.1 by Fraser Birks (fraser.birks@warwick.ac.uk)
+Loading plugin: MLML fix style v0.1 by Fraser Birks (fraser.birks@warwick.ac.uk)
 </pre></div>
 </div>
 </section>

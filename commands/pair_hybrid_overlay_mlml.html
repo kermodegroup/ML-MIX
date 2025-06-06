@@ -45,6 +45,7 @@
               <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../setup.html">Setup</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../setup.html#building-ml-mix">Building ML-MIX</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../overview.html">Package Overview</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../examples.html">Examples</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="index.html">LAMMPS Style Documentation</a><ul class="current">
@@ -53,6 +54,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#syntax">Syntax</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#examples">Examples</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#description">Description</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#acceleration">Acceleration</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#restrictions">Restrictions</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#related-commands">Related commands</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#default">Default</a></li>
@@ -153,10 +155,23 @@ In force-mixing, cell pressures are not well defined. LAMMPS will output pressur
 <p>Forces from force mixing are not the derivatives of a potential energy function, subsequently the ‘total energy’ of the system is not well defined. Therefore, the <em>hybrid/overlay/mlml</em> will set global potential energy and virials to zero.</p>
 <p>A consequence of force mixing is that the total force on the system may not be zero. To address this, the <em>zero</em> keyword can be used. If set to <em>yes</em>, the total force on the system will be modified such that the total is zero. This is achieved by averaging the net overall force on the system over all atoms and subtracting this from the force on each atom.</p>
 </section>
+<section id="acceleration">
+<h2>Acceleration<a class="headerlink" href="#acceleration" title="Link to this heading"></a></h2>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>Kokkos acceleration for this pair_style is experimental and still in development. Some features may not work as expected, please report any issues you encounter.</p>
+</div>
+<p>This pair_style has a kokkos enabled version, which exists in order to allow ML/ML simulations to be performed using GPU accelerated kokkos pair_styles. Please see the restrictions section below for information on how the use of this differs from the CPU version.</p>
+</section>
 <section id="restrictions">
 <h2>Restrictions<a class="headerlink" href="#restrictions" title="Link to this heading"></a></h2>
+<p><strong>CPU Version:</strong>
+To use this pair_style, the i2_potential and d2_eval property/atoms must be defined.
+This pair_style is designed to be used in conjunction with the <em>hybrid/overlay/mlml</em> pair style.</p>
+<p><strong>GPU Version:</strong>
+To use this pair_style, the d_potential_1, d_potential_2, d_eval_1 and d_eval_2 property/atoms must be defined (for device compatibility).</p>
 <p>As well as the restrictions that apply to the <em>hybrid/overlay</em> pair style, <span class="xref std std-doc">run_style respa</span> is completely disabled for <em>hybrid/overlay/mlml</em>.</p>
-<p>To use this pair_style, the i2_potential and d2_eval property/atoms must be defined.</p>
+<p>This fix is designed to be used in conjunction with the <em>hybrid/overlay/mlml</em> pair style.</p>
 <p>This pair_style is designed to be used in conjunction with <em>fix mlml</em>. Please see <span class="xref std std-doc">fix mlml</span> for more information.</p>
 </section>
 <section id="related-commands">

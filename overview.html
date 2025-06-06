@@ -46,8 +46,13 @@
               <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="setup.html">Setup</a></li>
+<li class="toctree-l1"><a class="reference internal" href="setup.html#building-ml-mix">Building ML-MIX</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Package Overview</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#command-overview">Command overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#tested-compatible-pair-style-s">Tested Compatible ``pair_style``s</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#cpu-pair-style-s">CPU ``pair_style``s</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#gpu-pair-style-s">GPU ``pair_style``s</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#notes-and-contributions">Notes and Contributions</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#why-use-this-package">Why Use This Package?</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#how-it-works-data-flow">How it works: Data flow</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#how-it-works-region-building">How it works: Region building</a></li>
@@ -93,10 +98,57 @@ It does this through the use of two commands; <cite>fix mlml</cite> and <cite>pa
 <section id="command-overview">
 <h2>Command overview<a class="headerlink" href="#command-overview" title="Link to this heading"></a></h2>
 <ul class="simple">
-<li><p><strong>fix mlml</strong>: Used to allocate and track which atoms should be evaluated by which potential.</p></li>
-<li><p><strong>pair hybrid/overlay/mlml</strong>: Used to mix together different pair_styles in the different spatial regions of the simulation domain designated by fix mlml.</p></li>
+<li><p><strong>fix mlml</strong>: Used to allocate and track which atoms should be evaluated by which potential. This has a kokkos implementation which allows mixing of GPU accelerated pair_styles.</p></li>
+<li><p><strong>pair hybrid/overlay/mlml</strong>: Used to mix together different pair_styles in the different spatial regions of the simulation domain designated by fix mlml. This has a kokkos implementation which allows mixing of GPU accelerated pair_styles.</p></li>
 <li><p><strong>fix langevin/mlml</strong>: Used to apply a langevin thermostat to a specific spatial region of the simulation domain designated by fix mlml.</p></li>
 </ul>
+</section>
+<section id="tested-compatible-pair-style-s">
+<h2>Tested Compatible <a href="#id1"><span class="problematic" id="id2">``</span></a>pair_style``s<a class="headerlink" href="#tested-compatible-pair-style-s" title="Link to this heading"></a></h2>
+<p>ML-MIX is designed to wrap any LAMMPS <code class="docutils literal notranslate"><span class="pre">pair_style</span></code> that is compatible with <code class="docutils literal notranslate"><span class="pre">pair_style</span> <span class="pre">hybrid</span></code>. However, incompatibilities can still arise—especially when a <code class="docutils literal notranslate"><span class="pre">pair_style</span></code> does something non-standard. Such issues may manifest as segmentation faults.</p>
+<p>A common source of incompatibility is when a <code class="docutils literal notranslate"><span class="pre">pair_style</span></code> performs an MPI communication during its <code class="docutils literal notranslate"><span class="pre">compute()</span></code> routine (e.g., <code class="docutils literal notranslate"><span class="pre">EAM</span></code>). This communication acts as a synchronization point, forcing all processors to halt. In ML/ML simulations, this can <em>severely</em> bottleneck performance and render the simulation impractical.</p>
+</section>
+<section id="cpu-pair-style-s">
+<h2>CPU <a href="#id3"><span class="problematic" id="id4">``</span></a>pair_style``s<a class="headerlink" href="#cpu-pair-style-s" title="Link to this heading"></a></h2>
+<p><strong>Tested and compatible (non-KOKKOS):</strong></p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">lj/cut</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">pace</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">uf3</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">snap</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">symmetrix/mace</span></code> (in <code class="docutils literal notranslate"><span class="pre">no_mpi_message_passing</span></code> mode)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">table</span></code></p></li>
+</ul>
+<p><strong>Tested and currently incompatible:</strong></p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">EAM</span></code> and all derivatives</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">symmetrix/mace</span></code> (in <code class="docutils literal notranslate"><span class="pre">mpi_message_passing</span></code> and <code class="docutils literal notranslate"><span class="pre">no_domain_decomposition</span></code> mode)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">allegro</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">mliappy</span> <span class="pre">mace</span></code></p></li>
+</ul>
+</section>
+<section id="gpu-pair-style-s">
+<h2>GPU <a href="#id5"><span class="problematic" id="id6">``</span></a>pair_style``s<a class="headerlink" href="#gpu-pair-style-s" title="Link to this heading"></a></h2>
+<p><strong>Tested and compatible (KOKKOS variants):</strong></p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">lj/cut/kk</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">symmetrix/mace/kk</span></code> (in <code class="docutils literal notranslate"><span class="pre">no_mpi_message_passing</span></code> mode)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">snap/kk</span></code></p></li>
+</ul>
+<p><strong>Tested and currently incompatible:</strong></p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">uf3/kk</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">symmetrix/mace</span></code> (in <code class="docutils literal notranslate"><span class="pre">mpi_message_passing</span></code> and <code class="docutils literal notranslate"><span class="pre">no_domain_decomposition</span></code> mode)</p></li>
+</ul>
+</section>
+<section id="notes-and-contributions">
+<h2>Notes and Contributions<a class="headerlink" href="#notes-and-contributions" title="Link to this heading"></a></h2>
+<p>There are likely many other compatible <a href="#id7"><span class="problematic" id="id8">``</span></a>pair_style``s that have not yet been tested. If you identify one, please get in touch with:</p>
+<ul class="simple">
+<li><p>Fraser Birks (<a class="reference external" href="mailto:fraser&#46;birks&#37;&#52;&#48;warwick&#46;ac&#46;uk">fraser<span>&#46;</span>birks<span>&#64;</span>warwick<span>&#46;</span>ac<span>&#46;</span>uk</a>)</p></li>
+</ul>
+<p>It is also possible that currently incompatible <code class="docutils literal notranslate"><span class="pre">pair_style``s</span> <span class="pre">could</span> <span class="pre">be</span> <span class="pre">made</span> <span class="pre">compatible</span> <span class="pre">with</span> <span class="pre">minor</span> <span class="pre">modifications</span> <span class="pre">(e.g.,</span> <span class="pre">adding</span> <span class="pre">ghost</span> <span class="pre">atoms</span> <span class="pre">and</span> <span class="pre">disabling</span> <span class="pre">MPI</span> <span class="pre">messaging</span> <span class="pre">in</span> <span class="pre">``EAM</span></code>). If this is important for your use case, please contact Fraser or raise a GitHub issue.</p>
+<p>If you believe that a <code class="docutils literal notranslate"><span class="pre">pair_style</span></code> should be compatible (for instance, because it avoids MPI in <code class="docutils literal notranslate"><span class="pre">compute()</span></code>), and suspect that ML-MIX may be at fault, please also raise a GitHub issue.</p>
 </section>
 <section id="why-use-this-package">
 <h2>Why Use This Package?<a class="headerlink" href="#why-use-this-package" title="Link to this heading"></a></h2>
@@ -111,18 +163,32 @@ It does this through the use of two commands; <cite>fix mlml</cite> and <cite>pa
 </section>
 <section id="how-it-works-data-flow">
 <h2>How it works: Data flow<a class="headerlink" href="#how-it-works-data-flow" title="Link to this heading"></a></h2>
-<p>Data for which potentials to be evaluated are stored in two user defined property/atom arrays: <cite>i2_potential</cite> and <cite>d2_eval</cite>.</p>
+<p>Data for which potentials are to be evaluated are stored in two user-defined <code class="docutils literal notranslate"><span class="pre">property/atom</span></code> arrays: <code class="docutils literal notranslate"><span class="pre">i2_potential</span></code> and <code class="docutils literal notranslate"><span class="pre">d2_eval</span></code>.</p>
 <ul class="simple">
-<li><p><cite>i2_potential</cite> is an integer array which specifies which potential(s) should be evaluated for each atom.</p></li>
-<li><p><cite>d2_eval</cite> is a double array which specifies the proportion of the force which should be evaluated by each potential for each atom.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">i2_potential</span></code> is an integer array which specifies which potential(s) should be evaluated for each atom.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">d2_eval</span></code> is a double array which specifies the proportion of the force which should be evaluated by each potential for each atom.</p></li>
 </ul>
-<p>At the start of every input script, these two arrays must be initialised with</p>
+<p><strong>CPU usage</strong></p>
+<p>At the start of every input script (CPU mode), these two arrays must be initialised with:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>fix<span class="w"> </span>eval_pot<span class="w"> </span>all<span class="w"> </span>property/atom<span class="w"> </span>i2_potential<span class="w"> </span><span class="m">2</span><span class="w"> </span>ghost<span class="w"> </span>yes
 fix<span class="w"> </span>eval_arr<span class="w"> </span>all<span class="w"> </span>property/atom<span class="w"> </span>d2_eval<span class="w"> </span><span class="m">2</span><span class="w"> </span>ghost<span class="w"> </span>yes
 </pre></div>
 </div>
-<p>The first column of each of these arrays corresponds to the potential labelled 1, and the second column corresponds to the potential labelled 2.</p>
-<p>The values held in these arrays can be dumped any time in the simulation with the <cite>dump custom</cite> command, allowing users to visualise which atoms are being evaluated by which potential.</p>
+<p><strong>KOKKOS (GPU) usage</strong></p>
+<p>When using Kokkos-accelerated pair styles, these must instead be defined in a device-compatible form using double vector <code class="docutils literal notranslate"><span class="pre">property/atom</span></code> fields:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>fix<span class="w"> </span>ml-mix-arrs<span class="w"> </span>all<span class="w"> </span>property/atom<span class="w"> </span>d_potential_1<span class="w"> </span>d_potential_2<span class="w"> </span>d_eval_1<span class="w"> </span>d_eval_2<span class="w"> </span>ghost<span class="w"> </span>yes
+</pre></div>
+</div>
+<p>Here:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">d_potential_1</span></code> and <code class="docutils literal notranslate"><span class="pre">d_potential_2</span></code> replace the columns of <code class="docutils literal notranslate"><span class="pre">i2_potential</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">d_eval_1</span></code> and <code class="docutils literal notranslate"><span class="pre">d_eval_2</span></code> replace the columns of <code class="docutils literal notranslate"><span class="pre">d2_eval</span></code></p></li>
+</ul>
+<p><strong>Notes</strong></p>
+<ul class="simple">
+<li><p>The first column of each array corresponds to potential 1, and the second corresponds to potential 2.</p></li>
+<li><p>These values can be dumped at any point in the simulation using the <code class="docutils literal notranslate"><span class="pre">dump</span> <span class="pre">custom</span></code> command, allowing users to visualise which atoms are being evaluated by which potential.</p></li>
+</ul>
 </section>
 <section id="how-it-works-region-building">
 <h2>How it works: Region building<a class="headerlink" href="#how-it-works-region-building" title="Link to this heading"></a></h2>
