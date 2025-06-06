@@ -9,33 +9,64 @@ To clone this repository (and its submodule dependencies), run:
 
     git clone --recurse-submodules https://github.com/kermodegroup/ML-MIX.git
 
-Installing LAMMPS
------------------
-To compile the ML-MIX LAMMPS plugin, first clone and build LAMMPS:
+Cloning LAMMPS
+--------------
+Before building ML-MIX, you must clone the LAMMPS source code:
 
 .. code-block:: bash
 
-    git clone -b release https://github.com/lammps/lammps.git mylammps
+    git clone -b release https://github.com/lammps/lammps.git lammps
 
-Follow the `official build instructions <https://docs.lammps.org/Build.html>`_.
+Building ML-MIX
+===============
+
+There are two ways to build ML-MIX:
+
+1. In-source (required for KOKKOS integration)
+2. As a plugin
+
+Instructions for both are given below.
+
+In-Source Build (Required for KOKKOS)
+-------------------------------------
+This method copies the `fix` and `pair` files into the `lammps/src/` directory. Run the installation script:
+
+.. code-block:: bash
+
+    ./install.sh /path/to/lammps/
+
+**Without KOKKOS**
+
+To build without KOKKOS, a reference build script is provided:
+
+- `build_scripts/example_lammps_build_script.sh`
 
 Required LAMMPS packages:
 
 - PLUGIN
-- ML-PACE which can be added using the instructions found `here <https://acesuit.github.io/ACEpotentials.jl/v0.6/tutorials/lammps/>`_.
+- ML-PACE (see `ACEpotentials.jl tutorial <https://acesuit.github.io/ACEpotentials.jl/v0.6/tutorials/lammps/>`_)
 - ML-UF3
-- RIGID (for Si stretched bond case study)
-- REPLICA (for nudged-elastic-band calculations)
+- RIGID (required for the Si stretched bond case study)
+- REPLICA (required for nudged-elastic-band calculations)
 
-The ML-MIX case studies (given in `case_studies/`) use Python-LAMMPS integration. 
-To install LAMMPS with this enabled, follow the `Python installation guide <https://docs.lammps.org/Python_install.html>`_.
-Installation into a virtual environment is highly recommended.
+The ML-MIX case studies require Python access to LAMMPS via its shared library interface. To enable this, follow the `LAMMPS Python installation guide <https://docs.lammps.org/Python_install.html>`_.
+Installing into a virtual environment is strongly recommended.
 
-**Example LAMMPS build script:** `build_scripts/example_lammps_build_script.sh`.
+**With KOKKOS**
 
-Building the ML-MIX Plugin
---------------------------
-To build the ML-MIX plugin, navigate to the `LAMMPS_plugin` directory and run:
+.. warning::
+
+    ML-MIX-kokkos is currently in beta. Bugs are expected and only a limited number of KOKKOS pair styles are supported.
+
+An in-source build is required for KOKKOS. Use the `install.sh` script as above. Then follow the example script:
+
+- `build_scripts/example_lammps_build_script_with_kokkos.sh`
+
+Refer to the `LAMMPS KOKKOS build documentation <https://docs.lammps.org/Build_extras.html#kokkos>`_ for guidance. Note that KOKKOS builds can be significantly slower to compile due to C++ templating.
+
+Plugin Build (Without KOKKOS)
+-----------------------------
+This method builds ML-MIX separately using the plugin infrastructure. Run:
 
 .. code-block:: bash
 
@@ -44,25 +75,23 @@ To build the ML-MIX plugin, navigate to the `LAMMPS_plugin` directory and run:
     cmake .. -D LAMMPS_SOURCE_DIR=/path/to/lammps/src
     cmake --build . -j 1
 
-Ensuring to replace `/path/to/lammps/src` with the path to the cloned LAMMPS source directory.
-
-Example script: `build_scripts/example_plugin_build_script.sh`.
+See also: `build_scripts/example_plugin_build_script.sh`.
 
 Loading the ML-MIX Plugin
 -------------------------
-To load the ML-MIX plugin files, add the following lines to your LAMMPS input script:
+To use ML-MIX via the plugin interface, load both the `fix` and `pair_style` libraries in your LAMMPS input script:
 
 .. code-block:: bash
 
     plugin load path/to/LAMMPS_plugin/build/hybridoverlaymlmlplugin.so
-    plugin load path/to/LAMMPS_plugin/build/langevinmlmlplugin.so
     plugin load path/to/LAMMPS_plugin/build/mlmlplugin.so
 
-If the plugins are loaded successfully, you should see outputs similar to the following for each:
+On successful load, you should see:
 
 .. code-block:: text
 
     Loading plugin: MLML hybrid overlay pair style v0.1 by Fraser Birks (fraser.birks@warwick.ac.uk)
+    Loading plugin: MLML fix style v0.1 by Fraser Birks (fraser.birks@warwick.ac.uk)
 
 Installing Python Packages
 --------------------------

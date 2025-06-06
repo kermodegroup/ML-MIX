@@ -83,12 +83,28 @@ Forces from force mixing are not the derivatives of a potential energy function,
 
 A consequence of force mixing is that the total force on the system may not be zero. To address this, the *zero* keyword can be used. If set to *yes*, the total force on the system will be modified such that the total is zero. This is achieved by averaging the net overall force on the system over all atoms and subtracting this from the force on each atom.
 
+Acceleration
+""""""""""""
+.. warning::
+
+  Kokkos acceleration for this pair_style is experimental and still in development. Some features may not work as expected, please report any issues you encounter.
+
+This pair_style has a kokkos enabled version, which exists in order to allow ML/ML simulations to be performed using GPU accelerated kokkos pair_styles. Please see the restrictions section below for information on how the use of this differs from the CPU version.
+
 Restrictions
 """"""""""""
+**CPU Version:**
+To use this pair_style, the i2_potential and d2_eval property/atoms must be defined.
+This pair_style is designed to be used in conjunction with the *hybrid/overlay/mlml* pair style.
+
+**GPU Version:**
+To use this pair_style, the d_potential_1, d_potential_2, d_eval_1 and d_eval_2 property/atoms must be defined (for device compatibility).
+
 
 As well as the restrictions that apply to the *hybrid/overlay* pair style, :doc:`run_style respa <run_style>` is completely disabled for *hybrid/overlay/mlml*. 
 
-To use this pair_style, the i2_potential and d2_eval property/atoms must be defined.
+This fix is designed to be used in conjunction with the *hybrid/overlay/mlml* pair style.
+
 
 This pair_style is designed to be used in conjunction with *fix mlml*. Please see :doc:`fix mlml <fix>` for more information.
 
