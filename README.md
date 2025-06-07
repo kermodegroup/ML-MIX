@@ -138,7 +138,7 @@ The ML-MIX plugin can be compiled straightforwardly with cmake in the `LAMMPS_pl
 ```
 mkdir build
 cd build
-cmake .. -D LAMMPS_SOURCE_DIR=/path/to/lammps/src \
+cmake ../cmake -D LAMMPS_SOURCE_DIR=/path/to/lammps/src \
 cmake --build . -j 1
 ```
 This code is also provided in `build_scripts/example_plugin_build_script.sh`.

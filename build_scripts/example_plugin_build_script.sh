@@ -4,7 +4,7 @@
 
 mkdir build
 cd build
-cmake .. -D LAMMPS_SOURCE_DIR=/path/to/lammps/src \
+cmake ../cmake -D LAMMPS_SOURCE_DIR=/path/to/lammps/src \
 
 cmake --build . -j 1
 
