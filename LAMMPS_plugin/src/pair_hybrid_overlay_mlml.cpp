@@ -374,6 +374,19 @@ void PairHybridOverlayMLML::compute(int eflag, int vflag)
   delete[] saved_special;
 
   if (vflag_fdotr) virial_fdotr_compute();
+
+  // if pair_only_forces custom array exists, then store the forces
+  int flag, cols;
+  int pair_only_idx = atom->find_custom("pair_only_forces", flag, cols);
+  if (pair_only_idx != -1) {
+    double** pair_only_forces = atom->darray[pair_only_idx];
+    for (int i = 0; i < nlocal+nghost; i++) {
+      for (int j = 0; j < 3; j++) {
+        pair_only_forces[i][j] = f[i][j];
+      }
+    }
+  }
+
 }
 
 

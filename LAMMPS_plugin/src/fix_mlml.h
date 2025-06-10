@@ -42,6 +42,9 @@ class FixMLML : public Fix {
   int pack_forward_comm(int, int *, double *, int, int *) override;
   void unpack_forward_comm(int, int, double *) override;
   void grow_arrays(int) override;
+  void pre_reverse(int, int) override;
+  void pre_force(int) override;
+  void setup_pre_reverse(int, int) override;
 
   bool check_cutoff(int, int, double);
   double blend(int, int);
@@ -68,7 +71,8 @@ class FixMLML : public Fix {
   double lb, ub;
 
   bool gflag, fflag, setup_only, init_flag, all_pot_one_flag;
-  bool first_set;
+  bool first_set, set_pair_only;
+  int pair_only_region, pair_forces_idx;
 
   double dtv, dtf;
   double *step_respa;

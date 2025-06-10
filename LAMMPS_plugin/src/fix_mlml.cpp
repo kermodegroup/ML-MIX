@@ -55,6 +55,7 @@ FixMLML::FixMLML(LAMMPS *lmp, int narg, char **arg) : Fix(lmp, narg, arg)
   initial_allocation = false;
   blend_type = 0; // linear blending by default
   bool check_kwargs = false;
+  set_pair_only = false;
 
   memory->create(core_qm_atom_idx, atom->nmax, "FixMLML: core_qm_atom_idx");
   memory->create(local_qm_atom_list, atom->nmax, "FixMLML: local_qm_atom_list");
@@ -146,7 +147,6 @@ FixMLML::FixMLML(LAMMPS *lmp, int narg, char **arg) : Fix(lmp, narg, arg)
       first_set = false;
     }
   } else error->all(FLERR,"FixMLML: Illegal fix mlml command");
-  
   if (check_kwargs){
     while (true){
       if (iarg >= narg) break;
@@ -180,11 +180,32 @@ FixMLML::FixMLML(LAMMPS *lmp, int narg, char **arg) : Fix(lmp, narg, arg)
           error->all(FLERR,"FixMLML: Illegal fix mlml blend type: {}", arg[iarg+1]);
         }
         iarg += 2;
+      } else if (strcmp(arg[iarg], "pair_only") == 0){
+        if (set_pair_only) error->all(FLERR, "FixMLML: pair_only specified multiple times");
+        set_pair_only = true;
+        // check there are no more arguments
+        if (iarg+1 > narg) error->all(FLERR,"FixMLML: Illegal fix mlml pair_only command");
+        // next value is the region to set pair only
+        pair_only_region = utils::inumeric(FLERR,arg[iarg+1],false,lmp);
+        if (pair_only_region < 1 || pair_only_region > 2){
+          error->all(FLERR,"FixMLML: Illegal fix mlml pair_only region: {}", pair_only_region);
+        }
+        iarg += 2;
       }else{
         error->all(FLERR,"FixMLML: Unrecognised fix mlml keyword: {}", arg[iarg]);
       }
     }
   }
+
+  // create arrays
+  int nlocal = atom->nlocal;
+  int nghost = atom->nghost;
+  int ntot = nlocal + nghost;
+  memory->create(d2_eval_prev, ntot, 2, "FixMLML: d2_eval_prev");
+  pair_forces_idx = -1;
+  if (set_pair_only) pair_forces_idx = atom->add_custom("pair_only_forces", 1, 3, 1);
+
+
 }
 
 FixMLML::~FixMLML()
@@ -203,6 +224,7 @@ int FixMLML::setmask()
   int mask = 0;
   mask |= FixConst::PRE_FORCE;
   mask |= FixConst::MIN_PRE_FORCE;
+  if (set_pair_only) mask |= FixConst::PRE_REVERSE;
   if (!setup_only) mask |= FixConst::END_OF_STEP;
   if (!setup_only) mask |= FixConst::MIN_POST_FORCE;
   return mask;
@@ -223,9 +245,11 @@ void FixMLML::init_list(int id, NeighList *ptr)
 
 void FixMLML::grow_arrays(int nmax)
 {
+  int ntot = atom->nlocal + atom->nghost;
   // grow the local_qm_atom_list array
   memory->grow(local_qm_atom_list, nmax, "FixMLML: local_qm_atom_list");
   memory->grow(core_qm_atom_idx, nmax, "FixMLML: core_qm_atom_idx");
+
 }
 
 void FixMLML::setup_pre_force(int){
@@ -233,16 +257,30 @@ void FixMLML::setup_pre_force(int){
   int nlocal = atom->nlocal;
   int nghost = atom->nghost;
   int ntot = nlocal + nghost;
-  prev_ntot = ntot;
-  memory->create(d2_eval_prev, ntot, 2, "FixMLML: d2_eval_prev");
 
-  //std::cout<<"HERE HERE HERE HERE"<<std::endl;
+  if (ntot > prev_ntot){
+    memory->grow(d2_eval_prev, ntot, 2, "FixMLML: d2_eval_prev");
+    // if we are using pair_only_forces, then grow the array
+    if (set_pair_only){
+      double** pair_only_forces = atom->darray[pair_forces_idx];
+      memory->grow(pair_only_forces, ntot, 3, "FixMLML: pair_only_forces");
+    }
+    prev_ntot = ntot;
+  }
+
+  int **i2_potential = (int**)atom->extract("i2_potential");
+  double **d2_eval = (double**)atom->extract("d2_eval");
+  // set all arrays to 0
+  for (int i = 0; i < ntot; i++){
+    i2_potential[i][0] = 0;
+    i2_potential[i][1] = 0;
+    d2_eval[i][0] = 0.0;
+    d2_eval[i][1] = 0.0;
+  }
 
   // if no initial group set, then start all atoms as QM
   if (all_pot_one_flag){
     error->warning(FLERR, "FixMLML: fix_classify command does not have an initialisation group, all atoms will be evaluated with potential 1 until first fix evaluation");
-    int **i2_potential = (int**)atom->extract("i2_potential");
-    double **d2_eval = (double**)atom->extract("d2_eval");
     int nlocal = atom->nlocal;
     int nghost = atom->nghost;
     if (i2_potential == nullptr || d2_eval == nullptr){
@@ -299,9 +337,68 @@ void FixMLML::min_post_force(int)
   this->end_of_step();
 }
 
+// pre_force, resize and zero the d2_pair_only_forces array
+void FixMLML::pre_force(int /*vflag*/) {
+
+  int ntot = atom->nlocal + atom->nghost;
+  if (ntot > prev_ntot){
+    memory->grow(d2_eval_prev, ntot, 2, "FixMLML: d2_eval_prev");
+    // if we are using pair_only_forces, then grow the array
+    if (set_pair_only){
+      double** pair_only_forces = atom->darray[pair_forces_idx];
+      memory->grow(pair_only_forces, ntot, 3, "FixMLML: pair_only_forces");
+    }
+    prev_ntot = ntot;
+  }
+
+  if (set_pair_only) {
+    double** pair_only_forces = atom->darray[pair_forces_idx];
+    int nlocal = atom->nlocal;
+    int nghost = atom->nghost;
+    int ntot = nlocal + nghost;
+
+    // zero the pair_only_forces array
+    for (int i = 0; i < ntot; i++){
+      pair_only_forces[i][0] = 0.0;
+      pair_only_forces[i][1] = 0.0;
+      pair_only_forces[i][2] = 0.0;
+    }
+  }
+}
+
+void FixMLML::setup_pre_reverse(int flag1, int flag2) {
+  if (set_pair_only) {
+    this->pre_reverse(flag1, flag2);
+  }
+}
+
+void FixMLML::pre_reverse(int flag1, int flag2) {
+  // if we are using pair_only_forces, then we need to zero
+  // out all non pair_contributions to the forces according to
+  // region supplied in input script
+
+  // this should have been set in pair_hybrid_overlay_mlml
+  double** pair_only_forces = atom->darray[pair_forces_idx];
+  double** d2_eval = (double**)atom->extract("d2_eval");
+  double** f = atom->f;
+  int nlocal = atom->nlocal;
+  int nghost = atom->nghost;
+  int ntot = nlocal + nghost;
+
+  // iterate over all local and ghost atoms, subtracting off the fraction of
+  // the non pair forces according to d2_eval
+  for (int i = 0; i < ntot; i++){
+    for (int j = 0; j < 3; j++){
+      f[i][j] -= (d2_eval[i][pair_only_region-1]) *
+                 (f[i][j] - pair_only_forces[i][j]);
+    }
+  }
+
+}
+
 void FixMLML::end_of_step()
 {
-  // at the end of the timestep this is called
+  // at the end of the timestep this is called (every nevery timesteps)
   this->allocate_regions();
 }
 
@@ -329,12 +426,6 @@ void FixMLML::allocate_regions(){
   if (i2_potential == nullptr || d2_eval == nullptr){
     error->all(FLERR, "FixMLML: both i2_potential and d2_eval must be allocated");
   }
-
-  if (prev_ntot<ntot){
-    prev_ntot = ntot;
-    memory->grow(d2_eval_prev, ntot, 2, "FixMLML: d2_eval_prev");
-  }
-
 
   // if we are tracking based on fix:
   if (fflag){
