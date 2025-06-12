@@ -43,7 +43,7 @@ pytest==8.3.4
 python-dateutil==2.9.0.post0
 pytz==2025.1
 PyYAML==6.0.2
-requests==2.32.4
+requests==2.32.3
 ruamel.yaml==0.18.10
 ruamel.yaml.clib==0.2.12
 scikit-learn==1.6.1
