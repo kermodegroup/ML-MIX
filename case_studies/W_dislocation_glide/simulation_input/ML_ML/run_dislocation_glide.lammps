@@ -1,0 +1,101 @@
+# ============= load MLMIX plugins
+plugin load ../../../../LAMMPS_plugin/build/mlmlplugin.so
+plugin load ../../../../LAMMPS_plugin/build/hybridoverlaymlmlplugin.so
+# ============= basic parameters
+units       metal
+atom_style  atomic
+atom_modify map array sort 0 0
+boundary p s p
+comm_style tiled
+fix eval_pot all property/atom i2_potential 2 ghost yes
+fix eval_arr all property/atom d2_eval 2 ghost yes
+read_data      ../25b_W_112glide_${temperature}K.data
+print ${temperature}
+print ${stress}
+variable        2xtemperature equal ${temperature}*2
+variable        1500timesteps equal ${timestep}*1500
+variable        output_frequency equal 1/${timestep}
+variable        MPa_to_eVA3 equal 0.0000062415
+# this region is so CNA (for region tracking - see later on) isn't done over the whole cell, minor computational saving
+variable        centralregioniny atom "((y- (ly/2+10))^2)^0.5 <60"
+group           centralregioniny_group variable centralregioniny
+# These are used to find the top and bottom slabs for application of stress, numbers hard coded based on inputed simulation cell
+variable        top_limit equal ly+8.5
+variable        bottom_limit equal 12
+# These are the IDs of the top and bottom slabs (plus referring to top, minus to bottom)
+variable        Yplus_idx atom "y > v_top_limit"
+variable        Yminus_idx atom "y < v_bottom_limit"
+variable        n_top       equal count(Yplus)
+variable        surface     equal lz*lx
+# application of shear stress to the top slab
+group           Yplus variable Yplus_idx
+variable        fz_slabplus     equal v_stress*v_surface/v_n_top*v_MPa_to_eVA3
+compute         disptop1 Yplus displace/atom
+fix stress_slab1 Yplus addforce 0 0 v_fz_slabplus
+# application of shear stress to the bottom slab
+group           Yminus variable Yminus_idx
+variable        fz_slabminus    equal -v_stress*v_surface/v_n_top*v_MPa_to_eVA3
+compute         disptop2 Yminus displace/atom
+fix stress_slab2 Yminus addforce 0 0 v_fz_slabminus
+# ============= MLMIX potential loading
+mass        1 183.839999952708211594654130749404
+pair_style hybrid/overlay/mlml pace pace table spline 5000 table spline 5000
+pair_coeff * * pace 1 1 ../w_3_21.yace W
+pair_coeff 1 1 table 1 1 ../w_3_21_pairpot.table W_W
+pair_coeff * * pace 2 2 ../w_3_14.yace W
+pair_coeff 1 1 table 2 2 ../w_3_14_pairpot.table W_W
+comm_modify cutoff 7.01
+# ============= region tracking
+compute mycna all cna/atom 3.838
+fix av_ca centralregioniny_group ave/atom 2 5 10 c_mycna
+fix mlml_fix all mlml 1 5.0 5.01 4.0 fix_classify av_ca 10 4.5 inf init_group centralregioniny_group
+fix b_fix all balance 10 1.1 rcb weight time 1.0
+# equilibration time
+velocity    all create ${2xtemperature} ${seed} dist gaussian
+fix     mylgv all langevin ${temperature} ${temperature} ${1500timesteps} ${seed} zero yes
+fix     mynve all nve
+timestep    ${timestep}
+thermo      50
+thermo_style custom step temp pxx pyy pzz pxy pxz pyz press vol etotal 
+run 25000
+# data dump after equilibration - dump positions more frequently than everything
+dump mydump all custom 500 dump.lammpstrj id type xs ys zs 
+dump mydump2 all custom 5000 dump2.lammpstrj id type xs ys zs vx vy vz fx fy fz d2_eval[1] d2_eval[2] i_potential[1] i_potential[2] 
+# Apply a weak thermostatto counteract
+# the small energy drift seen in ML/ML simulations.
+unfix      mynve
+unfix      mylgv
+fix        mynvt all nvt temp ${temperature} ${temperature} 10
+##### For finding speed (in glide direction) based on work done, not necessarily most efficient way. CNA is probably better
+# ============= Remove old displacement computes and their dependencies
+uncompute  disptop1
+uncompute  disptop2
+# ============= Define new displacement computes with new names
+compute    disptop1_new Yplus displace/atom
+compute    disptop2_new Yminus displace/atom
+# ============= Define new energy variables based on new computes
+variable   enperat_slab1_new atom -c_disptop1_new[3]*v_fz_slabplus
+variable   enperat_slab2_new atom -c_disptop2_new[3]*v_fz_slabminus
+unfix stress_slab1
+unfix stress_slab2
+# ============= Define new fixes that use the new energy variables
+fix        stress_slab1_new Yplus addforce 0 0 v_fz_slabplus energy v_enperat_slab1_new
+fix        stress_slab2_new Yminus addforce 0 0 v_fz_slabminus energy v_enperat_slab2_new
+# Define energy contributions
+variable E_potential equal pe
+variable E_kinetic equal ke
+variable stored_energy1 equal f_stress_slab1_new
+variable stored_energy2 equal f_stress_slab2_new
+# Define a custom work term 
+variable E_work equal "v_stored_energy1 +v_stored_energy2"  
+variable distance_travelled equal "-v_E_work / v_MPa_to_eVA3/v_stress/lz*25/lz" # 25 is hard coded length of dislocation line in burgers vectors
+variable mystep equal step
+variable t equal "(v_mystep - 25000)*v_timestep"
+variable velocity_in_x equal "100 * v_distance_travelled /(v_t+0.00000001)" # 100 is to convert to m/s
+# Track total modified energy
+variable E_total equal "v_E_potential + v_E_kinetic + v_E_work"
+##### End of finding speed based on work done
+# ============= Main simulation run
+thermo_style custom step temp pxx pyy pzz pxy pxz pyz press vol etotal v_E_total v_E_work v_distance_travelled v_velocity_in_x v_t
+thermo     50
+run        ${n_timesteps}
