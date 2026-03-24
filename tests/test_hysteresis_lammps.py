@@ -124,6 +124,7 @@ def hysteresis_test(verbose=False,
 
 
     lmps.command(f'dump decaydump all custom 1 {data_path}/dump_{pick_seed_with}.lammpstrj id type x y z fx fy fz i2_potential[1] i2_potential[2] d2_eval[1] d2_eval[2]')
+    lmps.command('dump_modify decaydump sort id')
     lmps.command('run 20')
 
     if rank == 0:
@@ -210,7 +211,7 @@ def hysteresis_test(verbose=False,
 
 
 def test_hysteresis_group():
-    hysteresis_test(pick_seed_with='group', hysteresis_time_out=0.01, nevery=1)
+    hysteresis_test(pick_seed_with='group', hysteresis_time_out=0.01, nevery=1,verbose=True)
     hysteresis_test(pick_seed_with='group', hysteresis_time_out=0.002, nevery=1)
     hysteresis_test(pick_seed_with='group', hysteresis_time_out=0.001, nevery=5)
     hysteresis_test(pick_seed_with='group', hysteresis_time_out=0.05, nevery=10)
