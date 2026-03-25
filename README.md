@@ -192,8 +192,7 @@ pip install .
 <!-- feature error table start -->
 | Potential | Serial | Date and time | Parallel | Date and time |
 | --- | --- | --- | --- | --- |
-| Force zeroing | ✅ | 2025-03-13 15:54:08 | N/A | N/A |
-| Region building | ✅ | 2025-05-13 15:38:53 | ✅ | 2025-05-13 15:23:57 |
+| Region building | ✅ | 2026-03-24 18:48:45 | N/A | N/A |
 
 <!-- feature error table end -->
 
