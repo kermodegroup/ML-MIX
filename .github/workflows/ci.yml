@@ -5,152 +5,185 @@ on: [push, pull_request]
 jobs:
   build-python-lammps:
     runs-on: ubuntu-latest
+
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-    - name: Install dependencies
-      run: |
-        sudo apt-get install -y build-essential cmake git libfftw3-dev libopenmpi-dev mpi-default-bin mpi-default-dev
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            build-essential cmake git wget \
+            libfftw3-dev libopenmpi-dev mpi-default-bin mpi-default-dev
 
-    - name: Get LAMMPS stable branch commit hash
-      run: |
-        LAMMPS_VERSION=$(git ls-remote https://github.com/lammps/lammps.git refs/heads/stable | awk '{print $1}')
-        echo "LAMMPS_VERSION=$LAMMPS_VERSION" >> $GITHUB_ENV
-    
-    - name: Set up python
-      uses: actions/setup-python@v5
-      with:
-        python-version: '3.10'
-    
-    - name: Cache LAMMPS
-      id: lammps-cache
-      uses: actions/cache@v4
-      with:
-        path: lammps
-        key: ${{ runner.os }}-lammps-${{ env.LAMMPS_VERSION }}-new_venv
-    
-    - name: Restore cached virtual environment
-      id: venv-cache
-      uses: actions/cache@v4
-      with:
-        path: venv
-        key: venv-${{ runner.os }}-${{ hashFiles('requirements.txt') }}
-        restore-keys: venv-${{ runner.os }}-
-    
-    - name: Create python venv (if venv cache misses)
-      if: ${{ steps.venv-cache.outputs.cache-hit != 'true' }}
-      run: |
-        python -m venv test_venv
-        source test_venv/bin/activate
-        pip install -r requirements.txt
-        deactivate
-  
-      
-    - name: Clone and build LAMMPS (if lammps cache misses)
-      if: ${{ steps.lammps-cache.outputs.cache-hit != 'true' }}
-      run: |
-        source test_venv/bin/activate
-        git clone -b stable https://github.com/lammps/lammps.git
-        cd lammps
-        mkdir build
-        cd build
-        wget -O libpace.tar.gz https://github.com/wcwitt/lammps-user-pace/archive/main.tar.gz
-        cmake ../cmake  -D PKG_PLUGIN=on\
-                        -D BUILD_SHARED_LIBS=on\
-                        -D CMAKE_INSTALL_PREFIX=$VIRTUAL_ENV \
-                        -D PKG_ML-PACE=yes \
-                        -D PACELIB_MD5=$(md5sum libpace.tar.gz | awk '{print $1}') \
-                        -D PKG_ML-UF3=yes \
-                        -D PKG_EXTRA-PAIR=yes \
-                        -D PKG_MOLECULE=yes \
-                        -D PKG_MANYBODY=yes \
-                        ../cmake
-        
-        cmake --build . -j 20
+      - name: Get LAMMPS stable branch commit hash
+        run: |
+          LAMMPS_VERSION=$(git ls-remote https://github.com/lammps/lammps.git refs/heads/stable | awk '{print $1}')
+          echo "LAMMPS_VERSION=$LAMMPS_VERSION" >> "$GITHUB_ENV"
 
-        cmake --install .
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
 
-        make install-python
-        
-        cd ../..
-    
-    - name: add LAMMPS to venv (if lammps cache hits, but venv misses)
-      if: ${{ steps.lammps-cache.outputs.cache-hit == 'true' && steps.venv-cache.outputs.cache-hit != 'true' }}
-      run: |
-        source test_venv/bin/activate
-        cd lammps/build
-        make install-python
-        cd ../..
+      - name: Restore venv cache
+        id: venv-cache
+        uses: actions/cache/restore@v4
+        with:
+          path: test_venv
+          key: ${{ runner.os }}-py310-venv-${{ hashFiles('requirements.txt') }}
 
-    - name: Update LAMMPS cache after build (if cache miss)
-      if: ${{ steps.lammps-cache.outputs.cache-hit != 'true' }}
-      uses: actions/cache@v4
-      with:
-        path: lammps
-        key: ${{ runner.os }}-lammps-${{ env.LAMMPS_VERSION }}-new_venv
+      - name: Create venv
+        if: steps.venv-cache.outputs.cache-hit != 'true'
+        run: |
+          python -m venv test_venv
+          source test_venv/bin/activate
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
 
-    - name: Upload venv cache after build (if cache miss or venv rebuilt)
-      if: ${{ steps.venv-cache.outputs.cache-hit != 'true' }}
-      uses: actions/cache@v4
-      with:
-        path: test_venv
-        key: venv-${{ runner.os }}-${{ hashFiles('requirements.txt') }}
+      - name: Restore LAMMPS source/build cache
+        id: lammps-src-cache
+        uses: actions/cache/restore@v4
+        with:
+          path: lammps
+          key: ${{ runner.os }}-lammps-src-${{ env.LAMMPS_VERSION }}
 
-    
-    # - name: Upload LAMMPS as an artifact for other tests
-    #   uses: actions/upload-artifact@v4
-    #   with:
-    #     name: lammps
-    #     path: lammps
+      - name: Restore LAMMPS install cache
+        id: lammps-install-cache
+        uses: actions/cache/restore@v4
+        with:
+          path: .cache/lammps-install
+          key: ${{ runner.os }}-lammps-install-${{ env.LAMMPS_VERSION }}
+
+      - name: Clone LAMMPS
+        if: steps.lammps-src-cache.outputs.cache-hit != 'true'
+        run: |
+          git clone -b stable https://github.com/lammps/lammps.git
+
+      - name: Build and install LAMMPS
+        if: steps.lammps-install-cache.outputs.cache-hit != 'true'
+        run: |
+          source test_venv/bin/activate
+          mkdir -p .cache/lammps-install
+          cd lammps
+          mkdir -p build
+          cd build
+
+          wget -O libpace.tar.gz https://github.com/wcwitt/lammps-user-pace/archive/main.tar.gz
+
+          cmake ../cmake \
+            -D PKG_PLUGIN=on \
+            -D BUILD_SHARED_LIBS=on \
+            -D CMAKE_INSTALL_PREFIX="$GITHUB_WORKSPACE/.cache/lammps-install" \
+            -D PKG_ML-PACE=yes \
+            -D PACELIB_MD5=$(md5sum libpace.tar.gz | awk '{print $1}') \
+            -D PKG_ML-UF3=yes \
+            -D PKG_EXTRA-PAIR=yes \
+            -D PKG_MOLECULE=yes \
+            -D PKG_MANYBODY=yes
+
+          cmake --build . -j"$(nproc)"
+          cmake --install .
+
+          # install Python wrapper into the venv
+          make install-python
+
+      - name: Reinstall Python wrapper into venv from cached LAMMPS build
+        if: steps.lammps-install-cache.outputs.cache-hit == 'true'
+        run: |
+          source test_venv/bin/activate
+          cd lammps/build
+          make install-python
+
+      - name: Expose cached LAMMPS install to runtime
+        run: |
+          echo "$GITHUB_WORKSPACE/.cache/lammps-install/bin" >> "$GITHUB_PATH"
+          echo "LD_LIBRARY_PATH=$GITHUB_WORKSPACE/.cache/lammps-install/lib:${LD_LIBRARY_PATH}" >> "$GITHUB_ENV"
+
+      - name: Save venv cache
+        if: steps.venv-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: test_venv
+          key: ${{ runner.os }}-py310-venv-${{ hashFiles('requirements.txt') }}
+
+      - name: Save LAMMPS source/build cache
+        if: steps.lammps-src-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: lammps
+          key: ${{ runner.os }}-lammps-src-${{ env.LAMMPS_VERSION }}
+
+      - name: Save LAMMPS install cache
+        if: steps.lammps-install-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: .cache/lammps-install
+          key: ${{ runner.os }}-lammps-install-${{ env.LAMMPS_VERSION }}
 
   run-tests:
     runs-on: ubuntu-latest
-    needs: build-python-lammps 
+    needs: build-python-lammps
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-    
-    - name: Install dependencies
-      run: |
-        sudo apt-get install -y build-essential cmake git libfftw3-dev libopenmpi-dev mpi-default-bin mpi-default-dev
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-    - name: Get LAMMPS stable branch commit hash
-      run: |
-        LAMMPS_VERSION=$(git ls-remote https://github.com/lammps/lammps.git refs/heads/stable | awk '{print $1}')
-        echo "LAMMPS_VERSION=$LAMMPS_VERSION" >> $GITHUB_ENV
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            build-essential cmake git wget \
+            libfftw3-dev libopenmpi-dev mpi-default-bin mpi-default-dev
 
-    - name: Download LAMMPS cache
-      uses: actions/cache@v4
-      with:
-        path: lammps
-        key: ${{ runner.os }}-lammps-${{ env.LAMMPS_VERSION }}-new_venv   
-      
+      - name: Get LAMMPS stable branch commit hash
+        run: |
+          LAMMPS_VERSION=$(git ls-remote https://github.com/lammps/lammps.git refs/heads/stable | awk '{print $1}')
+          echo "LAMMPS_VERSION=$LAMMPS_VERSION" >> "$GITHUB_ENV"
 
-    - name: Build Plugin
-      run: |
-        cd lammps/src
-        LAMMPS_SRC_DIR=$(pwd)
-        cd ../../LAMMPS_plugin
-        mkdir build
-        cd build
-        cmake ../cmake \
-          -D LAMMPS_SOURCE_DIR=$LAMMPS_SRC_DIR \
-          -D BUILD_SHARED_LIBS=on
-    
-        cmake --build . -j 1
-    
-    - name: Restore cached virtual environment
-      uses: actions/cache@v4
-      with:
-        path: test_venv
-        key: venv-${{ runner.os }}-${{ hashFiles('requirements.txt') }}
-        restore-keys: venv-${{ runner.os }}-
-  
-    - name: Activate virtual environment and run tests
-      run: |
-        source test_venv/bin/activate
-        cd tests/
-        pip install pytest
-        python -m pytest -s -v
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+
+      - name: Restore venv cache
+        uses: actions/cache/restore@v4
+        with:
+          path: test_venv
+          key: ${{ runner.os }}-py310-venv-${{ hashFiles('requirements.txt') }}
+
+      - name: Restore LAMMPS source/build cache
+        uses: actions/cache/restore@v4
+        with:
+          path: lammps
+          key: ${{ runner.os }}-lammps-src-${{ env.LAMMPS_VERSION }}
+
+      - name: Restore LAMMPS install cache
+        uses: actions/cache/restore@v4
+        with:
+          path: .cache/lammps-install
+          key: ${{ runner.os }}-lammps-install-${{ env.LAMMPS_VERSION }}
+
+      - name: Expose cached LAMMPS install to runtime
+        run: |
+          echo "$GITHUB_WORKSPACE/.cache/lammps-install/bin" >> "$GITHUB_PATH"
+          echo "LD_LIBRARY_PATH=$GITHUB_WORKSPACE/.cache/lammps-install/lib:${LD_LIBRARY_PATH}" >> "$GITHUB_ENV"
+
+      - name: Build plugin
+        run: |
+          cd lammps/src
+          LAMMPS_SRC_DIR=$(pwd)
+          cd ../../LAMMPS_plugin
+          mkdir -p build
+          cd build
+          cmake ../cmake \
+            -D LAMMPS_SOURCE_DIR="$LAMMPS_SRC_DIR" \
+            -D BUILD_SHARED_LIBS=on
+          cmake --build . -j1
+
+      - name: Run tests
+        run: |
+          source test_venv/bin/activate
+          cd tests
+          python -m pytest -s -v
