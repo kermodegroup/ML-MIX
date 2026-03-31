@@ -106,7 +106,6 @@ def hysteresis_test(verbose=False,
     if pick_seed_with == 'group':
         lmps.command('delete_atoms group seed_atoms compress no')
         seed_atoms = get_seed_atoms(struct)
-        print(seed_atoms)
         d2_eval_lammps = np.delete(d2_eval_lammps, seed_atoms, axis=0)
 
         
@@ -135,12 +134,9 @@ def hysteresis_test(verbose=False,
             # first check the initial step matches
             if pick_seed_with == 'group':
                 d2_eval_prev = d2_eval_lammps[:,0]
-                print(d2_eval_prev)
                 d2_eval_target = np.zeros_like(d2_eval_prev)
                 d2_eval_predicted = predict_d2_eval(d2_eval_prev, d2_eval_target, nevery, dt, hysteresis_time_in, hysteresis_time_out)
-                print(d2_eval_predicted)
                 next_d2_eval = dump[0].arrays['d2_eval[1]']
-                print(next_d2_eval)
                 assert np.allclose(d2_eval_predicted, next_d2_eval), f"Prediction failed at step 0"
             elif pick_seed_with == 'fix':
                 assert np.allclose(dump[0].arrays['d2_eval[1]'], np.ones_like(d2_eval_lammps[:,0])), f"Prediction failed at step 0"
