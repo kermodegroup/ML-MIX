@@ -253,7 +253,7 @@ void FixMLML::grow_arrays(int nmax)
 }
 
 void FixMLML::setup_pre_force(int){
-  // called right at the start of simulation
+  // called at the start of each run command
   int nlocal = atom->nlocal;
   int nghost = atom->nghost;
   int ntot = nlocal + nghost;
@@ -268,14 +268,15 @@ void FixMLML::setup_pre_force(int){
     prev_ntot = ntot;
   }
 
+  // initialise all arrays to zero at the very first setup
   int **i2_potential = (int**)atom->extract("i2_potential");
   double **d2_eval = (double**)atom->extract("d2_eval");
-  // set all arrays to 0
-  for (int i = 0; i < ntot; i++){
-    i2_potential[i][0] = 0;
-    i2_potential[i][1] = 0;
-    d2_eval[i][0] = 0.0;
-    d2_eval[i][1] = 0.0;
+  // set d2_eval array to zero if it's very first timestep
+  if (update->ntimestep == 0){
+    for (int i = 0; i < ntot; i++){
+      d2_eval[i][0] = 0.0;
+      d2_eval[i][1] = 0.0;
+    }
   }
 
   // if no initial group set, then start all atoms as QM
