@@ -22,3 +22,8 @@ ln -sf $(pwd)/src/pair_hybrid_overlay_mlml.h ${lammps}/src/pair_hybrid_overlay_m
 ln -sf $(pwd)/src/pair_hybrid_overlay_mlml.cpp ${lammps}/src/pair_hybrid_overlay_mlml.cpp
 ln -sf $(pwd)/src/KOKKOS/pair_hybrid_overlay_mlml_kokkos.h ${lammps}/src/KOKKOS/pair_hybrid_overlay_mlml_kokkos.h
 ln -sf $(pwd)/src/KOKKOS/pair_hybrid_overlay_mlml_kokkos.cpp ${lammps}/src/KOKKOS/pair_hybrid_overlay_mlml_kokkos.cpp
+
+ln -sf $(pwd)/src/pair_eam_mlml.h ${lammps}/src/pair_eam_mlml.h
+ln -sf $(pwd)/src/pair_eam_mlml.cpp ${lammps}/src/pair_eam_mlml.cpp
+ln -sf $(pwd)/src/pair_eam_fs_mlml.h ${lammps}/src/pair_eam_fs_mlml.h
+ln -sf $(pwd)/src/pair_eam_fs_mlml.cpp ${lammps}/src/pair_eam_fs_mlml.cpp
